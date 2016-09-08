@@ -1,0 +1,89 @@
+font:
+  catalog:
+    # Noto Serif supports Latin, Latin-1 Supplement, Latin Extended-A, Greek, Cyrillic, Vietnamese & an assortment of symbols
+    Noto Serif:
+      normal: notoserif-regular-subset.ttf
+      bold: notoserif-bold-subset.ttf
+      italic: notoserif-italic-subset.ttf
+      bold_italic: notoserif-bold_italic-subset.ttf
+    # M+ 1mn supports ASCII and the circled numbers used for conums
+    M+ 1mn:
+      normal: mplus1mn-regular-ascii-conums.ttf
+      bold: mplus1mn-bold-ascii.ttf
+      italic: mplus1mn-italic-ascii.ttf
+      bold_italic: mplus1mn-bold_italic-ascii.ttf
+    # M+ 1p supports Latin, Latin-1 Supplement, Latin Extended, Greek, Cyrillic, Vietnamese, Japanese & an assortment of symbols
+    # It also provides arrows for ->, <-, => and <= replacements in case these glyphs are missing from font
+    M+ 1p Fallback:
+      normal: mplus1p-regular-fallback.ttf
+      bold: mplus1p-regular-fallback.ttf
+      italic: mplus1p-regular-fallback.ttf
+      bold_italic: mplus1p-regular-fallback.ttf
+page:
+  layout: portrait
+  margin: [0.75in, 1in, 0.75in, 1in]
+  size: A4
+base:
+  font_color: #333333
+  font_family: Helvetica
+  font_size: 8
+  line_height_length: 11
+  line_height: $base_line_height_length / $base_font_size
+vertical_spacing: $base_line_height_length
+heading:
+  font_color: #262626
+  font_size: 14
+  font_style: bold
+  line_height: 1.2
+  margin_bottom: $vertical_spacing
+link:
+  font_color: #002FA7
+outline_list:
+  indent: $base_font_size * 1.5
+admonition:
+  border_color: $base_border_color
+  border_width: $base_border_width
+  padding: [0, $horizontal_rhythm, 0, $horizontal_rhythm]
+code:
+  font_color: $base_font_color
+  font_family: $literal_font_family
+  font_size: ceil($base_font_size)
+  padding: $code_font_size
+  line_height: 1.25
+  background_color: f5f5f5
+  border_color: cccccc
+  border_radius: $base_border_radius
+  border_width: 0.75
+footer:
+  font_size: $base_font_size_small
+  # NOTE if background_color is set, background and border will span width of page
+  border_color: dddddd
+  border_width: 0.25
+  height: $base_line_height_length * 2.5
+  line_height: 1
+  padding: [$base_line_height_length / 2, 1, 0, 1]
+  vertical_align: top
+  #image_vertical_align: <alignment> or <number>
+  # additional attributes for content:
+  # * {page-count}
+  # * {page-number}
+  # * {document-title}
+  # * {document-subtitle}
+  # * {chapter-title}
+  # * {section-title}
+  # * {section-or-chapter-title}
+  recto:
+    #columns: "<50%,0%,>50%"
+    right:
+      content: '{page-number}'
+      #content: '{section-or-chapter-title} | {page-number}'
+      #content: '{document-title} | {page-number}'
+    #center:
+    #  content: '{page-number}'
+  verso:
+    #columns: "<50%,0%,>50%"
+    left:
+      content: '{page-number}'
+      #content: '{page-number} | {chapter-title}'
+    #center:
+    #  content: '{page-number}'

@@ -1,0 +1,109 @@
+ComputeCpp SDK Readme
+=====================
+
+image:documents/images/ComputeCpp.svg[ComputeCpp(TM)]
+
+Introduction
+------------
+
+This is the README for the ComputeCpp SDK, a collection of sample code,
+utilities and documentation for Codeplay's ComputeCpp, an implementation
+of the SYCL programming standard. You can find more information at:
+
+ * http://computecpp.codeplay.com/
+ * http://sycl.tech/
+
+Contents
+--------
+
+* LICENSE.txt
+    - The license this package is available under: Apache 2.0
+* README.adoc
+    - This readme file
+* cmake/
+    - Contains useful files for integrating ComputeCpp with existing
+      projects. See later in this document for a description of the CMake
+      modules provided.
+* documentation/
+    - Documentation for the SDK (including CMake and samples) written in
+      ASCIIDoc.
+* samples/
+    - A collection of sample SYCL code, tested on ComputeCpp, provided as
+      a learning resource and starting point for new SYCL software. CMake
+      files are also provided for most samples.
+* tools/
+    - Useful tools for working with SYCL code and ComputeCpp. Includes a
+      simple driver script for compiling SYCL code with ComputeCpp, an
+      example Makefile and other utilities.
+
+Setup
+-----
+
+CMake files are provided as a build system for this software. CMake version
+3.2.2 is required at minimum, though later versions of CMake should continue
+to be compatible.
+
+The CMakeLists.txt file is located in the samples/ directory.
+
+At minimum, one CMake variable is required to get the sample code
+building - COMPUTECPP_PACKAGE_ROOT_DIR. This variable should be the root
+directory of the ComputeCpp install (i.e. the directory with the the folders
+bin, include, lib and so on).
+
+You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_DIR to
+choose a Debug or Release build and the location you'd like to be used when
+the "install" target is built.
+
+In the documents directory there is a
+link:documents/ComputeCpp_Getting_Started.asciidoc[getting started guide]
+that serves as an introduction to SYCL and ComputeCpp. Additionally, there
+is an link:documents/ComputeCpp_Integration_Guide.asciidoc[Integration
+guide] should you wish to add ComputeCpp to existing projects.
+
+
+
+Requirements
+------------
+
+* The samples should work with any SYCL 1.2 implementation, though have
+  only been tested with ComputeCpp CE Public Beta v0.1
+
+* OpenCL 1.2-capable hardware and drivers with SPIR 1.2 support
+
+* pass:[C++11-compliant compiler and libstdc++ on GNU/Linux (GCC 4.9+, Clang 3.6+)]
+
+* CMake 3.2.2 and newer
+
+Troubleshooting
+---------------
+
+The sample code should compile without error on our supported platforms.
+If you run into trouble, or think you have found a bug, we have a JIRA
+Service Desk available through the https://computecpp.codeplay.com/[ComputeCpp
+website].
+
+Frequently Asked Questions
+--------------------------
+
+We have a link:documents/ComputeCpp_FAQ.asciidoc[FAQ document] available online.
+
+Maintainers
+-----------
+
+This SDK is maintained by https://www.codeplay.com/[Codeplay Software Ltd.]
+If you have any problems, please contact mailto:sycl@codeplay.com[].
+
+Acknowledgements
+----------------
+
+This repository contains code written by Sean Barrett (stb_image code in the
+Gaussian blur sample) and Charles Salvia (the stack allocator used in the
+smart pointer sample). Please see the files for their respective licences.
+
+Contributions
+-------------
+
+This SDK is licensed under the Apache 2.0 license. Patches are very welcome!
+If you have an idea for a new sample, different build system integration or
+even a fix for something that is broken, please get in contact.
+

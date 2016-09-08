@@ -1,0 +1,208 @@
+= Community Edition Q&A
+:toc:
+:homepage: http://www.codeplay.com/computecpp
+:author: Codeplay Software Ltd. <sycl@codeplay.com>
+:sectnums:
+include::adoc_links.asciidoc[]
+image:images/ComputeCpp.svg[ComputeCpp]
+
+=== What Is SYCL(TM)?
+
+link:https://www.khronos.org/sycl[SYCL(TM)] is an open, royalty-free standard
+specification from the Khronos Group which defines a single source pass:[C++]
+programming layer that is built on top of
+link:https://www.khronos.org/opencl[OpenCL(TM)].
+SYCL(TM) allows developers to leverage pass:[C++] features on
+a wide range of heterogeneous devices supported by OpenCL, providing a
+foundation for creating efficient, portable and reusable middleware libraries
+and applications.
+
+=== What is ComputeCpp(TM) Community Edition?
+ComputeCpp(TM) Community Edition (CE) is a heterogeneous parallel programming
+platform that provides a beta pre-conformant implementantion of SYCL(TM) 1.2
+Khronos
+link:http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf[specification].
+ComputeCpp Community Edition is an entirely free version that supports
+Intel(TM) and AMD(TM) OpenCL(TM) platforms (please see the
+link:https://computecpp.codeplay.com/releases/latest/platform-support-notes[ComputeCpp Community Edition Platform Support Notes]).
+The ComputeCpp Package is downloadable from https://computecpp.codeplay.com,
+the latest release notes are available in
+https://computecpp.codeplay.com/latest/Release_notes.
+
+=== Why should I use SYCL?
+
+SYCL is aimed at developers who want to create or integrate OpenCL
+applications and libraries with pass:[C++] programs. Dispatching device kernels
+from pass:[C++] applications is a widely used method for dealing with
+heterogeneous platforms in various programming models, such as CUDA,
+pass:[C++]AMP, HCC, OpenACC, or OpenMP. SYCL brings this capability to a wide
+range of accelerators supporting OpenCL. This lets developers create powerful,
+performance portable template libraries that can take advantage of a wide
+range of heterogeneous hardware and software platforms.
+
+
+=== Does SYCL have full pass:[C++] support?
+
+SYCL defines a standard pass:[C++]11 programming interface and supports most of
+the pass:[C++11] features in SYCL kernels. The restrictions are: function
+pointers, dynamic memory allocation, dynamic polymorphism, structs using host
+initialized pointers, runtime type information, exception handling, dynamic
+recursion, global variables and non-const static variables.
+
+=== Can I use my existing OpenCL kernels and libraries in SYCL?
+
+Yes. SYCL fully supports OpenCL interoperability and ease of integration with
+existing OpenCL frameworks. SYCL supports and exposes all of the OpenCL 1.2
+features and capabilities. The SYCL API accepts OpenCL pre-built programs,
+libraries, kernels and memory objects. The SYCL OpenCL interoperability API
+allows the execution of OpenCL and SYCL kernels to be interleaved.
+Integrating existing OpenCL libraries with a SYCL program is the suggested way
+to re-use and retain highly optimized OpenCL code for specific devices, but
+also have the capability of SYCL portable code for other devices
+without needing to provide all of the possible highly tuned OpenCL libraries.
+
+
+=== What is the difference between SYCL and the OpenCL pass:[C++] kernel language?
+
+SYCL is a parallel programming interface where the host and device code are
+in the same source file. The OpenCL pass:[C++] kernel language is the
+specification for the language used for the device code. Seperately defined
+is the OpenCL C host API specification for the host code. Similar languages
+to the OpenCL kernel language is GLSL and HLSL.
+
+=== Can I still use vendor specific extensions in SYCL?
+
+Yes. Any vendor specific extensions that are available in OpenCL are
+still available in SYCL. All OpenCL intrinsics can be used within SYCL
+kernels just as developers would do in an OpenCL kernel. Portability and
+host execution can be ensured using preprocessor definitions.
+
+
+=== Can I port my existing OpenCL kernels to SYCL?
+
+Yes. The SYCL kernel library supports all of the features and capabilities of
+OpenCL C kernel language through pass:[C++] classes and built-in functions.
+There is one to one mapping for the vast majority of the OpenCL C language
+extensions to the SYCL kernel library classes, methods and functions.
+
+
+=== Can a SYCL application work without an OpenCL device?
+
+Yes. SYCL targets OpenCL devices but in the case where there is no OpenCL
+device available on the system, every SYCL implementation provides a SYCL
+Host device, which is a C++ multi-threaded native implementation of a SYCL
+device on the host CPU.
+
+=== Can I use ComputeCpp in my existing toolchain?
+
+Yes. ComputeCpp is designed to be as flexible as possible when it comes
+to integration within new or existing toolchains. The SYCL application can be
+built with any C++ compiler to produce the native pass:[C++] executable and the
+ComputeCpp device compiler is only used for the SYCL device kernels.
+More information can be found at
+<<ComputeCpp_Integration_Guide.asciidoc#, ComputeCpp Integration Guide>>
+
+
+=== Which platforms does ComputeCpp(TM) Community Edition Support?
+
+The ComputeCpp(TM) Community Edition supports Intel(TM) and AMD(TM) OpenCL
+platforms. Further details can be found in
+link:https:{platformSupportUrl}[Platform Support Notes].
+
+=== How can I debug SYCL code?
+
+SYCL kernel functions are standard pass:[C++]. Therefore, a SYCL kernel
+function can execute on the
+<<ComputeCpp_Glossary.asciidoc#SYCLHostDevice, SYCL Host Device>>
+allowing developers to use their prefered C++ debuggers to debug their code on
+the host CPU. ComputeCpp(TM) Community Edition does not provide a SYCL device
+debugger, but ComputeCpp(TM) Debuggers will be available in the future.
+
+=== Will SYCL be as efficient as OpenCL?
+
+The SYCL specification has been designed so that the there is no overhead posed
+by the SYCL API to an OpenCL application and the SYCL runtime has enough
+information to optimize memory transfers. The SYCL kernel library is designed
+so that the compiler toolchains can optimize out any unnecessary code and be as
+efficient as OpenCL kernels.
+
+=== Will SYCL support future versions of OpenCL?
+
+Yes. SYCL specification is created by the SYCL subgroup of the OpenCL Khronos
+group. As part of the OpenCL Khronos group it follows the advancements in
+OpenCL. The SYCL 2.2 _provisional_ specification is
+available https://www.khronos.org/registry/sycl/specs/sycl-2.2.pdf[here].
+
+=== How does SYCL compare with other pass:[C++] parallel programming models?
+
+SYCL takes a similar approach to other modern pass:[C++] programming models,
+so most pass:[C++] developers who are familiar with recent developments in
+the standard should find it familiar. There are a few differences. Unlike
+some other single-source pass:[C++] programming models, SYCL adds no
+language extensions, which ensures your application can always be processed
+by standard pass:[C++] compilers. SYCL aims to target a wide range of
+heterogeneous devices, which means it abstracts away some of the many
+differences between those devices to enable maximum performance as well as
+abstraction. SYCL is a royalty-free open standard from Khronos. SYCL
+separates data storage from data access via accessors, which allows the
+system to support very efficient memory access on a wide range of
+devices.
+
+=== Can I integrate SYCL with OpenGL?
+
+SYCL does support SYCL/OpenGL interop, through the existing extensions for
+OpenCL/OpenGL interop. However, this is not supported in the current release of
+ComputeCpp Community Edition Beta.
+
+
+=== Can I target NVIDIA GPUs?
+
+ComputeCpp targets OpenCL platforms with SPIR 1.2 support. Since NVIDIA GPUs
+don't have SPIR 1.2 support, they are not supported.
+
+=== What should I do if I find a problem?
+
+As ComputeCpp Community Edition is still in the Beta stage, it is
+still under active development. We aim to provide a stable library for
+creating pass:[C++] parallel applications, however if you find a bug please
+report it here https://computecpp.codeplay.com. We will aim to resolve the issue
+in a later update.
+
+
+=== Why is ComputeCpp(TM) Community Edition a Beta release?
+
+ComputeCpp(TM) Community Edition is a Beta release, since it is not yet a SYCL
+conformant implementation. Codeplay is committed to provide a conformant SYCL
+implementation. Once ComputeCpp Community edition is conformant it will be
+released with the same licensing scheme as the current one.
+
+
+=== Is ComputeCpp(TM) Community Edition going to remain free?
+
+ComputeCpp(TM) Community Edition release is aimed towards the non-commercial
+projects and the open-source community and as such will continue providing
+releases in the future. Keep in touch with us at
+mailto:sycl@codeplay.com[sycl at codeplay.com] for commercial support.
+
+=== Can we mix SYCL with other paradigms, like TBB, MPI, OpenMP?
+
+Yes. SYCL applications are standard pass:[C++] applications. They can be
+combined with any other pass:[C++] programming model using modern pass:[C++]
+techniques.
+
+
+=== I want XXX feature in the ComputeCpp(TM) Community Edition, why is it not there?
+
+We have aimed to target the core features of SYCL in this first release of the
+ComputeCpp(TM) Community Edition. Suggestions are welcome please add a feature
+request on the issue tracker at https://computecpp.codeplay.com.
+
+=== I would like to talk to the ComputeCpp Team in person, how can I reach them?
+
+Codeplay Software employees routinely attend various technology conferences
+around the globe. Please register to ComputeCpp(TM) Community at
+https://computecpp.codeplay.com.
+
+_Khronos, SPIR and SYCL are trademarks of the Khronos Group Inc. OpenCL
+and the OpenCL logo are trademarks of Apple Inc. used by permission by
+Khronos._

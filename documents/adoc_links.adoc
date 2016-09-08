@@ -1,0 +1,13 @@
+:computecppUrl: https://computecpp.codeplay.com
+:syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
+:spirUrl: http://www.khronos.org/faq/spir
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+:computecppInfoUrl: https://computecpp.codeplay.com/releases/latest/information-manual
+:ccpApiDoc: https://computecpp.codeplay.com/releases/latest/api-guide/
+:computeppUrl: https://computecpp.codeplay.com/releases/latest/computepp-manual
+:streamUrl: https://computecpp.codeplay.com/releases/latest/stream-manual
+:syclParallelStlUrl: https://github.com/KhronosGroup/SyclParallelSTL
+:computecppIntegrationGuide: https://github.com/computecpp-sdk/html/ComputeCpp_Integration_Guide.html
+:opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
+:computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
+:eigenSYCLUrl: https://bitbucket.org/benoitsteiner/opencl/branch/Codeplay

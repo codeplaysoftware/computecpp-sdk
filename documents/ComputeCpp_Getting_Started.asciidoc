@@ -1,0 +1,279 @@
+== Community Edition (Beta) v. 0.1
+:toc:
+:homepage: http://www.codeplay.com/computecpp
+:doctype: article
+:version: 0.1
+:author: Codeplay Software Ltd. <sycl@codeplay.com>
+:source-highlighter: coderay
+:coderay-css: style
+:copycss:
+:linkcss:
+include::adoc_links.asciidoc[]
+{author}
+
+
+image:images/ComputeCpp.svg[ComputeCpp(TM)]
+
+:numbered!:
+[abstract]
+==  ComputeCpp(TM) Community Edition (CE): Beta Release
+
+ComputeCpp Community Edition (CE) is a heterogeneous parallel programming
+platform that provides a beta pre-conformant implementantion of SYCL(TM) 1.2
+Khronos link:{syclSpecUrl}[specification].
+
+ComputeCpp CE {version} beta release includes the ComputeCpp CE Package version
+{version} and ComputeCpp CE SDK version {version}. The supported OpenCL 1.2
+platforms for ComputeCpp CE beta release, are AMD(TM) and Intel(TM).
+
+This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries
+for better integration with pass:[C++] frameworks and applications like
+link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries.
+
+
+[ComputeCppPackage]
+.ComputeCpp Package Components
+image::images/ComputeCppPackageContent.svg[ComputeCpp Package Components]
+
+
+The ComputeCpp Package includes the components of the ComputeCpp Community Edition
+beta implementation of SYCL 1.2. ComputeCpp Package includes the pass:[compute++] SYCL
+device compiler and the SYCL Runtime library along with its headers. The
+ComputeCpp Package can be downloaded from the
+link:{computecppUrl}[ComputeCpp Download Page], and further details on how to
+integrate the ComputeCpp Package to an existing pass:[C++] application can be found
+in the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
+
+The ComputeCpp SDK complements the ComputeCpp Package with build system
+integration, sample code and documentation. The ComputeCpp Package is available at
+link:{computecppSdkUrl}[computecpp-sdk @ *GitHub*].
+
+Further documentation of the system can also be found in
+link:{computecppUrl}[ComputeCpp API Documentation].
+There is a local copy of the API Documentation available in the directory
+_doc/api_pages/index.html_ of the ComputeCpp Package.
+
+ComputeCpp CE does not currently implement the complete SYCL 1.2 standard.
+Note that this is a beta version, and some performance optimizations are
+disabled.
+
+Please, refer to the
+link:{platformSupportUrl}[ComputeCpp Platform Support Notes] for details on the
+supported platforms and limitations. Alongside this document there is a
+copy of the _doc/computecpp_platform_support_notes.pdf_.
+
+
+== Getting started with SYCL(TM) using ComputeCpp(TM)
+
+SYCL(TM) for OpenCL(TM) is a heterogeneous parallel programming interface which
+integrates modern pass:[C++] techniques with OpenCL(TM) 1.2 massively parallel
+device capabilities. A SYCL application is a pass:[C++] application that uses
+the SYCL API, in order to integrate with OpenCL platforms existing on the target
+system.
+
+The following example (<<SimpleSycl>>) depicts the basic structure of a SYCL
+application.
+
+This example implements a simple addition of two vectors of scalar types on
+a SYCL device. The vectors are represented using _std::array_ for simplicity.
+
+[SimpleSycl]
+.Basic SYCL example
+[source,cpp,linenums]
+----
+#include <CL/sycl.hpp>
+#include <array>
+
+constexpr cl::sycl::access::mode sycl_read = cl::sycl::access::mode::read;
+constexpr cl::sycl::access::mode sycl_write = cl::sycl::access::mode::write;
+
+template <typename T>
+class SimpleVadd;
+
+template <typename T, size_t N>
+void simple_vadd(const std::array<T, N> &A, const std::array<T, N> &B,
+                 std::array<T, N> &C) {
+  cl::sycl::queue deviceQueue;
+  cl::sycl::range<1> numOfItems{N};
+  cl::sycl::buffer<T, 1> bufferA(A.data(), numOfItems);
+  cl::sycl::buffer<T, 1> bufferB(B.data(), numOfItems);
+  cl::sycl::buffer<T, 1> bufferC(C.data(), numOfItems);
+
+  deviceQueue.submit([&](cl::sycl::handler &cgh) {
+    auto accessorA = bufferA.template get_access<sycl_read>(cgh);
+    auto accessorB = bufferB.template get_access<sycl_read>(cgh);
+    auto accessorC = bufferC.template get_access<sycl_write>(cgh);
+
+    cgh.parallel_for<class SimpleVadd<T>>(numOfItems,
+		[=](cl::sycl::id<1> wiID) {
+      accessorC[wiID] = accessorA[wiID] + accessorB[wiID];
+    });
+  });
+}
+
+int main() {
+  const size_t array_size = 4;
+  std::array<cl::sycl::cl_int, array_size> A = {{1, 2, 3, 4}},
+                                           B = {{1, 2, 3, 4}}, C;
+  std::array<cl::sycl::cl_float, array_size> D = {{1.f, 2.f, 3.f, 4.f}},
+                                             E = {{1.f, 2.f, 3.f, 4.f}}, F;
+  simple_vadd<int, array_size>(A, B, C);
+  simple_vadd<float, array_size>(D, E, F);
+  for (unsigned int i = 0; i < array_size; i++) {
+    if (C[i] != A[i] + B[i]) {
+      return 1;
+    }
+    if (F[i] != D[i] + E[i]) {
+      return 1;
+    }
+  }
+  return 0;
+}
+----
+
+In this example, the addition of the two vector arrays is defined using a
+templated function `simple_vadd`. This function implements:
+....
+C = A + B
+....
+where *A*, *B* and *C* are vector arrays of the same type and size.
+
+The contents of the _std::array_ are initially stored on the host memory, as
+usual in pass:[C++] programs. In order to make the contents of the array
+available on the device, developers must create a SYCL memory object.
+
+On line number <1>, we include `CL/sycl.hpp`.
+The ComputeCpp SYCL implementation uses this single header to include all
+the API interface and the dependant types defined on the API.
+
+
+On line number <14>, we construct a _cl::sycl::range_ object initialized to the
+size of the vectors (the template parameter passed to the function).
+Objects in SYCL are multi-dimensional, and the number of elements per components
+is expressed using the _cl::sycl::range_ objects.
+A _cl::sycl::range_ is a vector with as many components as dimensions. The value
+stored in each component express the size on that component, starting from 1.
+The range is used to create the _cl::sycl::buffer_ object, which manages the
+data on host and device. In this case, since we use vectors, we only use one
+dimensional buffers (second template parameter).
+The objects `bufferA`, `bufferB` and `bufferC` are initialized with the pointer
+obtained from the _std::array_.
+
+In SYCL, the execution of any computation on a SYCL device
+follows the link:{opencl12Url}[OpenCL execution model]. In this simple example,
+we use the _default_ SYCL device chosen by the ComputeCpp runtime library on
+`cl::sycl::queue` construction.
+
+
+The <<CommandGroupFunctor,SYCL command group functor>> encapsulates the vector
+addition kernel alongside with the input and output operations.
+On line number <19> we define the lambda function (our command group functor)
+and submit it to the our  queue object `deviceQueue`.
+
+The <<CommandGroupFunctor, Command Group>> defines the
+<<CommandGroupScope, Command Group Scope>>. Any object that takes a
+_cl::sycl::handler_ object can only be used in
+<<CommandGroupScope, Command Group Scope>>. The _cl::sycl::handler_ object can
+only be constructed by the runtime.
+Device accessors and the <<KernelFunctor,Kernel Functor>> can only be defined
+in this scope.
+
+The SYCL programming model uses <<Accessors, accessors>> (the
+`cl::sycl::accessor` class) to keep track of the access from different command
+groups to memory objects. The <<SYCLRuntime, SYCL Runtime>> can then use the
+different access modes of the accessors to create a dependency graph to schedule
+the execution of multiple command groups in different devices while maintaining
+a consistent view of the memory.
+
+Accessors are obtained from buffers on lines <20> to <21>, by calling the
+`get_access` method on the buffers to create `cl::sycl::accessor` objects.
+
+On line <20> we require a read only accessor on the queue's device. The
+`sycl_read` variable is a `constexpr` variable of the enum class
+`cl::sycl::access::mode`. The declarations of `sycl_read` and the corresponding
+`sycl_write` are on lines <4> and <5>.
+
+This example implements the `simple_vadd` computation in a SIMD(single
+  instruction, multiple data) manner: The computation will be executed on
+  multiple processing elements in parallel. This is the _default_ parallel
+  programming mode in SYCL.
+
+The lambda function object defined at line numbers <24> to <27> defines the
+<<KernelScope, Kernel Scope>>. The lambda is called by the `parallel_for`
+fuction API. In the example, we spawn as many work-items as the number of
+elements of the vectors, specified in the _numOfItems_ _cl::sycl::range_
+variable.
+The name of the kernel is specified as the template parameter of the
+`parallel_for` using the class type `SimpleVadd` footnote:[pass:[C++] lambda
+functions are unnamed function objects which capture variables in scope. Due to
+the fact that ComputeCpp is following the _single source multiple pass_
+techique, using a host and a device compiler, that name is going to be used for
+identifying the function object across the different compilers.]
+
+Note that this is not required when the parallel_for function is called using a
+functor object, the functor typename is going to be used as the SYCL kernel
+name].
+
+The `parallel_for` invocation will execute the lambda function object as a SYCL
+kernel to an _nd_range_ execution space. The _nd_range_ consists of _work-items_
+organized into _work-groups_.
+
+The `parallel_for` API used in the example is the simplest way of dispatching
+kernels to a SYCL device. The _number of work-groups_ is defined by the
+heuristics of the ComputeCpp runtime: An <<NDRange, ND-range>> will be
+implicitly constructed for the OpenCL execution of the
+<<KernelFunctor,SYCL kernel functor>> footnote:[If a `cl::sycl::nd_range`
+object is given to the `parallel_for` invocation, the SYCL runtime will be using
+the explicitly specified _nd_range_.]. In this example, `simple_vadd` is called
+for `array_size` equal to four on line number <39> and line number <40>. The
+number of work-items, `numOfItems`, is equal to four so the number of
+work-groups can only be one, two or four as shown in the following
+<<parallel_for_execution,diagram>>.
+
+[parallel_for_execution]
+.Vector Addition Diagram
+image::images/parallel_for_execution.svg[Vector Addition Diagram]
+
+On line number <26>, `accessorC` (a write only accessor) is used to store the
+result of the addition of the read-only accessors `accessorA` and `accessorB` is
+assigned to. Let's take a simplified view of what the second work-item (`wiID`)
+of our four-element one dimensional _nd_range_ will do. The `wiID[1]` will add
+`accessorA[wiID[1]]` with `accessorB[wiID[1]]` and store it to
+`accessorC[wiID[1]]` (depicted in <<parallel_for_execution,diagram>>).
+
+On line number <25> the lambda function object (that defines the
+<<KernelScope, Kernel Scope>>) takes as parameter the current instance in the
+global index space class (`cl::sycl::id`). The _cl::sycl::id_ class features
+various getter methods to obtain specific values of the instance. The value of
+`wiID` will change for each instance in the complete _nd_range_ execution
+space. Note that SYCL allows using _cl::sycl::id_ variables directly to index
+accessor types.
+
+The `cl::sycl::queue::submit` method returns immediately after scheduling the
+command group functor to the SYCL queue for execution on the SYCL device. The
+command group functor will be executed on the device when the accessor
+dependencies are resolved and the device is ready to perform the
+<<KernelDispatch, Kernel Dispatch>>.
+
+In the `main` function of the pass:[C++] SYCL application, we define the size
+of the vectors to be `array_size`. On line <33> we define the `std::array`
+vectors *A*, *B* and *C* using the SYCL type `cl::sycl::cl_int`.
+All `cl_XXX` types defined in the SYCL namespace are types portable between
+{Cpluplus} host and device. ComputeCpp can convert the host type to the
+corresponding device type in this case. Normal host types (e.g, `int`) can still
+be used, but the interoperability is not defined, and sizes may vary between
+host and device.
+ footnote:[pass:[compute++] is not going to change the type defined the developer on
+ the device side unless it is defined as a SYCL OpenCL interoperability type,
+ e.g. cl_int, cl_long, etc.].
+
+On line number <36> we are calling the `simple_add` templated function for
+`cl_int` and `array_size` providing as parameters the array objects of A, B and
+C. Note that on line number <37> we are calling the `simple_add` templated
+function for `cl_float` and `array_size` for the `std::array` objects *D*,*E*
+and *F*. This shows one of the main features of SYCL: Since the SYCL interface
+is templated, we can write generic algorithms that can be templated by different
+types without changing the algorithm, interacting nicely with pass:[C++]
+programming.
+
+include::Glossary.adoc[]
