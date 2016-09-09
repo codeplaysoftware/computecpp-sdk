@@ -3,7 +3,33 @@
 :homepage: http://www.codeplay.com/computecpp
 :author: Codeplay Software Ltd. <sycl@codeplay.com>
 :sectnums:
-include::adoc_links.asciidoc[]
+
+ifdef::env-github[]
+// Includes do not work on GitHub
+:computecppUrl: https://computecpp.codeplay.com
+:syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
+:spirUrl: http://www.khronos.org/faq/spir
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+:computecppInfoUrl: https://computecpp.codeplay.com/releases/latest/information-manual
+:ccpApiDoc: https://computecpp.codeplay.com/releases/latest/api-guide/
+:computeppUrl: https://computecpp.codeplay.com/releases/latest/computepp-manual
+:streamUrl: https://computecpp.codeplay.com/releases/latest/stream-manual
+:syclParallelStlUrl: https://github.com/KhronosGroup/SyclParallelSTL
+:computecppIntegrationGuide: https://github.com/computecpp-sdk/html/ComputeCpp_Integration_Guide.html
+:opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
+:computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
+:eigenSYCLUrl: https://bitbucket.org/benoitsteiner/opencl/branch/Codeplay
+
+:integrationGuide: link:https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Integration_Guide[ComputeCpp Integration Guide]
+:glossarySyclHostDevice: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#sycl-host-device[SYCL Host Device]
+endif::env-github[]
+
+ifndef::env-github[]
+include::adoc_links.adoc[]
+:integrationGuide: <<ComputeCpp_Integration_Guide.asciidoc#, ComputeCpp Integration Guide>>
+:glossarySyclHostDevice: <<ComputeCpp_Glossary.asciidoc#SYCLHostDevice, SYCL Host Device>>
+endif::env-github[]
+
 image:images/ComputeCpp.svg[ComputeCpp]
 
 === What Is SYCL(TM)?
@@ -97,10 +123,10 @@ device on the host CPU.
 
 Yes. ComputeCpp is designed to be as flexible as possible when it comes
 to integration within new or existing toolchains. The SYCL application can be
-built with any C++ compiler to produce the native pass:[C++] executable and the
-ComputeCpp device compiler is only used for the SYCL device kernels.
-More information can be found at
-<<ComputeCpp_Integration_Guide.asciidoc#, ComputeCpp Integration Guide>>
+built with any pass:[C++] compiler to produce the native pass:[C++] executable
+and the ComputeCpp device compiler is only used for the SYCL device kernels.
+More information can be found at {integrationGuide}.
+
 
 
 === Which platforms does ComputeCpp(TM) Community Edition Support?
@@ -112,10 +138,9 @@ link:https:{platformSupportUrl}[Platform Support Notes].
 === How can I debug SYCL code?
 
 SYCL kernel functions are standard pass:[C++]. Therefore, a SYCL kernel
-function can execute on the
-<<ComputeCpp_Glossary.asciidoc#SYCLHostDevice, SYCL Host Device>>
-allowing developers to use their prefered C++ debuggers to debug their code on
-the host CPU. ComputeCpp(TM) Community Edition does not provide a SYCL device
+function can execute on the {glossarySyclHostDevice} allowing developers to use
+their prefered C++ debuggers to debug their code on the host CPU.
+ComputeCpp(TM) Community Edition does not provide a SYCL device
 debugger, but ComputeCpp(TM) Debuggers will be available in the future.
 
 === Will SYCL be as efficient as OpenCL?

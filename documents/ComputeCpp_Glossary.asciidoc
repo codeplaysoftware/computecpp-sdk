@@ -5,25 +5,45 @@
 :doctype: article
 :version: 0.1
 
+ifdef::env-github[]
+:computecppUrl: https://computecpp.codeplay.com
+:syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
+:spirUrl: http://www.khronos.org/faq/spir
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+:computecppInfoUrl: https://computecpp.codeplay.com/releases/latest/information-manual
+:ccpApiDoc: https://computecpp.codeplay.com/releases/latest/api-guide/
+:computeppUrl: https://computecpp.codeplay.com/releases/latest/computepp-manual
+:streamUrl: https://computecpp.codeplay.com/releases/latest/stream-manual
+:syclParallelStlUrl: https://github.com/KhronosGroup/SyclParallelSTL
+:computecppIntegrationGuide: https://github.com/computecpp-sdk/html/ComputeCpp_Integration_Guide.html
+:opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
+:computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
+:eigenSYCLUrl: https://bitbucket.org/benoitsteiner/opencl/branch/Codeplay
+endif::env-github[]
+
+ifndef::env-github[]
 include::adoc_links.asciidoc[]
+endif::env-github[]
 
+[[Accessor]]
+==== Accessor
+An accessor is an interface which allows a kernel function to access data
+managed by a buffer or image class. Accessors are used to express the
+dependencies among the different <<CommandGroupFunctor,command groups>>.
+<<sycl-spec>>
 
-[[Accessor]]Accessor::
-  An accessor is an interface which allows a kernel function to access data
-  managed by a buffer or image class. Accessors are used to express the
-  dependencies among the different <<CommandGroupFunctor,command groups>>.
-  <<sycl-spec>>
+[[Buffer]]
+==== Buffer
+The buffer class manages data for the SYCL C++ host application and the SYCL
+device kernels. The buffer class acquires ownership of any host pointers,
+that are passed to its constructors. The buffer and <<Accessor,accessor>>
+classes are responsible for tracking memory transfers and guaranteeing data
+consistency among the different kernels. The <<SYCLRuntime,SYCL Runtime>>
+manages the memory allocations on both the host and the device within the
+lifetime of the buffer object.
 
-[[Buffer]]Buffer::
-  The buffer class manages data for the SYCL C++ host application and the SYCL
-  device kernels. The buffer class acquires ownership of any host pointers,
-  that are passed to its constructors. The buffer and <<Accessor,accessor>>
-  classes are responsible for tracking memory transfers and guaranteeing data
-  consistency among the different kernels. The <<SYCLRuntime,SYCL Runtime>>
-  manages the memory allocations on both the host and the device within the
-  lifetime of the buffer object.
-
-[[Barrier]]Barrier::
+[[Barrier]]
+==== Barrier
   Command Queue Barrier:::
     The SYCL API provides two variants for functions that force synchronisation
     on a SYCL command queue. The `cl::sycl::queue::wait()` and `cl::sycl::queue::wait_and_throw()` functions force the SYCL command queue to wait for the execution of the <<CommandGroupFunctor, Command Group Functor>> before it is able to continue executing.
@@ -38,205 +58,241 @@ include::adoc_links.asciidoc[]
     Note: In OpenCL 1.2 there is no synchronization between different
     work-groups.<<opencl-1.2-spec>>,<<opencl-2.1-spec>>
 
-[[CommandGroup]]Command Group::
-  SYCL  groups  OpenCL commands into  a  functor  given  a  unique  command
-  group handler object to perform all the necessary work required to correctly
-  process host data on a device using a kernel. In this way, they group the
-  commands of transferring and processing these data in order to enqueue them
-  on a device for execution. Command groups are submitted to a SYCL queue.<<sycl-spec>>
+[[CommandGroup]]
+==== Command Group
+SYCL  groups  OpenCL commands into  a  functor  given  a  unique  command
+group handler object to perform all the necessary work required to correctly
+process host data on a device using a kernel. In this way, they group the
+commands of transferring and processing these data in order to enqueue them
+on a device for execution. Command groups are submitted to a SYCL queue.<<sycl-spec>>
 
-[[CommandGroupFunctor]]Command Group Functor::
-  All of the OpenCL commands, memory object creation, copying, mapping and
-  synchronization operations to correctly execute a kernel on a device are
-  defined in a functor and called a command group functor. Command group
-  functors executed in different threads are added to queues atomically, so it
-  is safe to submit command group functors operating on shared queues, buffers
-  and images.<<sycl-spec>>
+[[CommandGroupFunctor]]
+==== Command Group Functor
+All of the OpenCL commands, memory object creation, copying, mapping and
+synchronization operations to correctly execute a kernel on a device are
+defined in a functor and called a command group functor. Command group
+functors executed in different threads are added to queues atomically, so it
+is safe to submit command group functors operating on shared queues, buffers
+and images.<<sycl-spec>>
 
-[[CommandGroupScope]]Command Group Scope::
-  The command group scope is the function scope defined by the command group
-  functor. <<Handler,Command Group Handler>> object lifetime is restricted to the Command Group Scope.<<sycl-spec>>
+[[CommandGroupScope]]
+==== Command Group Scope
+The command group scope is the function scope defined by the command group
+functor. <<Handler,Command Group Handler>> object lifetime is restricted to the Command Group Scope.<<sycl-spec>>
 
-[[CommandQueue]]Command Queue::
-  A SYCL Command Queue is an object that holds <<CommandGroups, Command Groups>>
-  that will be executed on a SYCL device.
-  SYCL provides a heterogeneous platform integration using device queue, which is the minimum requirement for a SYCL application to run on a SYCL device.
+[[CommandQueue]]
+==== Command Queue
+A SYCL Command Queue is an object that holds <<CommandGroups, Command Groups>>
+that will be executed on a SYCL device.
+SYCL provides a heterogeneous platform integration using device queue, which is the minimum requirement for a SYCL application to run on a SYCL device.
 
-[[ConstantMemory]]Constant Memory::
- A region of global memory that remains constant during the
-  execution of a kernel <<opencl-1.2-spec>>. The <<SYCLRuntime,SYCL Runtime>> allocates and initializes memory objects placed into constant memory.
+[[ConstantMemory]]
+==== Constant Memory
+A region of global memory that remains constant during the
+execution of a kernel <<opencl-1.2-spec>>. The <<SYCLRuntime,SYCL Runtime>> allocates and initializes memory objects placed into constant memory.
 
-[[Device]]Device::
-  A SYCL device encapsulates OpenCL devices and the
-  <<SYCLHostDevice,SYCL host device>>, which can SYCL kernels on host.
+[[Device]]
+==== Device
+A SYCL device encapsulates OpenCL devices and the
+<<SYCLHostDevice,SYCL host device>>, which can SYCL kernels on host.
 
-[[DeviceCompiler]]Device Compiler::
-  A SYCL device compiler is a compiler that produces OpenCL device binaries from a valid SYCL program.
+[[DeviceCompiler]]
+==== Device Compiler
+A SYCL device compiler is a compiler that produces OpenCL device binaries from a valid SYCL program.
 
-[[Functor]]Functor::
-  Functors are a concept from pass:[C++]. An alternative name for function in pass:[C++] is _function object_. A functor is a pass:[C++] class with an _operator()_ method that enables the object to be executed in a way that looks like a function call, but where the object itself is also passed in as a parameter.
+[[Functor]]
+==== Functor
+Functors are a concept from pass:[C++]. An alternative name for function in pass:[C++] is _function object_. A functor is a pass:[C++] class with an _operator()_ method that enables the object to be executed in a way that looks like a function call, but where the object itself is also passed in as a parameter.
 
-[[GlobalID]]Global ID::
-  As in OpenCL, a global *ID* is used to uniquely identify a work-item and is
-  derived from the number of global work-items specified when executing a
-  kernel. A global *ID* is a one, two or three-dimensional value that starts at
-  0 per dimension. <<sycl-spec>>,<<opencl-1.2-spec>>
+[[GlobalID]]
+==== Global ID
+As in OpenCL, a global *ID* is used to uniquely identify a work-item and is
+derived from the number of global work-items specified when executing a
+kernel. A global *ID* is a one, two or three-dimensional value that starts at
+0 per dimension. <<sycl-spec>>,<<opencl-1.2-spec>>
 
-[[GlobalMemory]]Global Memory::
-  Global memory is a memory region accessible to all work-items executing on a device. <<sycl-spec>>,<<opencl-1.2-spec>>
+[[GlobalMemory]]
+==== Global Memory
+Global memory is a memory region accessible to all work-items executing on a device. <<sycl-spec>>,<<opencl-1.2-spec>>
 
-[[GroupID]]Group ID::
-  As in OpenCL, SYCL kernels execute in work groups. The group *ID* is the
-  *ID* of the work group that a work item is executing within.  A group *ID* is
-  an one, two or three dimensional value that starts at 0 per dimension.
-  <<sycl-spec>>,<<opencl-1.2-spec>>
+[[GroupID]]
+==== Group ID
+As in OpenCL, SYCL kernels execute in work groups. The group *ID* is the
+*ID* of the work group that a work item is executing within.  A group *ID* is
+an one, two or three dimensional value that starts at 0 per dimension.
+<<sycl-spec>>,<<opencl-1.2-spec>>
 
-[[GroupRange]]Group Range::
-  A group range is the size of the <<WorkGroup,Work-Group>> for every dimension.
+[[GroupRange]]
+==== Group Range
+A group range is the size of the <<WorkGroup,Work-Group>> for every dimension.
 
-[[Handler]]Command Group Handler::
- The Command Group Handler class provides the interface for the commands that
- can be executed inside the command group scope and it is provided as a
- scoped object to all of the data access requests within the command group
- scope. <<sycl-spec>>
+[[Handler]]
+==== Command Group Handler
+The Command Group Handler class provides the interface for the commands that
+can be executed inside the command group scope and it is provided as a
+scoped object to all of the data access requests within the command group
+scope. <<sycl-spec>>
 
-[[ID]]ID::
-  It is a unique identifier of an item in an index space. It can be one, two or three dimensional index space, since the SYCL Kernel execution model is an
-  <<NDRange,nd-range>>. It is one of the
-  <<IndexSpaceClasses, Index Space Classes>>.
+[[ID]]
+==== ID
+It is a unique identifier of an item in an index space. It can be one, two or three dimensional index space, since the SYCL Kernel execution model is an
+<<NDRange,nd-range>>. It is one of the
+<<IndexSpaceClasses, Index Space Classes>>.
 
-[[Image]]Image::
-   Images in SYCL, like buffers, are abstractions of the OpenCL equivalent. As
-   in OpenCL, an image stores a two- or three-dimensional structured array. The
-   SYCL runtime will make available images in OpenCL contexts in
-   order to execute semantically correct kernels in different OpenCL contexts.
-   <<sycl-spec>>
+[[Image]]
+==== Image
+Images in SYCL, like buffers, are abstractions of the OpenCL equivalent. As
+in OpenCL, an image stores a two- or three-dimensional structured array. The
+SYCL runtime will make available images in OpenCL contexts in
+order to execute semantically correct kernels in different OpenCL contexts.
+<<sycl-spec>>
 
-[[ImplementationDefined]]Implementation defined::
-  Behavior that is explicitly allowed to vary between conforming
-  implementations of SYCL. A SYCL implementer is required to document the
-  implementation defined behavior.<<sycl-spec>>
+[[ImplementationDefined]]
+==== Implementation defined
+Behavior that is explicitly allowed to vary between conforming
+implementations of SYCL. A SYCL implementer is required to document the
+implementation defined behavior.<<sycl-spec>>
 
-[[IndexSpaceClasses]] Index Space Classes::
-  OpenCL Kernel Execution Model defines an <<NDRange, nd-range>> index space.
-  The SYCL runtime class that defines an <<NDRange, nd_range>> is the
-  `cl::sycl::nd_range`, which takes as input the sizes of global and local
-  work-items, represented using the `cl::sycl::range` class. The kernel library
-  classes for indexing in the defined <<NDRange, nd_range>> are the following
-  classes:
-    * `cl::sycl::id` : The basic index class representing a work-item <<ID, ID>>.
-    * `cl::sycl::item` : The index class that contains the global and local work-item <<ID, ID>>.
-    * `cl::sycl::nd_item` : The index class that contains the global, local work-item <<ID, ID>> and the <<GroupID, Group ID>>.
-    * `cl::sycl::group` : The group class that contains the global and local
-      <<GroupID, Group ID>> and the methods on a <<WorkGroup,Work-Group>>.
+[[IndexSpaceClasses]]
+==== Index Space Classes
+OpenCL Kernel Execution Model defines an <<NDRange, nd-range>> index space.
+The SYCL runtime class that defines an <<NDRange, nd_range>> is the
+`cl::sycl::nd_range`, which takes as input the sizes of global and local
+work-items, represented using the `cl::sycl::range` class. The kernel library
+classes for indexing in the defined <<NDRange, nd_range>> are the following
+classes:
+  * `cl::sycl::id` : The basic index class representing a work-item <<ID, ID>>.
+  * `cl::sycl::item` : The index class that contains the global and local work-item <<ID, ID>>.
+  * `cl::sycl::nd_item` : The index class that contains the global, local work-item <<ID, ID>> and the <<GroupID, Group ID>>.
+  * `cl::sycl::group` : The group class that contains the global and local
+    <<GroupID, Group ID>> and the methods on a <<WorkGroup,Work-Group>>.
 
-[[IntegrationHeader]]Integration Header::
-  The *integration header* is a pass:[C++] header file generated by
-  pass:[compute++] that includes all the information the <<SYCLRuntime,SYCL
-  Runtime>> requires to access the device kernels.
+[[IntegrationHeader]]
+==== Integration Header
+The *integration header* is a pass:[C++] header file generated by
+pass:[compute++] that includes all the information the <<SYCLRuntime,SYCL
+Runtime>> requires to access the device kernels.
 
-[[ItemID]]Item ID::
-  The <<IndexSpaceClasses,index class>> that contains the global and local  <<WorkItemID, Work-Item ID>>.
+[[ItemID]]
+==== Item ID
+The <<IndexSpaceClasses,index class>> that contains the global and local  <<WorkItemID, Work-Item ID>>.
 
-[[Kernel]]Kernel::
-  A SYCL kernel is a C++ functor or lambda function that is compiled to
-  execute on a device. There are several ways to define SYCL kernels defined in the SYCL specification. It is also possible in SYCL to use OpenCL kernels as
-  specified in the OpenCL specification. Kernels can execute on either an
-  OpenCL device or on the host.<<sycl-spec>>
+[[Kernel]]
+==== Kernel
+A SYCL kernel is a C++ functor or lambda function that is compiled to
+execute on a device. There are several ways to define SYCL kernels defined in the SYCL specification. It is also possible in SYCL to use OpenCL kernels as
+specified in the OpenCL specification. Kernels can execute on either an
+OpenCL device or on the host.<<sycl-spec>>
 
-[[KernelDispatch]]Kernel Dispatch::
-  Issuing a kernel to an OpenCL device.
+[[KernelDispatch]]
+==== Kernel Dispatch
+Issuing a kernel to an OpenCL device.
 
-[[KernelFunctor]]Kernel Functor::
-    See <<Kernel>>.
+[[KernelFunctor]]
+==== Kernel Functor
+See <<Kernel>>.
 
-[[KernelName]]Kernel Name::
-  A kernel name is a class type that is used to assign a name to the kernel
-  function, used to link the host system with the kernel object output by the
-  device compiler.<<sycl-spec>>
+[[KernelName]]
+==== Kernel Name
+A kernel name is a class type that is used to assign a name to the kernel
+function, used to link the host system with the kernel object output by the
+device compiler.<<sycl-spec>>
 
-[[KernelScope]]Kernel Scope::
-  The function scope of a kernel functor or lambda function. Note that
-  any function or method called from the <<Kernel,kernel>> is also compiled in
-  kernel scope. The kernel scope allows C++ language extensions as well as
-  restrictions to reflect the capabilities of OpenCL devices. The extensions
-  and restrictions are defined in the SYCL device compiler
-  specification.<<sycl-spec>>
+[[KernelScope]]
+==== Kernel Scope
+The function scope of a kernel functor or lambda function. Note that
+any function or method called from the <<Kernel,kernel>> is also compiled in
+kernel scope. The kernel scope allows C++ language extensions as well as
+restrictions to reflect the capabilities of OpenCL devices. The extensions
+and restrictions are defined in the SYCL device compiler
+specification.<<sycl-spec>>
 
-[[LocalMemory]]Local Memory::
-  As in OpenCL, local memory is a memory region associated with a work-group
-  and accessible only by work-items in that work-group.<<sycl-spec>>
+[[LocalMemory]]
+==== Local Memory
+As in OpenCL, local memory is a memory region associated with a work-group
+and accessible only by work-items in that work-group.<<sycl-spec>>
 
-[[NDRange]]NDRange (nd-range)::
-  The OpenCL Execution Model is based on a three-dimensional index space, where
-  <<WorkItem,Work-Items>> are grouped into <<WorkGroup,Work-Groups>>. The size
-  of the `cl::sycl::nd_range` is given by the total number of work-items per
-  dimension and the number of work-groups per dimension. The size of an nd_range
-  is represented using a `cl::sycl::range`. The minimum size of a `cl::sycl::range` is 1 per dimension, consequently, the minimum size of an
-  `cl::sycl::nd_range` is 1 per dimension.
-  <<sycl-spec>>,<<opencl-1.2-spec>>,<<opencl-2.1-spec>>
+[[NDRange]]
+==== NDRange (nd-range)
+The OpenCL Execution Model is based on a three-dimensional index space, where
+<<WorkItem,Work-Items>> are grouped into <<WorkGroup,Work-Groups>>. The size
+of the `cl::sycl::nd_range` is given by the total number of work-items per
+dimension and the number of work-groups per dimension. The size of an nd_range
+is represented using a `cl::sycl::range`. The minimum size of a `cl::sycl::range` is 1 per dimension, consequently, the minimum size of an
+`cl::sycl::nd_range` is 1 per dimension.
+<<sycl-spec>>,<<opencl-1.2-spec>>,<<opencl-2.1-spec>>
 
-[[Platform]]Platform::
-  The host plus a collection of devices managed by the OpenCL framework that allow an application to share resources and execute kernels on devices in the platform.<<opencl-2.1-spec>>
-  A SYCL application can target one or multiple OpenCL platforms provided by
-  OpenCL device vendors.
+[[Platform]]
+==== Platform
+The host plus a collection of devices managed by the OpenCL framework that allow an application to share resources and execute kernels on devices in the platform.<<opencl-2.1-spec>>
+A SYCL application can target one or multiple OpenCL platforms provided by
+OpenCL device vendors.
 
-[[PrivateMemory]]Private Memory::
-  A region of memory private to a work-item. Variables defined in one workitem’s private memory are not visible to another work-item. <<opencl-2.1-spec>>
+[[PrivateMemory]]
+==== Private Memory
+A region of memory private to a work-item. Variables defined in one workitem’s private memory are not visible to another work-item. <<opencl-2.1-spec>>
 
-[[ProgramObject]]Program Object::
-  A program object in SYCL is an OpenCL program object encapsulated in a SYCL
-  class. It contains OpenCL kernels and functions compiled to execute on OpenCL
-  devices. A program object can be generated from SYCL C++ kernels by the SYCL
-  runtime, or obtained from an OpenCL implementation.<<sycl-spec>>
+[[ProgramObject]]
+==== Program Object
+A program object in SYCL is an OpenCL program object encapsulated in a SYCL
+class. It contains OpenCL kernels and functions compiled to execute on OpenCL
+devices. A program object can be generated from SYCL C++ kernels by the SYCL
+runtime, or obtained from an OpenCL implementation.<<sycl-spec>>
+
+[[SingleSourceMultiplePasses]]
+==== Single Source Multiple Compiler Passes
+The compilation flow technique where a _single source file_ is parsed by multiple compilers for building native programs per compilation target. For example, a standard pass:[C++] CPU compiler for targeting _host_ will parse the _single source file_ to create the C++ host application which offloads parts of the computation to other devices. A SYCL device compiler will parse the _same source file_ and target _only SYCL kernels_. Refer to the SYCL
+specification for details on the Single Source Multiple Compiler Passes (also called _shared source_) approach.
+
+[[SPIR]]
+==== SPIR
+https://www.khronos.org/faq/spir
+
+[[SYCLHostDevice]]
+==== SYCL Host Device
+The SYCL Host Device is multi-threaded native C++ implementation of a SYCL
+device. It does not have an OpenCL cl_device_id and it will only appear in the
+available SYCL devices, as it is not an OpenCL device. It has full SYCL
+capabilities and reports them through the SYCL information retrieval
+interface. The SYCL Host Device is mandatory for every SYCL implementation and
+is always available, but may not achieve the same performance as an OpenCL CPU
+device. Any C++ application debugger can be used for debugging SYCL kernels
+executing on a SYCL host device.
 
 
-[[SingleSourceMultiplePasses]]Single Source Multiple Compiler Passes::
-  The compilation flow technique where a _single source file_ is parsed by multiple compilers for building native programs per compilation target. For example, a standard pass:[C++] CPU compiler for targeting _host_ will parse the _single source file_ to create the C++ host application which offloads parts of the computation to other devices. A SYCL device compiler will parse the _same source file_ and target _only SYCL kernels_. Refer to the SYCL
-  specification for details on the Single Source Multiple Compiler Passes (also called _shared source_) approach.
+[[SYCLRuntime]]
+==== SYCL Runtime
+A SYCL runtime is an implementation of the SYCL API specification. The SYCL
+runtime manages the different OpenCL platforms, devices, contexts as well as
+memory handling of data between host and OpenCL contexts to enable
+semantically correct execution of SYCL programs.
 
-[[SPIR]]SPIR::
-  https://www.khronos.org/faq/spir
+[[SYCLFile]]
+==== SYCL File
+A C++ source file that contains SYCL API calls.
 
-[[SYCLHostDevice]]SYCL Host Device::
- The SYCL Host Device is multi-threaded native C++ implementation of a SYCL
- device. It does not have an OpenCL cl_device_id and it will only appear in the
- available SYCL devices, as it is not an OpenCL device. It has full SYCL
- capabilities and reports them through the SYCL information retrieval
- interface. The SYCL Host Device is mandatory for every SYCL implementation and
- is always available, but may not achieve the same performance as an OpenCL CPU
- device. Any C++ application debugger can be used for debugging SYCL kernels
- executing on a SYCL host device.
+[[WorkGroup]]
+==== Work-Group
+The SYCL work-group (`cl::sycl::group` class) is a representation of an
+OpenCL work group. A collection of related work-items that execute on a
+single compute unit. The work-items in the group execute the same
+kernel-instance and share local memory and workgroup
+functions.<<opencl-2.1-spec>>
 
+[[WorkItem]]
+==== Work-Item
+The SYCL work-item (`cl::sycl::nd_item` class) is a representation of an
+OpenCL work item.
+One of a collection of parallel executions of a kernel invoked on a device by a command. A work-item is executed by one or more processing elements as part of a work-group executing on a compute unit. A work-item is distinguished from other work-items by its global ID or the combination of its work-group ID and its local ID within a work-group.<<opencl-2.1-spec>>
 
-[[SYCLRuntime]]SYCL Runtime::
-  A SYCL runtime is an implementation of the SYCL API specification. The SYCL
-  runtime manages the different OpenCL platforms, devices, contexts as well as
-  memory handling of data between host and OpenCL contexts to enable
-  semantically correct execution of SYCL programs.
-
-[[SYCLFile]]SYCL File::
-  A C++ source file that contains SYCL API calls.
-
-[[WorkGroup]]Work-Group::
-  The SYCL work-group (`cl::sycl::group` class) is a representation of an
-  OpenCL work group. A collection of related work-items that execute on a
-  single compute unit. The work-items in the group execute the same
-  kernel-instance and share local memory and workgroup
-  functions.<<opencl-2.1-spec>>
-
-[[WorkItem]]Work-Item::
-  The SYCL work-item (`cl::sycl::nd_item` class) is a representation of an
-  OpenCL work item.
-  One of a collection of parallel executions of a kernel invoked on a device by a command. A work-item is executed by one or more processing elements as part of a work-group executing on a compute unit. A work-item is distinguished from other work-items by its global ID or the combination of its work-group ID and its local ID within a work-group.<<opencl-2.1-spec>>
-
-[[WorkItemID]]Work-Item ID::
-  Local Work-Item ID:::
-    A unique identifier of a work-item among other work-items of a
-    <<WorkGroup,Work-Group>>.
-  Global Work-Item ID:::
-    A unique identifier of a work-item among all the work-items in the
-    <<NDRange,nd-range>>.
+[[WorkItemID]]
+==== Work-Item ID
+Local Work-Item ID::
+  A unique identifier of a work-item among other work-items of a
+  <<WorkGroup,Work-Group>>.
+Global Work-Item ID::
+  A unique identifier of a work-item among all the work-items in the
+  <<NDRange,nd-range>>.
 
 === Bibliography
 

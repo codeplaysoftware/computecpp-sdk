@@ -8,11 +8,57 @@
 :coderay-css: style
 :copycss:
 :linkcss:
-include::adoc_links.asciidoc[]
+
 {author}
+ifdef::env-github[]
+:computecppUrl: https://computecpp.codeplay.com
+:syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
+:spirUrl: http://www.khronos.org/faq/spir
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+:computecppInfoUrl: https://computecpp.codeplay.com/releases/latest/information-manual
+:ccpApiDoc: https://computecpp.codeplay.com/releases/latest/api-guide/
+:computeppUrl: https://computecpp.codeplay.com/releases/latest/computepp-manual
+:streamUrl: https://computecpp.codeplay.com/releases/latest/stream-manual
+:syclParallelStlUrl: https://github.com/KhronosGroup/SyclParallelSTL
+:computecppIntegrationGuide: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Integration_Guide
+:opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
+:computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
+:eigenSYCLUrl: https://bitbucket.org/benoitsteiner/opencl/branch/Codeplay
 
+:glossaryCommandGroupFunctor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group-functor[SYCL command group functor]
+:glossaryCommandGroup: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group[Command Group]
+:glossaryCommandGroupScope: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group-scope[Command Group Scope]
+:glossaryKernelFunctor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel-functor[Kernel Functor]
+:glossaryKernelScope: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel-scope[Kernel Scope]
+:glossaryAccessor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#accessor[Accessor]
+:glossarySyclRuntime: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#sycl-runtime[SYCL Runtime]
+:glossaryNDRange: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#ndrange-nd-range[ND-range]
+:glossaryKernelDispatch: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel-dispatch[Kernel Dispatch]
 
-image:images/ComputeCpp.svg[ComputeCpp(TM)]
+:imageComputeCppLogo: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCpp.png
+:imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
+:imageParallelFor: /codeplaysoftware/computecpp-sdk/wiki/images/parallel_for_execution.png
+endif::env-github[]
+
+ifndef::env-github[]
+include::adoc_links.adoc[]
+
+:glossaryCommandGroupFunctor: <<ComputeCpp_Glossary.asciidoc#CommandGroupFunctor, Command Group Functor>>
+:glossaryCommandGroup: <<ComputeCpp_Glossary.asciidoc#CommandGroup, Command Group>>
+:glossaryCommandGroupScope: <<ComputeCpp_Glossary.asciidoc#CommandGroupScope, Command Group Scope>>
+:glossaryKernelFunctor: <<ComputeCpp_Glossary.asciidoc#KernelFunctor,Kernel Functor>>
+:glossaryKernelScope: <<ComputeCpp_Glossary.asciidoc#KernelScope, Kernel Scope>>
+:glossaryAccessor: <<ComputeCpp_Glossary.asciidoc#Accessor, Accessor>>
+:glossarySyclRuntime: <<ComputeCpp_Glossary.asciidoc#SYCLRuntime, SYCL Runtime>>
+:glossaryNDRange: <<ComputeCpp_Glossary.asciidoc#NDRange, ND-range>>
+:glossaryKernelDispatch: <<ComputeCpp_Glossary.asciidoc#KernelDispatch, Kernel Dispatch>>
+
+:imageComputeCppLogo: images/ComputeCpp.svg
+:imagePackageContent: images/ComputeCppPackageContent.svg
+:imageParallelFor: images/parallel_for_execution.svg
+endif::env-github[]
+
+image::{imageComputeCppLogo}[ComputeCpp (TM)]
 
 :numbered!:
 [abstract]
@@ -33,7 +79,7 @@ link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYC
 
 [ComputeCppPackage]
 .ComputeCpp Package Components
-image::images/ComputeCppPackageContent.svg[ComputeCpp Package Components]
+image::{imagePackageContent}[ComputeCpp Package Components]
 
 
 The ComputeCpp Package includes the components of the ComputeCpp Community Edition
@@ -59,9 +105,7 @@ disabled.
 
 Please, refer to the
 link:{platformSupportUrl}[ComputeCpp Platform Support Notes] for details on the
-supported platforms and limitations. Alongside this document there is a
-copy of the _doc/computecpp_platform_support_notes.pdf_.
-
+supported platforms and limitations.
 
 == Getting started with SYCL(TM) using ComputeCpp(TM)
 
@@ -165,22 +209,20 @@ we use the _default_ SYCL device chosen by the ComputeCpp runtime library on
 `cl::sycl::queue` construction.
 
 
-The <<CommandGroupFunctor,SYCL command group functor>> encapsulates the vector
+The {glossaryCommandGroupFunctor} encapsulates the vector
 addition kernel alongside with the input and output operations.
 On line number <19> we define the lambda function (our command group functor)
 and submit it to the our  queue object `deviceQueue`.
 
-The <<CommandGroupFunctor, Command Group>> defines the
-<<CommandGroupScope, Command Group Scope>>. Any object that takes a
-_cl::sycl::handler_ object can only be used in
-<<CommandGroupScope, Command Group Scope>>. The _cl::sycl::handler_ object can
-only be constructed by the runtime.
-Device accessors and the <<KernelFunctor,Kernel Functor>> can only be defined
+The {glossaryCommandGroup} defines the {glossaryCommandGroupScope}. Any object that
+takes a _cl::sycl::handler_ object can only be used in {glossaryCommandGroupScope}.
+The _cl::sycl::handler_ object can only be constructed by the runtime.
+Device accessors and the {glossaryKernelFunctor} can only be defined
 in this scope.
 
-The SYCL programming model uses <<Accessors, accessors>> (the
+The SYCL programming model uses {glossaryAccessor} (the
 `cl::sycl::accessor` class) to keep track of the access from different command
-groups to memory objects. The <<SYCLRuntime, SYCL Runtime>> can then use the
+groups to memory objects. The {glossarySyclRuntime} can then use the
 different access modes of the accessors to create a dependency graph to schedule
 the execution of multiple command groups in different devices while maintaining
 a consistent view of the memory.
@@ -199,7 +241,7 @@ This example implements the `simple_vadd` computation in a SIMD(single
   programming mode in SYCL.
 
 The lambda function object defined at line numbers <24> to <27> defines the
-<<KernelScope, Kernel Scope>>. The lambda is called by the `parallel_for`
+{glossaryKernelScope}. The lambda is called by the `parallel_for`
 fuction API. In the example, we spawn as many work-items as the number of
 elements of the vectors, specified in the _numOfItems_ _cl::sycl::range_
 variable.
@@ -220,9 +262,9 @@ organized into _work-groups_.
 
 The `parallel_for` API used in the example is the simplest way of dispatching
 kernels to a SYCL device. The _number of work-groups_ is defined by the
-heuristics of the ComputeCpp runtime: An <<NDRange, ND-range>> will be
+heuristics of the ComputeCpp runtime: An {glossaryNDRange} will be
 implicitly constructed for the OpenCL execution of the
-<<KernelFunctor,SYCL kernel functor>> footnote:[If a `cl::sycl::nd_range`
+{glossaryKernelFunctor} footnote:[If a `cl::sycl::nd_range`
 object is given to the `parallel_for` invocation, the SYCL runtime will be using
 the explicitly specified _nd_range_.]. In this example, `simple_vadd` is called
 for `array_size` equal to four on line number <39> and line number <40>. The
@@ -232,7 +274,7 @@ work-groups can only be one, two or four as shown in the following
 
 [parallel_for_execution]
 .Vector Addition Diagram
-image::images/parallel_for_execution.svg[Vector Addition Diagram]
+image::{imageParallelFor}[Vector Addition Diagram]
 
 On line number <26>, `accessorC` (a write only accessor) is used to store the
 result of the addition of the read-only accessors `accessorA` and `accessorB` is
@@ -242,7 +284,7 @@ of our four-element one dimensional _nd_range_ will do. The `wiID[1]` will add
 `accessorC[wiID[1]]` (depicted in <<parallel_for_execution,diagram>>).
 
 On line number <25> the lambda function object (that defines the
-<<KernelScope, Kernel Scope>>) takes as parameter the current instance in the
+{glossaryKernelScope) takes as parameter the current instance in the
 global index space class (`cl::sycl::id`). The _cl::sycl::id_ class features
 various getter methods to obtain specific values of the instance. The value of
 `wiID` will change for each instance in the complete _nd_range_ execution
@@ -252,8 +294,7 @@ accessor types.
 The `cl::sycl::queue::submit` method returns immediately after scheduling the
 command group functor to the SYCL queue for execution on the SYCL device. The
 command group functor will be executed on the device when the accessor
-dependencies are resolved and the device is ready to perform the
-<<KernelDispatch, Kernel Dispatch>>.
+dependencies are resolved and the device is ready to perform the {glossaryKernelDispatch}.
 
 In the `main` function of the pass:[C++] SYCL application, we define the size
 of the vectors to be `array_size`. On line <33> we define the `std::array`
@@ -276,4 +317,3 @@ is templated, we can write generic algorithms that can be templated by different
 types without changing the algorithm, interacting nicely with pass:[C++]
 programming.
 
-include::Glossary.adoc[]

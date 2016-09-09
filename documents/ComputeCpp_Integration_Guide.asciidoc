@@ -5,7 +5,45 @@ ComputeCpp : ComputeCpp Integration Guide
 :computePP: compute++
 :version: 0.1
 
+ifdef::env-github[]
+// Includes do not work on GitHub
+:computecppUrl: https://computecpp.codeplay.com
+:syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
+:spirUrl: http://www.khronos.org/faq/spir
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+:computecppInfoUrl: https://computecpp.codeplay.com/releases/latest/information-manual
+:ccpApiDoc: https://computecpp.codeplay.com/releases/latest/api-guide/
+:computeppUrl: https://computecpp.codeplay.com/releases/latest/computepp-manual
+:streamUrl: https://computecpp.codeplay.com/releases/latest/stream-manual
+:syclParallelStlUrl: https://github.com/KhronosGroup/SyclParallelSTL
+:computecppIntegrationGuide: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Integration_Guide
+:opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
+:computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
+:eigenSYCLUrl: https://bitbucket.org/benoitsteiner/opencl/branch/Codeplay
+
+// These links differ between GitHub and not-GitHub
+:glossarySpir: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#spir[SPIR(TM)]
+:glossarySSMCP: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#single-source-multiple-compiler-passes[Single Source Multiple Compiler Passes]
+:glossaryIntHeader: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#integration-header[Integration Header]
+:glossarySyclRuntime: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#sycl-runtime[SYCL Runtime]
+:glossarySyclKernel: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel[SYCL Kernel]
+:imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
+:imageProgramBuild: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppProgramBuild.png
+:imagesSyclThread: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppThreadDiagram.png
+
+endif::env-github[]
+
+ifndef::env-github[]
 include::adoc_links.adoc[]
+:glossarySpir: <<ComputeCpp_Glossary.asciidoc#SPIR,SPIR(TM)>>
+:glossarySSMCP: <<ComputeCpp_Glossary.asciidoc#SingleSourceMultiplePasses,Single Source Multiple Compiler Passes>>
+:glossaryIntHeader: <<ComputeCpp_Glossary.asciidoc#IntegrationHeader,Integration Header>>
+:glossarySyclRuntime: <<ComputeCpp_Glossary.asciidoc#SYCLRuntime,SYCL Runtime>>
+:glossarySyclKernel: <<ComputeCpp_Glossary.asciidoc#Kernel,SYCL Kernels>>
+:imagePackageContent: images/ComputeCppPackageContent.svg
+:imageProgramBuild: images/ComputeCppProgramBuild.svg
+:imagesSyclThread: images/ComputeCppThreadDiagram.svg
+endif::env-github[]
 
 == Objective of this document
 
@@ -27,7 +65,7 @@ The following sections delve into further details on the above topics.
 
 The ComputeCpp(TM) Community Edition {version} targets the SYCL(TM) 1.2 Khronos
 link:{syclSpecUrl}[specification]. This release provides a pre-conformance beta
-edition for OpenCL(TM) 1.2 devices with <<ComputeCpp_Glossary.asciidoc#SPIR,SPIR(TM)>> 1.2 support.
+edition for OpenCL(TM) 1.2 devices with {glossarySpir} 1.2 support.
 ComputeCpp supports AMD(TM) and Intel(TM) OpenCL 1.2 devices with compatible
 drivers. It also provides the capability of using the system for targeting the
 SYCL host device.
@@ -40,13 +78,11 @@ Further documentation of the system can also be found in
 link:{computecppUrl}[ComputeCpp Implementation Documentation].
 
 Please, refer to the link:{platformSupportUrl}[ComputeCpp Platform Support
-Notes] for details on the supported platforms and limitations. Along with
-this document, there is a copy of the
-link:platform_support_notes{fileExtension}[ComputeCpp Platform Support Notes].
+Notes] for details on the supported platforms and limitations.
 
 [ComputeCppPackageContent]
 .ComputeCpp Package Content Diagram
-image::images/ComputeCppPackageContent.svg[ComputeCpp Package Content diagram]
+image::{imagePackageContent}[ComputeCpp Package Content diagram]
 
 The ComputeCpp Package contains the ComputeCpp implementation files.
 The Components of the package are shown in <<ComputeCppPackageContent>> and
@@ -81,7 +117,6 @@ section of this document.
 == Building applications with ComputeCpp
 
 The SYCL programming model uses a
-<<ComputeCpp_Glossary.asciidoc#SingleSourceMultiplePasses,Single Source Multiple Compiler Passes>>
 approach to produce the final binary of the application.
 
 To implement the aforementioned approach
@@ -90,22 +125,20 @@ passes on the input file.
 This facilitates the integration of ComputeCpp with existing build systems,
 since there is no need to replace the existing host compiler used for an
 application.
-The device compiler, *pass:[compute++]*, generates an
-<<IntegrationHeader, Integration Header>> that is later
+The device compiler, *pass:[compute++]*, generates an {glossaryIntHeader}
+ that is later
 included by a host compiler as a standard pass:[C++] program header.
-This allows the <<ComputeCpp_Glossary.asciidoc#SYCLRuntime,SYCL Runtime>>
- to interact with the kernel
+This allows the {glossarySyclRuntime} to interact with the kernel
 binaries generated by the device compiler.
 The diagram <<ComputeCppProgramBuild>> illustrates the build flow required for
 ComputeCpp to work.
 
 [ComputeCppProgramBuild]
 .ComputeCpp Program Build
-image::images/ComputeCppProgramBuild.svg[ComputeCpp Program Build]
+image::{imageProgramBuild}[ComputeCpp Program Build]
 
 In order to implement the multiple-compiler approach from ComputeCpp,
-the build system has to include the
-<<ComputeCpp_Glossary.asciidoc#IntegrationHeader,Integration Header>>
+the build system has to include the {glossaryIntHeader}
 into the compilation flow. This implies that pass:[compute++] must compile the
 source and produce the integration header before the
 host compiler processes the same file.
@@ -125,7 +158,7 @@ There are various methods that can be utilised to achieve this result:
   The developer must make sure to manually run *pass:[compute++]* in order to update
   the integration header every time there is a change in the SYCL source file.
 
-Note that, in all cases, any source file containing <<ComputeCpp_Glossary.asciidoc#Kernel,SYCL Kernels>>
+Note that, in all cases, any source file containing {glossarySyclKernel}
 must be processed with *pass:[compute++]* before the host compiler processes it.
 This is typically implemented in build systems via a dependency between the
 integration header and the SYCL source file that contains the SYCL kernels.
@@ -145,9 +178,7 @@ This is normally part of the SDK of the chosen OpenCL platform.
 
 === Using Unix Makefile Files
 
-Integrating the ComputeCpp
-<<ComputeCpp_Glossary.asciidoc#SingleSourceMultiplePasses,Single Source Multiple Compiler Passes>> into Makefile-based build
-systems is trivial.
+Integrating the ComputeCpp {glossarySSMCP} systems is trivial.
 <<TrivialMakefileExample, The Trivial Makefile example below>> depicts a simple
 Makefile that generates an application executable from a source file named
 `file.cpp`.
@@ -256,7 +287,7 @@ add_sycl_to_target(syclProgram ${CMAKE_CURRENT_SOURCE_DIR}/syclProgram.cpp
 --
 
 More complex options (such as using multiple pass:[C++] files with
-<<ComputeCpp_Glossary.asciidoc#Kernel,SYCL Kernels>> defined) are possible by using this module and
+{glossarySyclKernel} defined) are possible by using this module and
 directly using the CMake variables defined by it.
 A low-level `build_spir` function is also provided, but using it directly
 is not supported.
@@ -313,7 +344,7 @@ depending on the implementation.
 
 [ComputeCppThreadDiagram]
 .ComputeCpp Thread Diagram
-image::images/ComputeCppThreadDiagram.svg[ComputeCpp Thread Diagram]
+image::{imagesSyclThread}[ComputeCpp Thread Diagram]
 
 == Redistributing SYCL applications using ComputeCpp
 
