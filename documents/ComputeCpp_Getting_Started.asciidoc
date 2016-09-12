@@ -9,8 +9,9 @@
 :copycss:
 :linkcss:
 
-{author}
+
 ifdef::env-github[]
+
 :computecppUrl: https://computecpp.codeplay.com
 :syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
 :spirUrl: http://www.khronos.org/faq/spir
@@ -58,6 +59,7 @@ include::adoc_links.adoc[]
 :imageParallelFor: images/parallel_for_execution.svg
 endif::env-github[]
 
+{author}
 image::{imageComputeCppLogo}[ComputeCpp (TM)]
 
 :numbered!:
