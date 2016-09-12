@@ -59,7 +59,6 @@ include::adoc_links.adoc[]
 :imageParallelFor: images/parallel_for_execution.svg
 endif::env-github[]
 
-{author}
 image::{imageComputeCppLogo}[ComputeCpp (TM)]
 
 :numbered!:
@@ -318,4 +317,3 @@ and *F*. This shows one of the main features of SYCL: Since the SYCL interface
 is templated, we can write generic algorithms that can be templated by different
 types without changing the algorithm, interacting nicely with pass:[C++]
 programming.
-
