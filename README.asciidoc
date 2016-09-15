@@ -1,7 +1,12 @@
 ComputeCpp SDK Readme
 =====================
 
+ifdef::env-github[]
+image:https://raw.githubusercontent.com/wiki/codeplaysoftware/computecpp-sdk/images/ComputeCpp.png[ComputeCpp(TM)]
+endif::env-github[]
+ifndef::env-github[]
 image:documents/images/ComputeCpp.svg[ComputeCpp(TM)]
+endif::env-githuub[]
 
 Introduction
 ------------
