@@ -32,7 +32,7 @@
 using namespace cl::sycl;
 
 /* We define the number of work items to enqueue. */
-const unsigned nElems = 64u;
+const int nElems = 64u;
 
 int main() {
   /* We define and initialize data to be copied to the device. */
@@ -81,7 +81,7 @@ int main() {
   }
 
   /* Check the result is correct. */
-  for (unsigned i = 0; i < nElems; i++) {
+  for (int i = 0; i < nElems; i++) {
     if (data[i] == i) {
       std::cout << "The results are correct." << std::endl;
       return 0;
