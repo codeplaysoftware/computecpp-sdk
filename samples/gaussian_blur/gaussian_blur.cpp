@@ -147,7 +147,6 @@ int main(int argc, char *argv[]) {
         newPixel /= (float)(blendMask * blendMask);
 
         auto outputCoords = int2(itemID.get_global(0), itemID.get_global(1));
-
         outPtr[outputCoords] = newPixel;
       }));
     });
@@ -159,7 +158,7 @@ int main(int argc, char *argv[]) {
   std::string outputFilePath;
   std::string inputName(argv[1]);
   auto pos = inputName.find_last_of(".");
-  if (pos == -1) {
+  if (pos == std::string::npos) {
     outputFilePath = inputName + "-blurred";
   } else {
     std::string ext = inputName.substr(pos, inputName.size() - pos);
@@ -167,7 +166,7 @@ int main(int argc, char *argv[]) {
     outputFilePath = inputName + "-blurred" + ext;
   }
 
-  stbi_write_png(outputFilePath.c_str(), inputWidth, inputHeight, inputChannels,
+  stbi_write_png(outputFilePath.c_str(), inputWidth, inputHeight, numChannels,
                  outputData, 0);
 
   std::cout << "Image successfully blurred!\n";
