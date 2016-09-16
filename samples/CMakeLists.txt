@@ -10,6 +10,7 @@ include(FindComputeCpp)
 
 # Set include ComputeCpp directories
 include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
+include_directories(SYSTEM ${OpenCL_INCLUDE_DIR})
 
 # warnings for SDK software
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
