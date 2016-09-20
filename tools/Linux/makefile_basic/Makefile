@@ -13,7 +13,7 @@ COMPUTECPP_LIBS ?= $(COMPUTECPP_PREFIX)/lib
 CXXFLAGS += --std=c++11 -I$(COMPUTECPP_INCLUDES)
 LDFLAGS += -L$(COMPUTECPP_LIBS) -lComputeCpp
 COMPUTECPP_FLAGS += \
-	$(CXX_FLAGS) $(shell $(COMPUTECPP_INFO) --dump-device-compiler-flags)
+	$(CXXFLAGS) $(shell $(COMPUTECPP_INFO) --dump-device-compiler-flags)
 
 # The example application to build.
 target := app
