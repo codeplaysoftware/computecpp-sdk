@@ -120,7 +120,7 @@ void local_mxm(cl::sycl::queue &q, T *MA, T *MB, T *MC, int matSize) {
      * runtime to use the host pointer for all data storage (instead of
      * making copies internally). Additionally, when running on an OpenCL
      * device that shares memory with the host (for example a CPU
-     * impementation), "zero-copy" memory optimisations could be used by
+     * implementation), "zero-copy" memory optimisations could be used by
      * the implementation. */
     buffer<T, 1, map_allocator<T> > bA(MA, dimensions);
     buffer<T, 1, map_allocator<T> > bB(MB, dimensions);

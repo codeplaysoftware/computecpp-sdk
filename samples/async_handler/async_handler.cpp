@@ -58,11 +58,11 @@ int main() {
    * This async handler takes the list of asynchronous exceptions
    * that have been captured by the runtime while executing the kernels.
    * a cl::sycl::exception_list object is a collection of std::exception_ptrs.
-   * std::exception_ptrs can only be rethrown, at which point the excpetion
+   * std::exception_ptrs can only be rethrown, at which point the exception
    * can be caught as usual and handled through the regular try/catch pair.
    *
    * In this example we re-throw the first exception and capture it to
-   * set a boolean variable. It would be posible to catch every single
+   * set a boolean variable. It would be possible to catch every single
    * exception individually from the list by reordering the code such that
    * the for loop encapsulates the try/catch. */
   auto asyncHandler = [&error, &nTimesCall](cl::sycl::exception_list eL) {

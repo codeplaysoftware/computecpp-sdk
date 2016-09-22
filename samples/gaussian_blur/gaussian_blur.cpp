@@ -110,7 +110,7 @@ int main(int argc, char *argv[]) {
   {
     /* Images need a void * pointing to the data, and enums describing the
      * type of the image (since a void * carries no type information). It
-     * also needs a range which descrbes the image's dimensions. */
+     * also needs a range which describes the image's dimensions. */
     image<2> image_in(inputData, co::RGBA, ct::UNORM_INT8, imgRange);
     image<2> image_out(outputData, co::RGBA, ct::UNORM_INT8, imgRange);
 
