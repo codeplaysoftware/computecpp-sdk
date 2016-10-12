@@ -1,6 +1,21 @@
 #.rst:
 # FindComputeCpp
 #---------------
+#
+#   Copyright 2016 Codeplay Software Ltd.
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use these files except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
 
 #########################
 #  FindComputeCpp.cmake  
@@ -8,6 +23,11 @@
 #
 #  Tools for finding and building with ComputeCpp.
 #
+#  User must define COMPUTECPP_PACKAGE_ROOT_DIR pointing to the ComputeCpp 
+#   installation.
+#  
+#  Latest version of this file can be found at:
+#    https://github.com/codeplaysoftware/computecpp-sdk
 
 # Require CMake version 3.2.2 or higher
 cmake_minimum_required(VERSION 3.2.2)
