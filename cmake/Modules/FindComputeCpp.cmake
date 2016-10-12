@@ -10,8 +10,6 @@
 #
 #       http://www.apache.org/licenses/LICENSE-2.0
 #
-#   For your convenience, a copy of the License has been included in this
-#   repository.
 #
 #   Unless required by applicable law or agreed to in writing, software
 #   distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +23,8 @@
 #
 #  Tools for finding and building with ComputeCpp.
 #
-#  User must define COMPUTECPP_SDK_ROOT pointing to the ComputeCpp installation.
+#  User must define COMPUTECPP_PACKAGE_ROOT_DIR pointing to the ComputeCpp 
+#   installation.
 #  
 #  Latest version of this file can be found at:
 #    https://github.com/codeplaysoftware/computecpp-sdk
