@@ -115,17 +115,6 @@ kernel. A global *ID* is a one, two or three-dimensional value that starts at
 ==== Global Memory
 Global memory is a memory region accessible to all work-items executing on a device. <<sycl-spec>>,<<opencl-1.2-spec>>
 
-[[GroupID]]
-==== Group ID
-As in OpenCL, SYCL kernels execute in work groups. The group *ID* is the
-*ID* of the work group that a work item is executing within.  A group *ID* is
-an one, two or three dimensional value that starts at 0 per dimension.
-<<sycl-spec>>,<<opencl-1.2-spec>>
-
-[[GroupRange]]
-==== Group Range
-A group range is the size of the <<WorkGroup,Work-Group>> for every dimension.
-
 [[Handler]]
 ==== Command Group Handler
 The Command Group Handler class provides the interface for the commands that
@@ -213,7 +202,7 @@ As in OpenCL, local memory is a memory region associated with a work-group
 and accessible only by work-items in that work-group.<<sycl-spec>>
 
 [[NDRange]]
-==== NDRange (nd-range)
+==== nd-range (NDRange)
 The OpenCL Execution Model is based on a three-dimensional index space, where
 <<WorkItem,Work-Items>> are grouped into <<WorkGroup,Work-Groups>>. The size
 of the `cl::sycl::nd_range` is given by the total number of work-items per
@@ -278,6 +267,18 @@ OpenCL work group. A collection of related work-items that execute on a
 single compute unit. The work-items in the group execute the same
 kernel-instance and share local memory and workgroup
 functions.<<opencl-2.1-spec>>
+
+[[GroupID]]
+==== Work-Group ID (group ID)
+As in OpenCL, SYCL kernels execute in work groups. The work-group *ID* is the
+*ID* of the work-group that a work item is executing within.  A work-group *ID* is
+a one, two or three dimensional value that starts at 0 per dimension.
+<<sycl-spec>>,<<opencl-1.2-spec>>
+
+[[GroupRange]]
+==== Work-Group Range (group range)
+A work-group range is the size of the <<WorkGroup,Work-Group>> for every dimension.
+
 
 [[WorkItem]]
 ==== Work-Item
