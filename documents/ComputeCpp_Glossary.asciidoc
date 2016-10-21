@@ -94,7 +94,7 @@ execution of a kernel <<opencl-1.2-spec>>. The <<SYCLRuntime,SYCL Runtime>> allo
 [[Device]]
 ==== Device
 A SYCL device encapsulates OpenCL devices and the
-<<SYCLHostDevice,SYCL host device>>, which can SYCL kernels on host.
+<<SYCLHostDevice,SYCL host device>>, which can execute SYCL kernels on host.
 
 [[DeviceCompiler]]
 ==== Device Compiler
