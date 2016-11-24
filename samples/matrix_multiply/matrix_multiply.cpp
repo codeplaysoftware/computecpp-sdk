@@ -62,10 +62,10 @@ void display_matrix(float *m, int matSize) {
 void block_host(float *MA, float *MB, float *MC, int matSize) {
   /* We set the block size to 32 for simplicity, though the optimal
    * value will depend on the platform this is run on. */
-  int block_size = 32; 
+  int block_size = 32;
   int numBlocks = block_size / matSize;
   int extraBlockLength = block_size % matSize;
-  numBlocks = extraBlockLength? (numBlocks + 1) : (numBlocks);
+  numBlocks = extraBlockLength ? (numBlocks + 1) : (numBlocks);
 
 #pragma omp parallel for collapse(2)
   for (int bIndexI = 0; bIndexI < matSize; bIndexI += block_size)
@@ -77,8 +77,8 @@ void block_host(float *MA, float *MB, float *MC, int matSize) {
         for (int bi = i; bi < std::min(i + block_size, matSize); bi++)
           for (int bj = j; bj < std::min(j + block_size, matSize); bj++)
             for (int bk = k; bk < std::min(k + block_size, matSize); bk++) {
-              MC[(bi) * matSize + (bj)] += MA[(bi) * matSize + (bk)] *
-                  MB[(bk) * matSize + (bj)];
+              MC[(bi)*matSize + (bj)] +=
+                  MA[(bi)*matSize + (bk)] * MB[(bk)*matSize + (bj)];
             }
       }
 }
@@ -104,9 +104,7 @@ inline int prevPowerOfTwo(int x) {
  * If there are bits sets to one after AND with the
  * previous number, then it is not a power of two.
  */
-inline bool isPowerOfTwo(int x) {
-  return (x & (x-1)) == 0;
-}
+inline bool isPowerOfTwo(int x) { return (x & (x - 1)) == 0; }
 
 /* Function template that performs the matrix * matrix operation. (It is
  * a template because only some OpenCL devices support double-precision
@@ -115,14 +113,14 @@ inline bool isPowerOfTwo(int x) {
  * Broadly, the function chooses an appropriate work size, then enqueues
  * the matrix * matrix lambda on the queue provided. Because the queues
  * are constructed inside this function, it will block until the work is
- * finished. 
+ * finished.
  * Note that this example only works for powers of two.
  * */
 template <typename T>
 bool local_mxm(cl::sycl::queue &q, T *MA, T *MB, T *MC, int matSize) {
   // Make sure it is power of two before running
   if (!isPowerOfTwo(matSize)) {
-    std::cout << " This example only works with power of two sizes " 
+    std::cout << " This example only works with power of two sizes "
               << std::endl;
     return true;
   }
@@ -136,7 +134,7 @@ bool local_mxm(cl::sycl::queue &q, T *MA, T *MB, T *MC, int matSize) {
   std::cout << " The order is : " << matSize << std::endl;
   std::cout << " The blockSize is : " << blockSize << std::endl;
   // Make sure the block size is not larger than the mat size
-  blockSize = min(matSize, blockSize);
+  blockSize = std::min(matSize, blockSize);
 
   {
     range<1> dimensions(matSize * matSize);
@@ -217,7 +215,8 @@ void usage(std::string programName) {
   std::cout << " Incorrect number of parameters " << std::endl;
   std::cout << " Usage: " << std::endl;
   std::cout << programName << " [matrix size] [omp|sycl]" << std::endl;
-  std::cout << "[matrix size] : Size of the matrix to multiply (minimum 32)" << std::endl;
+  std::cout << "[matrix size] : Size of the matrix to multiply (minimum 32)"
+            << std::endl;
   std::cout << "[omp|sycl]    : Run the OpenMP or the SYCL variant. "
             << " Default is to use both " << std::endl;
 }
@@ -305,8 +304,8 @@ int main(int argc, char *argv[]) {
         for (int j = 0; j < matSize; j++) {
           if (std::fabs(MC[i * matSize + j] - MB[i * matSize + j]) > 1e-8) {
             std::cout << " Position " << i << ", " << j
-              << " differs: " << MC[i * matSize + j]
-              << " != " << MB[i * matSize + j] << std::endl;
+                      << " differs: " << MC[i * matSize + j]
+                      << " != " << MB[i * matSize + j] << std::endl;
             error = true;
           }
         }
@@ -316,7 +315,6 @@ int main(int argc, char *argv[]) {
       } else {
         std::cout << " Error in the computation " << std::endl;
       }
-
     }
   }
 
@@ -337,26 +335,26 @@ int main(int argc, char *argv[]) {
          * cl::sycl::queue::throw() or cl::sycl::queue::wait_and_throw() is
          * called. */
         queue q([&](exception_list eL) {
-            try {
+          try {
             for (auto &e : eL) {
-            std::rethrow_exception(e);
+              std::rethrow_exception(e);
             }
-            } catch (cl::sycl::exception e) {
+          } catch (cl::sycl::exception e) {
             std::cout << " An exception has been thrown: " << e.what()
-            << std::endl;
-            }
-            });
+                      << std::endl;
+          }
+        });
 
         auto start = std::chrono::steady_clock::now();
         error = local_mxm(q, MA, MB, MC, matSize);
         q.wait_and_throw();
         auto end = std::chrono::steady_clock::now();
         auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
-            end - start).count();
+                        end - start).count();
         std::cout << "SYCL: ";
         std::cout << "Time: " << time << std::endl;
         float flops =
-          (2.0f * matSize * matSize * matSize / (time / 1000.0f)) * 1.0e-9f;
+            (2.0f * matSize * matSize * matSize / (time / 1000.0f)) * 1.0e-9f;
         std::cout << "GFLOPs: " << flops << std::endl;
         std::cout << " Output " << std::endl;
       }
@@ -369,8 +367,8 @@ int main(int argc, char *argv[]) {
           for (int j = 0; j < matSize; j++) {
             if (std::fabs(MC[i * matSize + j] - MB[i * matSize + j]) > 1e-8) {
               std::cout << " Position " << i << ", " << j
-                << " differs: " << MC[i * matSize + j]
-                << " != " << MB[i * matSize + j] << std::endl;
+                        << " differs: " << MC[i * matSize + j]
+                        << " != " << MB[i * matSize + j] << std::endl;
               error = true;
             }
           }
