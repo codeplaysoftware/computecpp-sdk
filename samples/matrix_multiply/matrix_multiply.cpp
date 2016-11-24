@@ -311,7 +311,6 @@ int main(int argc, char *argv[]) {
         }
       if (!error) {
         std::cout << "Success" << std::endl;
-        ;
       } else {
         std::cout << " Error in the computation " << std::endl;
       }
