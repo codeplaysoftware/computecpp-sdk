@@ -27,8 +27,6 @@
 
 #include <CL/sycl.hpp>
 
-#include <iostream>
-
 using namespace cl::sycl;
 
 /* This sample executes a single-threaded kernel on the default device
