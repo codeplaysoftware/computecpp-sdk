@@ -145,17 +145,18 @@ class PointerMapper {
   buffer_id generate_id() {
     // Limit the number of attemts to half the combinations
     // just to avoid an infinite loop
-    int numberOfAttempts = 1ul << (BUFFER_ID_BITSIZE / 2);
+    const int numberOfAttempts = 1ul << (BUFFER_ID_BITSIZE / 2);
     buffer_id bId;
     do {
-      std::cout << "*" << std::endl;
       bId = uni_(rng_);
     } while (__pointer_list.find(bId) != __pointer_list.end() &&
              numberOfAttempts--);
     return bId;
   }
 
-  /* add_pointer
+  /* add_pointer.
+   * Adds a pointer to the map and returns the fake pointer id.
+   * This will be the bufferId on the most significant bytes and 0 elsewhere.
    */
   legacy_pointer_t add_pointer(buffer_t &&b) {
     auto nextNumber = __pointer_list.size();
@@ -169,14 +170,16 @@ class PointerMapper {
     return retVal;
   }
 
-  /* get_buffer
+  /* get_buffer.
+   * Returns a buffer from the map using the buffer id
    */
   buffer_t get_buffer(buffer_id bId) const {
     buffer_t retVal = __pointer_list.at(bId);
     return retVal;
   }
 
-  /* remove_pointer
+  /* remove_pointer.
+   * Removes the given pointer from the map.
    */
   void remove_pointer(void *ptr) {
     buffer_id bId = this->get_buffer_id(ptr);
@@ -186,7 +189,6 @@ class PointerMapper {
   /* count.
    * Return the number of active pointers (i.e, pointers that
    * have been malloc but not freed).
-   *
    */
   size_t count() const { return __pointer_list.size(); }
 
@@ -215,6 +217,11 @@ inline PointerMapper &getPointerMapper() {
   return thePointerMapper;
 }
 
+/**
+ * Malloc-like interface to the pointer-mapper. 
+ * Given a size, creates a byte-typed buffer and returns a
+ * fake pointer to keep track of it.
+ */
 void *malloc(size_t size) {
   // Create a generic buffer of the given size
   auto thePointer = getPointerMapper().add_pointer(
@@ -223,6 +230,11 @@ void *malloc(size_t size) {
   return static_cast<void *>(thePointer);
 }
 
+/**
+ * Free-like interface to the pointer mapper.
+ * Given a fake-pointer created with the legacy-pointer malloc,
+ * destroys the buffer and remove it from the list.
+ */
 void free(void *ptr) { getPointerMapper().remove_pointer(ptr); }
 
 }  // legacy
