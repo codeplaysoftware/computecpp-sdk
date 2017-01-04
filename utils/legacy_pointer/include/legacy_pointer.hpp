@@ -181,11 +181,14 @@ class PointerMapper {
   buffer_t get_buffer(buffer_id bId) const {
     //  buffer_t retVal = __pointer_list.at(bId);
     auto it = __pointer_list.find(bId);
-    if (it != __pointer_list.end()) return it->second;
+    if (it != __pointer_list.end()) {
+      return it->second;
+    }
+
     std::cerr << "No sycl buffer has been found. Make sure that you have "
                  "allocated memory for your buffer by calling malloc function."
               << std::endl;
-    abort();
+    std::abort();
   }
 
   /* remove_pointer.

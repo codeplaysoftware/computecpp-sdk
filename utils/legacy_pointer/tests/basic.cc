@@ -45,7 +45,7 @@ using buffer_t = legacy::PointerMapper::buffer_t;
 
 TEST(pointer_mapper, basic_test) {
   {
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
     void * myPtr = legacy::malloc(100 * sizeof(float));
     ASSERT_NE(myPtr, nullptr);
 
@@ -55,7 +55,7 @@ TEST(pointer_mapper, basic_test) {
 
     ASSERT_TRUE(legacy::PointerMapper::is_nullptr(totallyInvalidPtr));
 
-    ASSERT_EQ(legacy::getPointerMapper().count(), 1);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 1u);
 
     // Obtain the buffer id
     buffer_id bId = legacy::getPointerMapper().get_buffer_id(myPtr);
@@ -79,23 +79,23 @@ TEST(pointer_mapper, basic_test) {
       ASSERT_EQ(hostAcc[0], 1.0f);
     }
     legacy::free(myPtr);
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
   }
 }
 
 
 TEST(pointer_mapper, two_buffers) {
   {
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
     void * ptrA = legacy::malloc(100 * sizeof(float));
     ASSERT_NE(ptrA, nullptr);
     ASSERT_FALSE(legacy::PointerMapper::is_nullptr(ptrA));
-    ASSERT_EQ(legacy::getPointerMapper().count(), 1);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 1u);
 
     void * ptrB = legacy::malloc(10 * sizeof(int));
     ASSERT_NE(ptrB, nullptr);
     ASSERT_FALSE(legacy::PointerMapper::is_nullptr(ptrA));
-    ASSERT_EQ(legacy::getPointerMapper().count(), 2);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 2u);
 
     // Obtain the buffer id
     buffer_id bId1 = legacy::getPointerMapper().get_buffer_id(ptrA);
@@ -132,10 +132,10 @@ TEST(pointer_mapper, two_buffers) {
       FAIL();
     }
 
-    ASSERT_EQ(legacy::getPointerMapper().count(), 2);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 2u);
     legacy::free(ptrA);
-    ASSERT_EQ(legacy::getPointerMapper().count(), 1);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 1u);
     legacy::free(ptrB);
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
   }
 }
