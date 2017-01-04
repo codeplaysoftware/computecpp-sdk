@@ -39,7 +39,16 @@ int main() {
   int data[nElems] = {0};
 
   try {
-    queue myQueue;
+    default_selector selector;
+    queue myQueue(selector, [](exception_list l) {
+      for (auto ep : l) {
+        try {
+          std::rethrow_exception(ep);
+        } catch (std::exception& e) {
+          std::cout << e.what();
+        }
+      }
+    });
 
     buffer<int, 1> buf(data, range<1>(nElems));
 
@@ -64,7 +73,9 @@ int main() {
       auto myKernel = ([=](nd_item<1> item) {
         /* Items have various methods to extract ids and ranges. The
          * specification has full details of these. Here we use the
-         * item::get_global() to retrieve the global id as an id<1>. */
+         * item::get_global() to retrieve the global id as an id<1>.
+         * This particular kernel will set the ith element to the value
+         * of i. */
         ptr[item.get_global()] = item.get_global()[0];
       });
 
@@ -81,13 +92,14 @@ int main() {
   }
 
   /* Check the result is correct. */
+  int result = 0;
   for (int i = 0; i < nElems; i++) {
-    if (data[i] == i) {
-      std::cout << "The results are correct." << std::endl;
-      return 0;
-    } else {
-      std::cout << "The results not are correct." << std::endl;
-      return 1;
+    if (data[i] != i) {
+      std::cout << "The results are incorrect (element " << i << " is "
+                << data[i] << "!\n";
+      result = 1;
     }
   }
+  std::cout << "The results are correct." << std::endl;
+  return result;
 }
