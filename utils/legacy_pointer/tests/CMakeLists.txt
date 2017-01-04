@@ -29,6 +29,7 @@ message(STATUS "Include dirs: ${gtest_SOURCE_DIR}")
 add_executable(basic basic.cc)
 set_property(TARGET basic PROPERTY CXX_STANDARD 11)
 message(STATUS "LIBRARY ${COMPUTECPP_LIBRARY}")
+
 target_link_libraries(basic PUBLIC ${gtest_BINARY_DIR}/libgtest.a)
 target_link_libraries(basic PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a)
 target_link_libraries(basic PUBLIC pthread)
@@ -36,3 +37,16 @@ add_dependencies(basic gtest_main)
 add_dependencies(basic gtest)
 add_sycl_to_target(basic ${CMAKE_CURRENT_SOURCE_DIR}/basic.cc ${CMAKE_CURRENT_BINARY_DIR})
 add_test(BasicTests basic)
+
+add_executable(offset offset.cc)
+set_property(TARGET basic PROPERTY CXX_STANDARD 11)
+target_link_libraries(offset PUBLIC ${gtest_BINARY_DIR}/libgtest.a)
+target_link_libraries(offset PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a)
+target_link_libraries(offset PUBLIC pthread)
+add_dependencies(offset gtest_main)
+add_dependencies(offset gtest)
+add_sycl_to_target(offset ${CMAKE_CURRENT_SOURCE_DIR}/offset.cc ${CMAKE_CURRENT_BINARY_DIR})
+add_test(OffsetTests offset)
+
+
+

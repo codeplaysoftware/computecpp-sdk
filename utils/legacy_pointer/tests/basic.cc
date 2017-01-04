@@ -18,11 +18,10 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  example_sycl_application.cpp
+ *   basic.cc
  *
  *  Description:
- *    Sample code that walks through the basics of executing a matrix
- *    add in SYCL.
+ *   Basic tests of the pointer mapper utility header
  *
  **************************************************************************/
 
