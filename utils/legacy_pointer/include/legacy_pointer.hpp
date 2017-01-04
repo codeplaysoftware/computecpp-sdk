@@ -46,7 +46,7 @@ class PointerMapper {
   const unsigned MAX_NUMBER_BUFFERS = 2 << BUFFER_ID_BITSIZE;
   const unsigned MAX_OFFSET = 2 << (ADDRESS_BITS - BUFFER_ID_BITSIZE);
 
-  using base_ptr_t = intptr_t;
+  using base_ptr_t = uintptr_t;
 
   /* Fake Pointers are constructed using an integer indexing plus
    * the offset:
@@ -145,7 +145,7 @@ class PointerMapper {
   buffer_id generate_id() {
     // Limit the number of attemts to half the combinations
     // just to avoid an infinite loop
-    const int numberOfAttempts = 1ul << (BUFFER_ID_BITSIZE / 2);
+    int numberOfAttempts = 1ul << (BUFFER_ID_BITSIZE / 2);
     buffer_id bId;
     do {
       bId = uni_(rng_);

@@ -67,7 +67,7 @@ struct kernel {
 
 TEST(offset, basic_test) {
   {
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
     float * myPtr = static_cast<float *>(
                         legacy::malloc(100 * sizeof(float)));
 
@@ -75,7 +75,7 @@ TEST(offset, basic_test) {
 
     ASSERT_FALSE(legacy::PointerMapper::is_nullptr(myPtr));
 
-    ASSERT_EQ(legacy::getPointerMapper().count(), 1);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 1u);
 
     myPtr += 3;
 
@@ -89,7 +89,7 @@ TEST(offset, basic_test) {
     //
     buffer_t b = legacy::getPointerMapper().get_buffer(bId);
 
-    off_t offset = legacy::getPointerMapper().get_offset(myPtr);
+    size_t offset = legacy::getPointerMapper().get_offset(myPtr);
     ASSERT_EQ(offset, 3*sizeof(float));
     
     cl::sycl::queue q;
@@ -106,7 +106,7 @@ TEST(offset, basic_test) {
       ASSERT_EQ(hostAcc[offset], 1.0f);
     }
     legacy::free(myPtr);
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
   }
 }
 
@@ -114,7 +114,7 @@ TEST(offset, basic_test) {
 TEST(offset, 2d_indexing) {
   {
     const unsigned SIZE = 8;
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
     float * myPtr = static_cast<float *>(
                         legacy::malloc(SIZE * SIZE * sizeof(float)));
 
@@ -122,7 +122,7 @@ TEST(offset, 2d_indexing) {
 
     ASSERT_FALSE(legacy::PointerMapper::is_nullptr(myPtr));
 
-    ASSERT_EQ(legacy::getPointerMapper().count(), 1);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 1u);
 
     // Obtain the buffer id
     buffer_id bId = legacy::getPointerMapper().get_buffer_id(myPtr);
@@ -131,8 +131,8 @@ TEST(offset, 2d_indexing) {
     cl::sycl::queue q;
 
     float * actPos = myPtr;
-    for (int i = 0; i < SIZE; i++) {   
-      for (int j = 0; j < SIZE; j++) {
+    for (unsigned i = 0; i < SIZE; i++) {   
+      for (unsigned j = 0; j < SIZE; j++) {
         // Obtain the buffer id
         buffer_id bId = 
           legacy::getPointerMapper().get_buffer_id(actPos);
@@ -144,7 +144,7 @@ TEST(offset, 2d_indexing) {
         //
         buffer_t b = legacy::getPointerMapper().get_buffer(bId);
 
-        off_t offset = legacy::getPointerMapper().get_offset(actPos);
+        size_t offset = legacy::getPointerMapper().get_offset(actPos);
         ASSERT_EQ(offset, (i * SIZE + j) * sizeof(float));
         
         q.submit([b, offset, i, j, SIZE](cl::sycl::handler& h) mutable {
@@ -163,13 +163,13 @@ TEST(offset, 2d_indexing) {
       ASSERT_EQ(b.get_size(), SIZE*SIZE*sizeof(float));
       auto hostAcc = b.get_access<sycl_acc_rw, sycl_acc_host>();
       float * fPtr = reinterpret_cast<float *>(&*hostAcc.get_pointer());
-      for (int i = 0; i < SIZE; i++) {
-        for (int j = 0; j < SIZE; j++) {
+      for (unsigned i = 0; i < SIZE; i++) {
+        for (unsigned j = 0; j < SIZE; j++) {
           ASSERT_EQ(fPtr[i * SIZE + j], i * SIZE + j);
         }
       }
     }
     legacy::free(myPtr);
-    ASSERT_EQ(legacy::getPointerMapper().count(), 0);
+    ASSERT_EQ(legacy::getPointerMapper().count(), 0u);
   }
 }
