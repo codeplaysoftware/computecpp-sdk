@@ -29,6 +29,8 @@
  * can be. That said, it includes no error checking and is rather terse. */
 #include <CL/sycl.hpp>
 
+#include <iostream>
+
 #include <array>
 
 constexpr cl::sycl::access::mode sycl_read = cl::sycl::access::mode::read;
@@ -70,9 +72,13 @@ int main() {
   simple_vadd<float, array_size>(D, E, F);
   for (unsigned int i = 0; i < array_size; i++) {
     if (C[i] != A[i] + B[i]) {
+      std::cout << "The results are incorrect (element " << i << " is "
+                << F[i] << "!\n";
       return 1;
     }
     if (F[i] != D[i] + E[i]) {
+      std::cout << "The results are incorrect (element " << i << " is "
+                << F[i] << "!\n";
       return 1;
     }
   }

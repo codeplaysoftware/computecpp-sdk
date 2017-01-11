@@ -1,0 +1,189 @@
+toc:
+:homepage: http://www.codeplay.com/computecpp
+:doctype: article
+:version: 0.1.1
+:author: Codeplay Software Ltd. <sycl@codeplay.com>
+:source-highlighter: coderay
+:coderay-css: style
+:copycss:
+:linkcss:
+ 
+ 
+ifdef::env-github[]
+ 
+:computecppUrl: https://computecpp.codeplay.com
+:syclSpecUrl: http://www.khronos.org/registry/sycl/specs/sycl-1.2.pdf
+:spirUrl: http://www.khronos.org/faq/spir
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+:computecppInfoUrl: https://computecpp.codeplay.com/releases/latest/information-manual
+:ccpApiDoc: https://computecpp.codeplay.com/releases/latest/api-guide/
+:computeppUrl: https://computecpp.codeplay.com/releases/latest/computepp-manual
+:streamUrl: https://computecpp.codeplay.com/releases/latest/stream-manual
+:syclParallelStlUrl: https://github.com/KhronosGroup/SyclParallelSTL
+:computecppAnatomyOfAnApp: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Anatomy_Of_App
+:computecppIntegrationGuide: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Integration_Guide
+:computecppOverview: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Overview
+:opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
+:computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
+:eigenSYCLUrl: https://github.com/benoitsteiner/tensorflow-opencl
+:computecppDownload: https://www.codeplay.com/products/computesuite/computecpp/download
+:computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
+ 
+:glossaryCommandGroupFunctor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group-functor[SYCL command group functor]
+:glossaryCommandGroup: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group[Command Group]
+:glossaryCommandGroupScope: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group-scope[Command Group Scope]
+:glossaryKernelFunctor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel-functor[Kernel Functor]
+:glossaryKernelScope: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel-scope[Kernel Scope]
+:glossaryAccessor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#accessor[Accessor]
+:glossarySyclRuntime: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#sycl-runtime[SYCL Runtime]
+:glossaryNDRange: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#ndrange-nd-range[ND-range]
+:glossaryKernelDispatch: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#kernel-dispatch[Kernel Dispatch]
+ 
+:imageComputeCppLogo: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCpp.png
+:imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
+:imageParallelFor: /codeplaysoftware/computecpp-sdk/wiki/images/parallel_for_execution.png
+:imageComputeCppInfo: /codeplaysoftware/computecpp-sdk/wiki/images/computecpp_info.png
+:imageCMakeGui: /codeplaysoftware/computecpp-sdk/wiki/images/cmakegui.png
+endif::env-github[]
+ 
+ifndef::env-github[]
+include::adoc_links.adoc[]
+ 
+:glossaryCommandGroupFunctor: <<ComputeCpp_Glossary.asciidoc#CommandGroupFunctor, Command Group Functor>>
+:glossaryCommandGroup: <<ComputeCpp_Glossary.asciidoc#CommandGroup, Command Group>>
+:glossaryCommandGroupScope: <<ComputeCpp_Glossary.asciidoc#CommandGroupScope, Command Group Scope>>
+:glossaryKernelFunctor: <<ComputeCpp_Glossary.asciidoc#KernelFunctor,Kernel Functor>>
+:glossaryKernelScope: <<ComputeCpp_Glossary.asciidoc#KernelScope, Kernel Scope>>
+:glossaryAccessor: <<ComputeCpp_Glossary.asciidoc#Accessor, Accessor>>
+:glossarySyclRuntime: <<ComputeCpp_Glossary.asciidoc#SYCLRuntime, SYCL Runtime>>
+:glossaryNDRange: <<ComputeCpp_Glossary.asciidoc#NDRange, ND-range>>
+:glossaryKernelDispatch: <<ComputeCpp_Glossary.asciidoc#KernelDispatch, Kernel Dispatch>>
+ 
+:imageComputeCppLogo: images/ComputeCpp.svg
+:imagePackageContent: images/ComputeCppPackageContent.svg
+:imageParallelFor: images/parallel_for_execution.svg
+:imageComputeCppInfo: images/computecpp_info.png
+:imageCMakeGui: images/cmakegui.png
+ 
+:computecppDownload: https://www.codeplay.com/products/computesuite/computecpp/download
+:computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
+:computecppAnatomyOfAnApp: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_Anatomy_Of_App
+:computecppIntegrationGuide: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_Integration_Guide
+:computecppOverview: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_Overview
+:platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
+
+:eigenSYCLUrl: https://github.com/benoitsteiner/tensorflow-opencl
+
+endif::env-github[]
+ 
+image::{imageComputeCppLogo}[ComputeCpp (TM)]
+ 
+:numbered!:
+[abstract]
+==  ComputeCpp(TM) Community Edition (CE): Beta Release
+ 
+ComputeCpp Community Edition (CE) is a heterogeneous parallel programming
+platform that provides a beta pre-conformant implementantion of SYCL(TM) 1.2
+Khronos link:{syclSpecUrl}[specification].
+ 
+ComputeCpp CE {version} beta release includes the ComputeCpp CE Package version
+{version} and ComputeCpp CE SDK version {version}. The supported OpenCL 1.2
+platforms for ComputeCpp CE beta release, are AMD(TM) and Intel(TM).
+ 
+This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries
+for better integration with pass:[C++] frameworks and applications like
+link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries.
+ 
+ 
+ 
+ 
+== Getting started with SYCL(TM) using ComputeCpp(TM)
+If you want to know more about what ComputeCpp, SYCL and OpenCL are, take a look at
+the [ComputeCpp Overview] section.
+ 
+This guide will show you how to set up your environment for ComputeCpp then compile
+and execute a simple code sample, this should take around 15 minutes. After that
+you can examine the code and discover how ComputeCpp follows the OpenCL execution model.
+
+For full information on ComputeCpp platform support you can read the link:{computecppIntegrationGuide}[Platform Support Notes].
+ 
+==== Step 1: Download ComputeCpp Community Edition
+If you have not already, link:{computecppDownload}[download the archive containg ComputeCpp] and extract it
+somewhere on your computer.
+
+==== Step 2: Install any pre-requisite tools you do not already have
+The pre-requisites for this guide are as follows, if you do not already have these environments installed you'll need to
+get them now. We don't provide a guide to setting up an OpenCL environment here, but there are plenty on the internet.
+
+- CMake (version 3.2.2 and above)
+- OpenCL 1.2-capable hardware and drivers with SPIR 1.2 support
+- OpenCL ICD Loader
+- OpenCL headers
+- gcc (version 4.9 and above)
+
+==== Step 2: Check your hardware support
+ComputeCpp includes a tool called computecpp_info. This allows you to check whether
+the hardware on your target machine is supported by ComputeCpp. It will also tell 
+us if the pre-requisites have been met.
+ 
+In a Terminal command line change to the "bin" folder in the location you extracted ComputeCpp to and type the command:
+ 
+>./computecpp_info
+
+The output of this command will look something like this.
+ 
+image::{imageComputeCppInfo}[ComputeCppInfo]
+ 
+This output will show what CPUs or GPUs on your hardware that are supported by ComputeCpp.
+There is also a guide for the computecpp_info tool, and a Supported Platforms guide.
+ 
+==== Step 3: Set up the ComputeCpp build environment
+The sample code for ComputeCpp is built using CMake (minimum v 3.2.2), you can find out
+more about CMake here.
+ 
+Most Linux platforms also offer CMake through a packaging system such as wget or apt-get making
+it easy to install.
+ 
+The following CMake variable needs to be set in order to build with ComputeCpp.
+ 
+COMPUTECPP_PACKAGE_ROOT_DIR 
+ 
+This should be set to the root directory of the ComputeCpp install (i.e the directory
+with the folders bin, include, lib)
+ 
+==== Step 4: Build a ComputeCpp application
+We’ll now build the simple_vector_add sample code, this application adds two vectors of
+scalar type on a SYCL device.
+ 
+In this guide we will use CMakeGUI to generate the build files for the application.
+ 
+Using this GUI tool we can specify the root directory path from "Step 3" and generate the build files 
+required for CMake to compile the application.
+
+image::{imageCMakeGui}[CMakeGUI]
+ 
+After hitting the “Configure” then the “Generate” buttons, and assuming everything is successful,
+it’s now possible to compile the application. In the Terminal change to the “build” directory specified in the
+CMakeGUI application then the “simple_vector_add” directory and call:
+ 
+>make
+ 
+This will build the executable for the sample code.
+ 
+==== Step 5: Execute a ComputeCpp application
+In the same folder where we called "make" simply call the generated file to execute
+
+>./simple_vector_add
+ 
+When successful you will see and ouput in the terminal window either showing the execution was successful
+or not.
+ 
+==== Step 6: Modify a ComputeCpp application
+This sample application adds two simple vectors together. These vectors are held in arrays within the code.
+The application adds A and B together and puts the sum into C, and also adds C and D together and puts them in F.
+Change some of the numbers in the arrays, build again using the “make” command and then execute again in the
+same way as in “Step 5.”
+ 
+We now recommend that you find out more about how ComputeCpp application are structured in the link:{computecppAnatomyOfAnApp}[Anatomy Of A ComputeCpp Application] article.
+
+You can also explore the other link:{computecppSamples}[Sample Code] applications and read the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
