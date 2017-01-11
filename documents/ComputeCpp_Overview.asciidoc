@@ -1,3 +1,21 @@
+:homepage: http://www.codeplay.com/computecpp
+:doctype: article
+:version: 0.1.1
+:author: Codeplay Software Ltd. <sycl@codeplay.com>
+:source-highlighter: coderay
+:coderay-css: style
+:copycss:
+:linkcss:
+
+ifdef::env-github[]
+:imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
+endif::env-github[]
+ 
+ifndef::env-github[]
+include::adoc_links.adoc[]
+:imagePackageContent: images/ComputeCppPackageContent.svg
+endif::env-github[]
+
 [abstract]
 ==  ComputeCpp(TM) Community Edition (CE): Beta Release
 
