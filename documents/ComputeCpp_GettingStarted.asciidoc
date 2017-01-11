@@ -1,4 +1,4 @@
-toc:
+:toc:
 :homepage: http://www.codeplay.com/computecpp
 :doctype: article
 :version: 0.1.1
@@ -99,7 +99,7 @@ link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYC
  
 == Getting started with SYCL(TM) using ComputeCpp(TM)
 If you want to know more about what ComputeCpp, SYCL and OpenCL are, take a look at
-the [ComputeCpp Overview] section.
+the link:{computecppOverview}[ComputeCpp Overview] section.
  
 This guide will show you how to set up your environment for ComputeCpp then compile
 and execute a simple code sample, this should take around 15 minutes. After that
