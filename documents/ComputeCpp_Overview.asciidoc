@@ -9,11 +9,13 @@
 
 ifdef::env-github[]
 :imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
+:computecppGettingStarted: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_GettingStarted
 endif::env-github[]
  
 ifndef::env-github[]
 include::adoc_links.adoc[]
 :imagePackageContent: images/ComputeCppPackageContent.svg
+:computecppGettingStarted: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_GettingStarted
 endif::env-github[]
 
 [abstract]
@@ -31,7 +33,6 @@ This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries
 for better integration with pass:[C++] frameworks and applications like
 link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries.
 
-
 [ComputeCppPackage]
 .ComputeCpp Package Components
 image::{imagePackageContent}[ComputeCpp Package Components]
@@ -41,9 +42,10 @@ The ComputeCpp Package includes the components of the ComputeCpp Community Editi
 beta implementation of SYCL 1.2. ComputeCpp Package includes the pass:[compute++] SYCL
 device compiler and the SYCL Runtime library along with its headers. The
 ComputeCpp Package can be downloaded from the
-link:{computecppUrl}[ComputeCpp Download Page], and further details on how to
-integrate the ComputeCpp Package to an existing pass:[C++] application can be found
-in the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
+link:{computecppUrl}[ComputeCpp Download Page], and a link:{computecppGettingStarted}[Getting Started guide] is available.
+
+Further details on how to integrate the ComputeCpp Package to an existing pass:[C++] application 
+can be found in the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
 
 The ComputeCpp SDK complements the ComputeCpp Package with build system
 integration, sample code and documentation. The ComputeCpp Package is available at

@@ -43,7 +43,7 @@ ifdef::env-github[]
 :imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
 :imageParallelFor: /codeplaysoftware/computecpp-sdk/wiki/images/parallel_for_execution.png
 :imageComputeCppInfo: /codeplaysoftware/computecpp-sdk/wiki/images/computecpp_info.png
-:imageCMakeGui: /codeplaysoftware/computecpp-sdk/wiki/images/cmakegui.png
+:imageCMakeGui: /codeplaysoftware/computecpp-sdk/wiki/images/computecpp_cmakegui.png
 endif::env-github[]
  
 ifndef::env-github[]
@@ -62,8 +62,8 @@ include::adoc_links.adoc[]
 :imageComputeCppLogo: images/ComputeCpp.svg
 :imagePackageContent: images/ComputeCppPackageContent.svg
 :imageParallelFor: images/parallel_for_execution.svg
-:imageComputeCppInfo: images/computecpp_info.png
-:imageCMakeGui: images/cmakegui.png
+:imageComputeCppInfo: images/computecpp_info.svg
+:imageCMakeGui: images/computecpp_cmakegui.png
  
 :computecppDownload: https://www.codeplay.com/products/computesuite/computecpp/download
 :computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
