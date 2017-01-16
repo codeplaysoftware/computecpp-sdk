@@ -28,6 +28,8 @@ ifdef::env-github[]
 :eigenSYCLUrl: https://github.com/benoitsteiner/tensorflow-opencl
 :computecppDownload: https://www.codeplay.com/products/computesuite/computecpp/download
 :computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
+:computecppgithub: https://github.com/codeplaysoftware/computecpp-sdk
+:cmake: https://cmake.org/
  
 :glossaryCommandGroupFunctor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group-functor[SYCL command group functor]
 :glossaryCommandGroup: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group[Command Group]
@@ -42,8 +44,6 @@ ifdef::env-github[]
 :imageComputeCppLogo: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCpp.png
 :imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
 :imageParallelFor: /codeplaysoftware/computecpp-sdk/wiki/images/parallel_for_execution.png
-:imageComputeCppInfo: /codeplaysoftware/computecpp-sdk/wiki/images/computecpp_info.png
-:imageCMakeGui: /codeplaysoftware/computecpp-sdk/wiki/images/computecpp_cmakegui.png
 endif::env-github[]
  
 ifndef::env-github[]
@@ -62,8 +62,6 @@ include::adoc_links.adoc[]
 :imageComputeCppLogo: images/ComputeCpp.svg
 :imagePackageContent: images/ComputeCppPackageContent.svg
 :imageParallelFor: images/parallel_for_execution.svg
-:imageComputeCppInfo: images/computecpp_info.svg
-:imageCMakeGui: images/computecpp_cmakegui.png
  
 :computecppDownload: https://www.codeplay.com/products/computesuite/computecpp/download
 :computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
@@ -71,7 +69,8 @@ include::adoc_links.adoc[]
 :computecppIntegrationGuide: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_Integration_Guide
 :computecppOverview: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_Overview
 :platformSupportUrl: https://computecpp.codeplay.com/releases/latest/platform-support-notes
-
+:cmake: https://cmake.org/
+:computecppgithub: https://github.com/codeplaysoftware/computecpp-sdk
 :eigenSYCLUrl: https://github.com/benoitsteiner/tensorflow-opencl
 
 endif::env-github[]
@@ -90,16 +89,15 @@ ComputeCpp CE {version} beta release includes the ComputeCpp CE Package version
 {version} and ComputeCpp CE SDK version {version}. The supported OpenCL 1.2
 platforms for ComputeCpp CE beta release, are AMD(TM) and Intel(TM).
  
-This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries
-for better integration with pass:[C++] frameworks and applications like
-link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries.
- 
- 
+This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries 
+for better integration with pass:[C++] frameworks and applications like 
+link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like 
+link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries. 
  
  
 == Getting started with SYCL(TM) using ComputeCpp(TM)
-If you want to know more about what ComputeCpp, SYCL and OpenCL are, take a look at
-the link:{computecppOverview}[ComputeCpp Overview] section.
+If you want to know more about what ComputeCpp, SYCL and OpenCL are, take a 
+look at the link:{computecppOverview}[ComputeCpp Overview] section.
  
 This guide will show you how to set up your environment for ComputeCpp then compile
 and execute a simple code sample, this should take around 15 minutes. After that
@@ -110,10 +108,12 @@ For full information on ComputeCpp platform support you can read the link:{compu
 ==== Step 1: Download ComputeCpp Community Edition
 If you have not already, link:{computecppDownload}[download the archive containg ComputeCpp] and extract it
 somewhere on your computer.
+Now clone the ComputeCpp package from GitHub that contains the sample code link:{computecppgithub}[here].
 
 ==== Step 2: Install any pre-requisite tools you do not already have
-The pre-requisites for this guide are as follows, if you do not already have these environments installed you'll need to
-get them now. We don't provide a guide to setting up an OpenCL environment here, but there are plenty on the internet.
+The pre-requisites for this guide are as follows, if you do not already have these 
+environments installed you'll need to get them now. We don't provide a guide to 
+setting up an OpenCL environment here, but there are plenty on the internet.
 
 - CMake (version 3.2.2 and above)
 - OpenCL 1.2-capable hardware and drivers with SPIR 1.2 support
@@ -126,28 +126,61 @@ ComputeCpp includes a tool called computecpp_info. This allows you to check whet
 the hardware on your target machine is supported by ComputeCpp. It will also tell 
 us if the pre-requisites have been met.
  
-In a Terminal command line change to the "bin" folder in the location you extracted ComputeCpp to and type the command:
+In a Terminal command line change to the "bin" folder in the location you extracted 
+ComputeCpp to and type the command:
  
->./computecpp_info
+`>./computecpp_info`
 
 The output of this command will look something like this.
  
-image::{imageComputeCppInfo}[ComputeCppInfo]
+```
+********************************************************************************
+
+ComputeCpp Info (CE 0.1.1)
+
+********************************************************************************
+
+Toolchain information:
+
+GLIBCXX: 20150426
+This version of libstdc++ is supported.
+
+********************************************************************************
+
+
+Device Info:
+
+Discovered 1 devices matching:
+  platform    : <any>
+  device type : <any>
+
+--------------------------------------------------------------------------------
+Device 0:
+
+  Device is supported                     : YES
+  CL_DEVICE_NAME                          : Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz
+  CL_DEVICE_VENDOR                        : Intel(R) Corporation
+  CL_DRIVER_VERSION                       : 1.2.0.25
+  CL_DEVICE_TYPE                          : CL_DEVICE_TYPE_CPU 
+********************************************************************************
+
+********************************************************************************
+
+********************************************************************************
+```
  
 This output will show what CPUs or GPUs on your hardware that are supported by ComputeCpp.
 There is also a guide for the computecpp_info tool, and a Supported Platforms guide.
  
 ==== Step 3: Set up the ComputeCpp build environment
 The sample code for ComputeCpp is built using CMake (minimum v 3.2.2), you can find out
-more about CMake here.
+more about CMake link:{cmake}[here].
  
 Most Linux platforms also offer CMake through a packaging system such as wget or apt-get making
 it easy to install.
  
-The following CMake variable needs to be set in order to build with ComputeCpp.
- 
-COMPUTECPP_PACKAGE_ROOT_DIR 
- 
+The CMake variable `COMPUTECPP_PACKAGE_ROOT_DIR` must be set in order to build with ComputeCpp.
+  
 This should be set to the root directory of the ComputeCpp install (i.e the directory
 with the folders bin, include, lib)
  
@@ -155,35 +188,44 @@ with the folders bin, include, lib)
 We’ll now build the simple_vector_add sample code, this application adds two vectors of
 scalar type on a SYCL device.
  
-In this guide we will use CMakeGUI to generate the build files for the application.
- 
-Using this GUI tool we can specify the root directory path from "Step 3" and generate the build files 
-required for CMake to compile the application.
+First in the terminal change to the root directory of the package you cloned from GitHub.
+This is the folder containing "samples" and "documents"
 
-image::{imageCMakeGui}[CMakeGUI]
- 
-After hitting the “Configure” then the “Generate” buttons, and assuming everything is successful,
-it’s now possible to compile the application. In the Terminal change to the “build” directory specified in the
-CMakeGUI application then the “simple_vector_add” directory and call:
- 
->make
- 
+`mkdir build`
+
+Now change into that directory
+
+`cd build`
+
+Then call cmake to build all the sample code in the package
+
+`cmake ../samples -DCOMPUTECPP_PACKAGE_ROOT_DIR=/path/to/computecpp`
+
+
+`make`
+
 This will build the executable for the sample code.
  
 ==== Step 5: Execute a ComputeCpp application
 In the same folder where we called "make" simply call the generated file to execute
 
->./simple_vector_add
+`>./simple_vector_add`
  
-When successful you will see and ouput in the terminal window either showing the execution was successful
-or not.
+When successful you will see an ouput in the terminal window whether the programming
+executed successfully or not.
  
 ==== Step 6: Modify a ComputeCpp application
-This sample application adds two simple vectors together. These vectors are held in arrays within the code.
-The application adds A and B together and puts the sum into C, and also adds C and D together and puts them in F.
-Change some of the numbers in the arrays, build again using the “make” command and then execute again in the
-same way as in “Step 5.”
- 
-We now recommend that you find out more about how ComputeCpp application are structured in the link:{computecppAnatomyOfAnApp}[Anatomy Of A ComputeCpp Application] article.
+This sample application adds two simple vectors together. These vectors are held in 
+arrays within the code.
 
-You can also explore the other link:{computecppSamples}[Sample Code] applications and read the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
+The application adds A and B together and puts the sum into C, and also adds D and E 
+together and puts them in F.
+
+Change some of the numbers in the arrays, build again using the `make` command and 
+then execute again in the same way as in “Step 5.”
+ 
+We now recommend that you find out more about how ComputeCpp application are 
+structured in the link:{computecppAnatomyOfAnApp}[Anatomy Of A ComputeCpp Application] article.
+
+You can also explore the other link:{computecppSamples}[Sample Code] applications and 
+read the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].

@@ -10,12 +10,14 @@
 ifdef::env-github[]
 :imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
 :computecppGettingStarted: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_GettingStarted
+:computecppgithub: https://github.com/codeplaysoftware/computecpp-sdk
 endif::env-github[]
  
 ifndef::env-github[]
 include::adoc_links.adoc[]
 :imagePackageContent: images/ComputeCppPackageContent.svg
 :computecppGettingStarted: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_GettingStarted
+:computecppgithub: https://github.com/codeplaysoftware/computecpp-sdk
 endif::env-github[]
 
 [abstract]
@@ -49,7 +51,7 @@ can be found in the link:{computecppIntegrationGuide}[ComputeCpp Integration Gui
 
 The ComputeCpp SDK complements the ComputeCpp Package with build system
 integration, sample code and documentation. The ComputeCpp Package is available at
-link:{computecppSdkUrl}[computecpp-sdk @ *GitHub*].
+link:{computecppgithub}[computecpp-sdk @ *GitHub*].
 
 Further documentation of the system can also be found in
 link:{computecppUrl}[ComputeCpp API Documentation].

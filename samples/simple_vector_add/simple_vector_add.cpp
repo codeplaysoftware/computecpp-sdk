@@ -29,9 +29,8 @@
  * can be. That said, it includes no error checking and is rather terse. */
 #include <CL/sycl.hpp>
 
-#include <iostream>
-
 #include <array>
+#include <iostream>
 
 constexpr cl::sycl::access::mode sycl_read = cl::sycl::access::mode::read;
 constexpr cl::sycl::access::mode sycl_write = cl::sycl::access::mode::write;
@@ -73,7 +72,7 @@ int main() {
   for (unsigned int i = 0; i < array_size; i++) {
     if (C[i] != A[i] + B[i]) {
       std::cout << "The results are incorrect (element " << i << " is "
-                << F[i] << "!\n";
+                << C[i] << "!\n";
       return 1;
     }
     if (F[i] != D[i] + E[i]) {
@@ -82,5 +81,6 @@ int main() {
       return 1;
     }
   }
+  std::cout << "The results are correct!\n";
   return 0;
 }

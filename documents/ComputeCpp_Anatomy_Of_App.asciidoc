@@ -73,8 +73,8 @@ device capabilities. A SYCL application is a pass:[C++] application that uses
 the SYCL API, in order to integrate with OpenCL platforms existing on the target
 system.
 
-The following example from the link:{computecppSamples}[ComputeCpp sample code] called "simple_vector_add" depicts the basic structure of a SYCL
-application.
+The following example from the link:{computecppSamples}[ComputeCpp sample code] 
+called "simple_vector_add" depicts the basic structure of a SYCL application.
 
 This example implements a simple addition of two vectors of scalar types on
 a SYCL device. The vectors are represented using _std::array_ for simplicity.
