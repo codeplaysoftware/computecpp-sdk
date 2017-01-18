@@ -136,7 +136,7 @@ The output of this command will look something like this.
 ```
 ********************************************************************************
 
-ComputeCpp Info (CE 0.1.1)
+ComputeCpp Info (CE 0.1.2)
 
 ********************************************************************************
 
@@ -157,15 +157,11 @@ Discovered 1 devices matching:
 --------------------------------------------------------------------------------
 Device 0:
 
-  Device is supported                     : YES
+  Device is supported                     : YES - Tested internally by Codeplay Software Ltd.
   CL_DEVICE_NAME                          : Intel(R) Core(TM) i7-6600U CPU @ 2.60GHz
   CL_DEVICE_VENDOR                        : Intel(R) Corporation
   CL_DRIVER_VERSION                       : 1.2.0.25
   CL_DEVICE_TYPE                          : CL_DEVICE_TYPE_CPU 
-********************************************************************************
-
-********************************************************************************
-
 ********************************************************************************
 ```
  
