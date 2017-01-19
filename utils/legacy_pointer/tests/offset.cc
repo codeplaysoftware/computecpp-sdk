@@ -151,7 +151,6 @@ TEST(offset, 2d_indexing) {
             auto accB = b.get_access<sycl_acc_rw>(h);
             h.single_task(kernel(accB, i, j, SIZE, offset));
         });
-        q.wait_and_throw();
         // We move to the next ptr
         actPos++;
       }  // for int j
