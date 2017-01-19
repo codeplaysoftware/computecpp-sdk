@@ -1,0 +1,67 @@
+:homepage: http://www.codeplay.com/computecpp
+:doctype: article
+:version: 0.1.1
+:author: Codeplay Software Ltd. <sycl@codeplay.com>
+:source-highlighter: coderay
+:coderay-css: style
+:copycss:
+:linkcss:
+
+ifdef::env-github[]
+:imagePackageContent: /codeplaysoftware/computecpp-sdk/wiki/images/ComputeCppPackageContent.png
+:computecppGettingStarted: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_GettingStarted
+:computecppgithub: https://github.com/codeplaysoftware/computecpp-sdk
+endif::env-github[]
+ 
+ifndef::env-github[]
+include::adoc_links.adoc[]
+:imagePackageContent: images/ComputeCppPackageContent.svg
+:computecppGettingStarted: https://www.codeplay.com/products/computesuite/computecpp/reference/ComputeCpp_GettingStarted
+:computecppgithub: https://github.com/codeplaysoftware/computecpp-sdk
+endif::env-github[]
+
+[abstract]
+==  ComputeCpp(TM) Community Edition (CE): Beta Release
+
+ComputeCpp Community Edition (CE) is a heterogeneous parallel programming
+platform that provides a beta pre-conformant implementantion of SYCL(TM) 1.2
+Khronos link:{syclSpecUrl}[specification].
+
+ComputeCpp CE {version} beta release includes the ComputeCpp CE Package version
+{version} and ComputeCpp CE SDK version {version}. The supported OpenCL 1.2
+platforms for ComputeCpp CE beta release, are AMD(TM) and Intel(TM).
+
+This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries
+for better integration with pass:[C++] frameworks and applications like
+link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries.
+
+[ComputeCppPackage]
+.ComputeCpp Package Components
+image::{imagePackageContent}[ComputeCpp Package Components]
+
+
+The ComputeCpp Package includes the components of the ComputeCpp Community Edition
+beta implementation of SYCL 1.2. ComputeCpp Package includes the pass:[compute++] SYCL
+device compiler and the SYCL Runtime library along with its headers. The
+ComputeCpp Package can be downloaded from the
+link:{computecppUrl}[ComputeCpp Download Page], and a link:{computecppGettingStarted}[Getting Started guide] is available.
+
+Further details on how to integrate the ComputeCpp Package to an existing pass:[C++] application 
+can be found in the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
+
+The ComputeCpp SDK complements the ComputeCpp Package with build system
+integration, sample code and documentation. The ComputeCpp Package is available at
+link:{computecppgithub}[computecpp-sdk @ *GitHub*].
+
+Further documentation of the system can also be found in
+link:{computecppUrl}[ComputeCpp API Documentation].
+There is a local copy of the API Documentation available in the directory
+_doc/api_pages/index.html_ of the ComputeCpp Package.
+
+ComputeCpp CE does not currently implement the complete SYCL 1.2 standard.
+Note that this is a beta version, and some performance optimizations are
+disabled.
+
+Please, refer to the
+link:{platformSupportUrl}[ComputeCpp Platform Support Notes] for details on the
+supported platforms and limitations.

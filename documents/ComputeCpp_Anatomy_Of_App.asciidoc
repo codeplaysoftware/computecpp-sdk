@@ -25,6 +25,7 @@ ifdef::env-github[]
 :opencl12Url: https://www.khronos.org/registry/cl/specs/opencl-1.2.pdf
 :computecppReleaseNotesUrl: https://computecpp.codeplay.com/latest/Release_notes
 :eigenSYCLUrl: https://bitbucket.org/benoitsteiner/opencl/branch/Codeplay
+:computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
 
 :glossaryCommandGroupFunctor: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group-functor[SYCL command group functor]
 :glossaryCommandGroup: https://github.com/codeplaysoftware/computecpp-sdk/wiki/ComputeCpp_Glossary#command-group[Command Group]
@@ -57,58 +58,14 @@ include::adoc_links.adoc[]
 :imageComputeCppLogo: images/ComputeCpp.svg
 :imagePackageContent: images/ComputeCppPackageContent.svg
 :imageParallelFor: images/parallel_for_execution.svg
+:computecppSamples: https://github.com/codeplaysoftware/computecpp-sdk/tree/master/samples
 endif::env-github[]
 
 image::{imageComputeCppLogo}[ComputeCpp (TM)]
 
 :numbered!:
-[abstract]
-==  ComputeCpp(TM) Community Edition (CE): Beta Release
 
-ComputeCpp Community Edition (CE) is a heterogeneous parallel programming
-platform that provides a beta pre-conformant implementantion of SYCL(TM) 1.2
-Khronos link:{syclSpecUrl}[specification].
-
-ComputeCpp CE {version} beta release includes the ComputeCpp CE Package version
-{version} and ComputeCpp CE SDK version {version}. The supported OpenCL 1.2
-platforms for ComputeCpp CE beta release, are AMD(TM) and Intel(TM).
-
-This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries
-for better integration with pass:[C++] frameworks and applications like
-link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries.
-
-
-[ComputeCppPackage]
-.ComputeCpp Package Components
-image::{imagePackageContent}[ComputeCpp Package Components]
-
-
-The ComputeCpp Package includes the components of the ComputeCpp Community Edition
-beta implementation of SYCL 1.2. ComputeCpp Package includes the pass:[compute++] SYCL
-device compiler and the SYCL Runtime library along with its headers. The
-ComputeCpp Package can be downloaded from the
-link:{computecppUrl}[ComputeCpp Download Page], and further details on how to
-integrate the ComputeCpp Package to an existing pass:[C++] application can be found
-in the link:{computecppIntegrationGuide}[ComputeCpp Integration Guide].
-
-The ComputeCpp SDK complements the ComputeCpp Package with build system
-integration, sample code and documentation. The ComputeCpp Package is available at
-link:{computecppSdkUrl}[computecpp-sdk @ *GitHub*].
-
-Further documentation of the system can also be found in
-link:{computecppUrl}[ComputeCpp API Documentation].
-There is a local copy of the API Documentation available in the directory
-_doc/api_pages/index.html_ of the ComputeCpp Package.
-
-ComputeCpp CE does not currently implement the complete SYCL 1.2 standard.
-Note that this is a beta version, and some performance optimizations are
-disabled.
-
-Please, refer to the
-link:{platformSupportUrl}[ComputeCpp Platform Support Notes] for details on the
-supported platforms and limitations.
-
-== Getting started with SYCL(TM) using ComputeCpp(TM)
+== Anatomy of a  SYCL(TM) application using ComputeCpp(TM)
 
 SYCL(TM) for OpenCL(TM) is a heterogeneous parallel programming interface which
 integrates modern pass:[C++] techniques with OpenCL(TM) 1.2 massively parallel
@@ -116,8 +73,8 @@ device capabilities. A SYCL application is a pass:[C++] application that uses
 the SYCL API, in order to integrate with OpenCL platforms existing on the target
 system.
 
-The following example (<<SimpleSycl>>) depicts the basic structure of a SYCL
-application.
+The following example from the link:{computecppSamples}[ComputeCpp sample code] 
+called "simple_vector_add" depicts the basic structure of a SYCL application.
 
 This example implements a simple addition of two vectors of scalar types on
 a SYCL device. The vectors are represented using _std::array_ for simplicity.
