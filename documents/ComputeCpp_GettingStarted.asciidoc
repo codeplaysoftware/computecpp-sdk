@@ -119,7 +119,7 @@ setting up an OpenCL environment here, but there are plenty on the internet.
 - OpenCL 1.2-capable hardware and drivers with SPIR 1.2 support
 - OpenCL ICD Loader
 - OpenCL headers
-- gcc (version 4.9 and above)
+- gcc (version 4.8 and above)
 
 ==== Step 2: Check your hardware support
 ComputeCpp includes a tool called computecpp_info. This allows you to check whether
