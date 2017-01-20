@@ -118,7 +118,7 @@ int main() {
 
   /* Construct a context without an async_handler. */
   {
-    context myContext(mySelector);
+    context myContext(mySelector, false);
     queue myQueue(myContext, mySelector);
     myQueue.submit(cgh_error);
 

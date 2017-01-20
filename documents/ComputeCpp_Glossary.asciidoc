@@ -3,7 +3,7 @@
 == Glossary
 :author: Codeplay Software Ltd.
 :doctype: article
-:version: 0.1.1
+:version: 0.1.2
 
 ifdef::env-github[]
 :computecppUrl: https://computecpp.codeplay.com
