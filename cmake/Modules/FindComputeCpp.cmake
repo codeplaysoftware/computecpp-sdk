@@ -208,7 +208,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
 
   # Name: (user-defined name)_(source file)_(counter for same source file name)_integration_header
   set(headerTargetName ${targetName}_${sourceFileName}_${fileCounter}_integration_header)
-  message(${headerTargetName})
+  
   # Add a custom target for the generated integration header
   add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
 
