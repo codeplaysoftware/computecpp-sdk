@@ -100,6 +100,8 @@ int main() {
       result = 1;
     }
   }
-  std::cout << "The results are correct." << std::endl;
+  if (result != 1) {
+    std::cout << "The results are correct." << std::endl;
+  }
   return result;
 }
