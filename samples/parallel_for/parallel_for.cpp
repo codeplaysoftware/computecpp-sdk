@@ -96,10 +96,12 @@ int main() {
   for (int i = 0; i < nElems; i++) {
     if (data[i] != i) {
       std::cout << "The results are incorrect (element " << i << " is "
-                << data[i] << "!\n";
+                << data[i] << ")!\n";
       result = 1;
     }
   }
-  std::cout << "The results are correct." << std::endl;
+  if (result != 1) {
+    std::cout << "The results are correct." << std::endl;
+  }
   return result;
 }
