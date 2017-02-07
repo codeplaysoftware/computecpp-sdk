@@ -216,12 +216,9 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   add_dependencies(${targetName} ${headerTargetName})
 
   # Force inclusion of the integration header for the host compiler
-  set(compileFlags -include ${outputSyclFile} "-Wall")
+  set(compileFlags -include ${outputSyclFile})
   target_compile_options(${targetName} PUBLIC ${compileFlags})
   
-  # Set the host compiler C++ standard to C++11
-  set_property(TARGET ${targetName} PROPERTY CXX_STANDARD 11)
-
   # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
     set_property(TARGET ${targetName} APPEND PROPERTY COMPILE_DEFINITIONS
