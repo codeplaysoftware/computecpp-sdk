@@ -60,7 +60,7 @@ choose a Debug or Release build and the location you'd like to be used when
 the "install" target is built.
 
 In the documents directory there is a
-link:documents/ComputeCpp_Getting_Started.asciidoc[getting started guide]
+link:documents/ComputeCpp_GettingStarted.asciidoc[getting started guide]
 that serves as an introduction to SYCL and ComputeCpp. Additionally, there
 is an link:documents/ComputeCpp_Integration_Guide.asciidoc[Integration
 guide] should you wish to add ComputeCpp to existing projects.

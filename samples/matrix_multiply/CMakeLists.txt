@@ -8,8 +8,8 @@ target_compile_options(
   PUBLIC ${HOST_COMPILER_OPTIONS} -Wno-unknown-pragmas
   )
 
-add_sycl_to_target(${SOURCE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp 
-                    ${CMAKE_CURRENT_BINARY_DIR})
+add_sycl_to_target(${SOURCE_NAME}  ${CMAKE_CURRENT_BINARY_DIR}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp)
 
 add_test(NAME ${SOURCE_NAME}_omp COMMAND ${SOURCE_NAME} 64 omp)
 add_test(NAME ${SOURCE_NAME}_sycl COMMAND ${SOURCE_NAME} 64 sycl)

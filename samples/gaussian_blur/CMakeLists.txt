@@ -7,8 +7,8 @@ target_compile_options(
   ${SOURCE_NAME}
   PUBLIC ${HOST_COMPILER_OPTIONS} -Wno-unused-but-set-variable)
 
-add_sycl_to_target(${SOURCE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
-                    ${CMAKE_CURRENT_BINARY_DIR})
+add_sycl_to_target(${SOURCE_NAME} ${CMAKE_CURRENT_BINARY_DIR}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp)
 
 # Copy the image Lenna.png into the binary directory. As there are no
 # configuration directories on multi configuration generators (i.e. MSVC) if you

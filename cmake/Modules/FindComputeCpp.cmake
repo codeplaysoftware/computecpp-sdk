@@ -163,8 +163,11 @@ endif()
 #  targetName : Name of the target.
 #  sourceFile : Source file to be compiled.
 #  binaryDir : Intermediate directory to output the integration header.
+#  fileCounter : Counter included in name of custom target. Different counter
+#       values prevent duplicated names of custom target when source files with the same name,
+#       but located in different directories, are used for the same target.
 #
-function(__build_spir targetName sourceFile binaryDir)
+function(__build_spir targetName sourceFile binaryDir fileCounter)
   
   # Retrieve source file name.
   get_filename_component(sourceFileName ${sourceFile} NAME)
@@ -203,19 +206,19 @@ function(__build_spir targetName sourceFile binaryDir)
     WORKING_DIRECTORY ${binaryDir}
   COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
+  # Name: (user-defined name)_(source file)_(counter for same source file name)_integration_header
+  set(headerTargetName ${targetName}_${sourceFileName}_${fileCounter}_integration_header)
+  
   # Add a custom target for the generated integration header
-  add_custom_target(${targetName}_integration_header DEPENDS ${outputSyclFile})
+  add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
 
   # Add a dependency on the integration header
-  add_dependencies(${targetName} ${targetName}_integration_header)
+  add_dependencies(${targetName} ${headerTargetName})
 
   # Force inclusion of the integration header for the host compiler
-  set(compileFlags -include ${outputSyclFile} "-Wall")
+  set(compileFlags -include ${outputSyclFile})
   target_compile_options(${targetName} PUBLIC ${compileFlags})
   
-  # Set the host compiler C++ standard to C++11
-  set_property(TARGET ${targetName} PROPERTY CXX_STANDARD 11)
-
   # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
     set_property(TARGET ${targetName} APPEND PROPERTY COMPILE_DEFINITIONS
@@ -232,13 +235,18 @@ endfunction()
 #  target and sets a dependancy on that new command.
 #
 #  targetName : Name of the target to add a SYCL to.
-#  sourceFile : Source file to be compiled for SYCL.
 #  binaryDir : Intermediate directory to output the integration header.
+#  sourceFiles : Source files to be compiled for SYCL.
 #
-function(add_sycl_to_target targetName sourceFile binaryDir)
+function(add_sycl_to_target targetName binaryDir sourceFiles)
 
+  set(sourceFiles ${sourceFiles} ${ARGN})
+  set(fileCounter 0)
   # Add custom target to run compute++ and generate the integration header
-  __build_spir(${targetName} ${sourceFile} ${binaryDir})
+  foreach(sourceFile ${sourceFiles})
+    __build_spir(${targetName} ${sourceFile} ${binaryDir} ${fileCounter})
+    MATH(EXPR fileCounter "${fileCounter} + 1")
+  endforeach()
 
   # Link with the ComputeCpp runtime library
   target_link_libraries(${targetName} PUBLIC ${COMPUTECPP_RUNTIME_LIBRARY}
