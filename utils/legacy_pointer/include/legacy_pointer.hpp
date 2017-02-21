@@ -33,6 +33,8 @@
 #include <CL/sycl.hpp>
 #include <iostream>
 
+#include <unordered_map>
+
 namespace codeplay {
 namespace legacy {
 
@@ -136,7 +138,7 @@ class PointerMapper {
    * Constructs the PointerMapper structure.
    */
   PointerMapper()
-      : m_pointerMap{}, m_rng(std::random_device()()), m_uni(1, 256){};
+      : m_pointerMap{}{};
 
   /**
    * PointerMapper cannot be copied or moved
@@ -152,15 +154,8 @@ class PointerMapper {
    * Generates a unique id for a buffer.
    */
   buffer_id generate_id() {
-    // Limit the number of attempts to half the combinations
-    // just to avoid an infinite loop
-    int numberOfAttempts = 1ul << (BUFFER_ID_BITSIZE / 2);
-    buffer_id bId;
-    do {
-      bId = m_uni(m_rng);
-    } while (m_pointerMap.find(bId) != m_pointerMap.end() &&
-             numberOfAttempts--);
-    return bId;
+    static buffer_id counter = 0;
+    return ++counter;
   }
 
   /* add_pointer.
@@ -212,15 +207,7 @@ class PointerMapper {
   /* Maps the buffer id numbers to the actual buffer
    * instances.
     */
-  std::map<buffer_id, buffer_t> m_pointerMap;
-
-  /* Random number generator for the buffer ids
-         */
-  std::mt19937 m_rng;
-
-  /* Random-number engine
-   */
-  std::uniform_int_distribution<short> m_uni;
+  std::unordered_map<buffer_id, buffer_t> m_pointerMap;
 };
 
 /**
