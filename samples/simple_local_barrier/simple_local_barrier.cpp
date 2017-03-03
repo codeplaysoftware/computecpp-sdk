@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <numeric>
 
 using namespace cl::sycl;
 
