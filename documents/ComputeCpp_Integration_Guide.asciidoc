@@ -346,6 +346,14 @@ depending on the implementation.
 .ComputeCpp Thread Diagram
 image::{imagesSyclThread}[ComputeCpp Thread Diagram]
 
+If the ComputeCpp Runtime detects a SIGINT it will attempt to safely destroy the _sheduling_ thread and the underlying OpenCL implementation, aborting any
+commands that are in progress.
+
+If a SIGINT signal handler is specified using std::signal before the ComputeCpp
+_scheduling_ thread is created, then the ComputeCpp Runtime will install a
+SIGINT signal handler which will call the user-specified signal handler on
+detection of a SIGINT.
+
 == Redistributing SYCL applications using ComputeCpp
 
 When distributing SYCL applications that have been built using the ComputeCpp
