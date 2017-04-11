@@ -3,7 +3,7 @@ ComputeCpp : ComputeCpp Integration Guide
 
 :Cplusplus: C++
 :computePP: compute++
-:version: 0.1.2
+:version: 0.1.3
 
 ifdef::env-github[]
 // Includes do not work on GitHub
@@ -345,6 +345,15 @@ depending on the implementation.
 [ComputeCppThreadDiagram]
 .ComputeCpp Thread Diagram
 image::{imagesSyclThread}[ComputeCpp Thread Diagram]
+
+If the ComputeCpp Runtime detects a SIGINT it will attempt to destroy the
+_scheduling_ thread and the underlying OpenCL implementation safely,
+aborting any commands that are in progress.
+
+If a SIGINT signal handler is specified using std::signal before the ComputeCpp
+_scheduling_ thread is created, then the ComputeCpp Runtime will install a
+SIGINT signal handler which will call the user-specified signal handler on
+detection of a SIGINT.
 
 == Redistributing SYCL applications using ComputeCpp
 

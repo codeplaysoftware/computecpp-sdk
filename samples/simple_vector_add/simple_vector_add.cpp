@@ -67,8 +67,8 @@ int main() {
                                            B = {{1, 2, 3, 4}}, C;
   std::array<cl::sycl::cl_float, array_size> D = {{1.f, 2.f, 3.f, 4.f}},
                                              E = {{1.f, 2.f, 3.f, 4.f}}, F;
-  simple_vadd<int, array_size>(A, B, C);
-  simple_vadd<float, array_size>(D, E, F);
+  simple_vadd(A, B, C);
+  simple_vadd(D, E, F);
   for (unsigned int i = 0; i < array_size; i++) {
     if (C[i] != A[i] + B[i]) {
       std::cout << "The results are incorrect (element " << i << " is "
