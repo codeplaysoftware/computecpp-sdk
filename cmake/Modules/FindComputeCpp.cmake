@@ -202,7 +202,8 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
             ${device_compiler_includes}
             -o ${outputSyclFile}
             -c ${sourceFile}
-    DEPENDS ${sourceFile}
+    DEPENDS ${WORKING_DIRECTORY}/${sourceFile}
+    IMPLICIT_DEPENDS CXX ${WORKING_DIRECTORY}/${sourceFile}
     WORKING_DIRECTORY ${binaryDir}
   COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
