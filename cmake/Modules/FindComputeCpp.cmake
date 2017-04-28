@@ -38,11 +38,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
       message(FATAL_ERROR
         "host compiler - Not found! (gcc version must be at least 4.8)")
-    # Require the GCC dual ABI to be disabled for 5.1 or higher
-    elseif (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.1)
-      set(COMPUTECPP_DISABLE_GCC_DUAL_ABI "True")
-      message(STATUS
-        "host compiler - gcc ${CMAKE_CXX_COMPILER_VERSION} (note pre 5.1 gcc ABI enabled)")
     else()
       message(STATUS "host compiler - gcc ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
@@ -63,6 +58,9 @@ set(COMPUTECPP_64_BIT_DEFAULT ON)
 option(COMPUTECPP_64_BIT_CODE "Compile device code in 64 bit mode"
         ${COMPUTECPP_64_BIT_DEFAULT})
 mark_as_advanced(COMPUTECPP_64_BIT_CODE)
+
+option(COMPUTECPP_DISABLE_GCC_DUAL_ABI "Compile with pre-5.1 ABI" OFF)
+mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
