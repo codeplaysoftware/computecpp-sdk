@@ -71,7 +71,7 @@ Requirements
 ------------
 
 * The samples should work with any SYCL 1.2 implementation, though have
-  only been tested with ComputeCpp CE Public Beta v0.1.3
+  only been tested with ComputeCpp CE Public Beta v0.1.4
 
 * OpenCL 1.2-capable hardware and drivers with SPIR 1.2 support
 
