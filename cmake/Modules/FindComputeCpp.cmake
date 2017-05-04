@@ -174,10 +174,14 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   set(outputSyclFile ${binaryDir}/${sourceFileName}.sycl)
 
   # Add any user-defined include to the device compiler
+  set(device_compiler_includes "")
   get_property(includeDirectories DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY
     INCLUDE_DIRECTORIES)
-  set(device_compiler_includes "")
   foreach(directory ${includeDirectories})
+    set(device_compiler_includes "-I${directory}" ${device_compiler_includes})
+  endforeach()
+  get_target_property(targetIncludeDirectories ${targetName} INCLUDE_DIRECTORIES)
+  foreach(directory ${targetIncludeDirectories})
     set(device_compiler_includes "-I${directory}" ${device_compiler_includes})
   endforeach()
   if (CMAKE_INCLUDE_PATH)
@@ -203,7 +207,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     DEPENDS ${WORKING_DIRECTORY}/${sourceFile}
     IMPLICIT_DEPENDS CXX ${WORKING_DIRECTORY}/${sourceFile}
     WORKING_DIRECTORY ${binaryDir}
-  COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
+    COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
   # Name: (user-defined name)_(source file)_(counter for same source file name)_integration_header
   set(headerTargetName ${targetName}_${sourceFileName}_${fileCounter}_integration_header)
