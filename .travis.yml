@@ -55,5 +55,6 @@ script:
     - cd samples
     - mkdir build
     - cd build 
+    # Use the latest CE edition
     - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.1.4-Linux/ -DCMAKE_MODULE_PATH=../../cmake/Modules
 
