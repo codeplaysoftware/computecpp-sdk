@@ -1,0 +1,59 @@
+language: cpp
+compiler: g++
+sudo: required
+dist: trusty
+os:
+  - linux
+
+compiler:
+  - gcc
+  - clang
+
+branches:
+  only:
+    - master
+    - travis-ci
+
+env:
+  - IMPL=TRISYCL
+  - IMPL=COMPUTECPP
+
+matrix:
+  fast_finish: true
+# Some tests are not passing on triSYCL
+  allow_failures:
+    - env: IMPL=TRISYCL
+
+addons:
+  apt:
+    sources:
+      - llvm-toolchain-precise
+      - ubuntu-toolchain-r-test
+      - sourceline: 'deb http://apt.llvm.org/trusty/ llvm-toolchain-trusty-3.9 main'
+        key_url: 'http://apt.llvm.org/llvm-snapshot.gpg.key'
+
+    packages:
+      - python-yaml
+      - gcc-5
+      - g++-5
+      - clang-3.9
+      - libc++-dev
+
+before_install:
+  - bash .travis/before_install.sh
+
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
+  - if [ "$CXX" = "clang++" ]; then export CXX="clang++-3.9" CC="clang-3.9"; fi
+  - if [ "$IMPL" = "COMPUTECPP" ]; then bash .travis/build_computecpp.sh; fi
+  - if [ "$IMPL" = "TRISYCL" ]; then bash .travis/build_triSYCL.sh; fi
+
+script:
+    ###########################
+    # Build ComputeCpp SDK
+    ###########################
+    - cd samples
+    - mkdir build
+    - cd build 
+    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-0.1.4/ -DCMAKE_MODULE_PATH=../../cmake/Modules
+
