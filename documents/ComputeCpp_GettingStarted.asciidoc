@@ -203,8 +203,9 @@ Then call cmake to build all the sample code in the package
 This will build the executable for the sample code.
  
 ==== Step 5: Execute a ComputeCpp application
-In the same folder where we called "make" simply call the generated file to execute
+In the "simple_vector_add" folder simply call the generated file to execute
 
+`>cd simple_vector_add`
 `>./simple_vector_add`
  
 When successful you will see an ouput in the terminal window whether the programming
