@@ -63,6 +63,10 @@ int main() {
 
   {
     gpu_selector gpuselector;
+    // This sample cannot be run if there is no GPU
+    if (gpuselector.is_host()) {
+      return 0;
+    }
 
     queue gpu_queue(gpuselector, [](cl::sycl::exception_list l) {
       for (auto ep : l) {
