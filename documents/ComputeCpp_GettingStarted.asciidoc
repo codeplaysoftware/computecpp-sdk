@@ -206,6 +206,7 @@ This will build the executable for the sample code.
 In the "simple_vector_add" folder simply call the generated file to execute
 
 `>cd simple_vector_add`
+
 `>./simple_vector_add`
  
 When successful you will see an ouput in the terminal window whether the programming
