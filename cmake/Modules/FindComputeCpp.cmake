@@ -62,6 +62,9 @@ mark_as_advanced(COMPUTECPP_64_BIT_CODE)
 option(COMPUTECPP_DISABLE_GCC_DUAL_ABI "Compile with pre-5.1 ABI" OFF)
 mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 
+set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
+mark_as_advanced(COMPUTECPP_USER_FLAGS)
+
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
 
@@ -72,7 +75,6 @@ if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
 else()
   message(STATUS "ComputeCpp package - Found")
 endif()
-option(COMPUTECPP_PACKAGE_ROOT_DIR "Path to the ComputeCpp Package")
 
 # Obtain the path to compute++
 find_program(COMPUTECPP_DEVICE_COMPILER compute++ PATHS
@@ -191,6 +193,9 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     endforeach()
   endif()
 
+  set(COMPUTECPP_DEVICE_COMPILER_FLAGS
+    ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+    ${COMPUTECPP_USER_FLAGS})
   # Convert argument list format
   separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
