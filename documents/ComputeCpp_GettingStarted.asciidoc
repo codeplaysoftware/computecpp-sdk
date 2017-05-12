@@ -1,7 +1,7 @@
 :toc:
 :homepage: http://www.codeplay.com/computecpp
 :doctype: article
-:version: 0.1.4
+:version: 0.2.0
 :author: Codeplay Software Ltd. <sycl@codeplay.com>
 :source-highlighter: coderay
 :coderay-css: style
@@ -136,7 +136,7 @@ The output of this command will look something like this.
 ```
 ********************************************************************************
 
-ComputeCpp Info (CE 0.1.4)
+ComputeCpp Info (CE 0.2.0)
 
 ********************************************************************************
 
