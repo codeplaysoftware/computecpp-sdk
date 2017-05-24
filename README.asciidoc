@@ -11,6 +11,8 @@ endif::env-github[]
 Introduction
 ------------
 
+image:https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master[Travis Badge]
+
 This is the README for the ComputeCpp SDK, a collection of sample code,
 utilities and documentation for Codeplay's ComputeCpp, an implementation
 of the SYCL programming standard. You can find more information at:
