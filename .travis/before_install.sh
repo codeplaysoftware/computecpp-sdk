@@ -16,11 +16,11 @@ wget https://github.com/KhronosGroup/OpenCL-Headers/archive/master.zip -O /tmp/o
 unzip /tmp/ocl-headers.zip -d /tmp
 wget https://github.com/KhronosGroup/OpenCL-ICD-Loader/archive/master.zip -O /tmp/ocl-icd.zip
 unzip /tmp/ocl-icd.zip -d /tmp
-ln -sf /tmp/OpenCL-Headers-master/ /tmp/OpenCL-ICD-Loader-master/inc/CL
+ln -sf /tmp/OpenCL-Headers-master/opencl22/CL /tmp/OpenCL-ICD-Loader-master/inc/CL
 pushd /tmp/OpenCL-ICD-Loader-master/ && make && popd
 # Recreate a fake OpenCL setup
 sudo mkdir /usr/include/CL/
-sudo cp -f /tmp/OpenCL-Headers-master/* /usr/include/CL/
+sudo cp -f /tmp/OpenCL-Headers-master/opencl22/CL /usr/include/CL/
 sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/
 sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/x86_64-linux-gnu/
 
