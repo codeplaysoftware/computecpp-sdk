@@ -14,14 +14,11 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-5 60 --slave /u
 # Install the khronos stub opencl
 wget https://github.com/KhronosGroup/OpenCL-Headers/archive/master.zip -O /tmp/ocl-headers.zip
 unzip /tmp/ocl-headers.zip -d /tmp
-wget https://github.com/KhronosGroup/OpenCL-ICD-Loader/archive/master.zip -O /tmp/ocl-icd.zip
-unzip /tmp/ocl-icd.zip -d /tmp
-ln -sf /tmp/OpenCL-Headers-master/opencl22/CL /tmp/OpenCL-ICD-Loader-master/inc/CL
-pushd /tmp/OpenCL-ICD-Loader-master/ && make && popd
+git clone https://github.com/KhronosGroup/OpenCL-ICD-Loader.git /tmp/OpenCL-ICD-Loader-master
+ln -sf /tmp/OpenCL-Headers-master/opencl12/CL /tmp/OpenCL-ICD-Loader-master/inc/CL
+pushd /tmp/OpenCL-ICD-Loader && git checkout cb4acb99df3441e147bd859c20d9c3533ec95ce8 && make && popd
 # Recreate a fake OpenCL setup
 sudo mkdir /usr/include/CL/
-sudo cp -rf /tmp/OpenCL-Headers-master/opencl22/CL /usr/include/CL/
+sudo cp -rf /tmp/OpenCL-Headers-master/opencl12/CL /usr/include/CL/
 sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/
 sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/x86_64-linux-gnu/
-
-
