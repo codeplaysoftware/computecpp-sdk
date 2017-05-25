@@ -20,5 +20,5 @@ pushd /tmp/OpenCL-ICD-Loader && git checkout cb4acb99df3441e147bd859c20d9c3533ec
 # Recreate a fake OpenCL setup
 sudo mkdir /usr/include/CL/
 sudo cp -rf /tmp/OpenCL-Headers-master/opencl12/CL /usr/include/CL/
-sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/
-sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/x86_64-linux-gnu/
+sudo cp -Rf /tmp/OpenCL-ICD-Loader/build/bin/* /usr/lib/
+sudo cp -Rf /tmp/OpenCL-ICD-Loader/build/bin/* /usr/lib/x86_64-linux-gnu/
