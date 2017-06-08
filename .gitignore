@@ -25,5 +25,5 @@ build/
 
 # HTML/PDF output from documentation
 html/
-.html
-.pdf
+*.html
+*.pdf
