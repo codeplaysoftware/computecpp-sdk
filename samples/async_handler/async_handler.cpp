@@ -67,18 +67,18 @@ int main() {
    * the for loop encapsulates the try/catch. */
   auto asyncHandler = [&error, &nTimesCall](cl::sycl::exception_list eL) {
     ++nTimesCall;
-    try {
-      for (auto& e : eL) {
+    for (auto& e : eL) {
+      try {
         std::rethrow_exception(e);
+      } catch (cl::sycl::exception& e) {
+        /* We set to true since we have caught a SYCL exception.
+         * More complex checking of error classes can be done here,
+         * like checking for specific SYCL sub-classes or
+         * recovering a potential underlying OpenCL error. */
+        error = true;
+        std::cout << " I have caught an exception! " << std::endl;
+        std::cout << e.what() << std::endl;
       }
-    } catch (cl::sycl::exception& e) {
-      /* We set to true since we have caught a SYCL exception.
-       * More complex checking of error classes can be done here,
-       * like checking for specific SYCL sub-classes or
-       * recovering a potential underlying OpenCL error. */
-      error = true;
-      std::cout << " I have caught an exception! " << std::endl;
-      std::cout << e.what() << std::endl;
     }
   };
 
