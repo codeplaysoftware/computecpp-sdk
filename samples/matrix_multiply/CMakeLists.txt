@@ -5,7 +5,7 @@ include_directories(${COMPUTECPP_INCLUDE_DIRECTORY})
 add_executable(${SOURCE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp  )
 target_compile_options(
   ${SOURCE_NAME}
-  PUBLIC ${HOST_COMPILER_OPTIONS} -Wno-unknown-pragmas
+  PUBLIC -Wno-unknown-pragmas
   )
 
 add_sycl_to_target(${SOURCE_NAME}  ${CMAKE_CURRENT_BINARY_DIR}

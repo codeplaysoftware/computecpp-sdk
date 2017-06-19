@@ -67,11 +67,13 @@ mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
+# OpenCL headers are used by ComputeCpp and necessary
+include_directories(SYSTEM ${OpenCL_INCLUDE_DIR})
 
-# Find ComputeCpp packagee
+# Find ComputeCpp package
 if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
   message(FATAL_ERROR
-    "ComputeCpp package - Not found! (please set COMPUTECPP_PACKAGE_ROOT_DIR")
+    "ComputeCpp package - Not found! (please set COMPUTECPP_PACKAGE_ROOT_DIR)")
 else()
   message(STATUS "ComputeCpp package - Found")
 endif()
