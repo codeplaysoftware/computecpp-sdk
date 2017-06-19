@@ -3,7 +3,7 @@ ComputeCpp : ComputeCpp Integration Guide
 
 :Cplusplus: C++
 :computePP: compute++
-:version: 0.2.0
+:version: 0.2.1
 
 ifdef::env-github[]
 // Includes do not work on GitHub
