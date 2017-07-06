@@ -1,7 +1,7 @@
 :toc:
 :homepage: http://www.codeplay.com/computecpp
 :doctype: article
-:version: 0.1.4
+:version: 0.2.1
 :author: Codeplay Software Ltd. <sycl@codeplay.com>
 :source-highlighter: coderay
 :coderay-css: style
@@ -136,7 +136,7 @@ The output of this command will look something like this.
 ```
 ********************************************************************************
 
-ComputeCpp Info (CE 0.1.4)
+ComputeCpp Info (CE 0.2.1)
 
 ********************************************************************************
 
@@ -203,7 +203,9 @@ Then call cmake to build all the sample code in the package
 This will build the executable for the sample code.
  
 ==== Step 5: Execute a ComputeCpp application
-In the same folder where we called "make" simply call the generated file to execute
+In the "simple_vector_add" folder simply call the generated file to execute
+
+`>cd simple_vector_add`
 
 `>./simple_vector_add`
  

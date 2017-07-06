@@ -24,4 +24,3 @@ sudo cp -f /tmp/OpenCL-Headers-master/* /usr/include/CL/
 sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/
 sudo cp -Rf /tmp/OpenCL-ICD-Loader-master/build/bin/* /usr/lib/x86_64-linux-gnu/
 
-

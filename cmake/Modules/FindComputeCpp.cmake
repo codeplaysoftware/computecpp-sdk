@@ -18,14 +18,14 @@
 #   limitations under the License.
 
 #########################
-#  FindComputeCpp.cmake  
+#  FindComputeCpp.cmake
 #########################
 #
 #  Tools for finding and building with ComputeCpp.
 #
-#  User must define COMPUTECPP_PACKAGE_ROOT_DIR pointing to the ComputeCpp 
+#  User must define COMPUTECPP_PACKAGE_ROOT_DIR pointing to the ComputeCpp
 #   installation.
-#  
+#
 #  Latest version of this file can be found at:
 #    https://github.com/codeplaysoftware/computecpp-sdk
 
@@ -62,17 +62,21 @@ mark_as_advanced(COMPUTECPP_64_BIT_CODE)
 option(COMPUTECPP_DISABLE_GCC_DUAL_ABI "Compile with pre-5.1 ABI" OFF)
 mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 
+set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
+mark_as_advanced(COMPUTECPP_USER_FLAGS)
+
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
+# OpenCL headers are used by ComputeCpp and necessary
+include_directories(SYSTEM ${OpenCL_INCLUDE_DIR})
 
-# Find ComputeCpp packagee
+# Find ComputeCpp package
 if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
   message(FATAL_ERROR
-    "ComputeCpp package - Not found! (please set COMPUTECPP_PACKAGE_ROOT_DIR")
+    "ComputeCpp package - Not found! (please set COMPUTECPP_PACKAGE_ROOT_DIR)")
 else()
   message(STATUS "ComputeCpp package - Found")
 endif()
-option(COMPUTECPP_PACKAGE_ROOT_DIR "Path to the ComputeCpp Package")
 
 # Obtain the path to compute++
 find_program(COMPUTECPP_DEVICE_COMPILER compute++ PATHS
@@ -152,7 +156,7 @@ else()
 endif()
 
 ####################
-#   __build_sycl   
+#   __build_sycl
 ####################
 #
 #  Adds a custom target for running compute++ and adding a dependency for the
@@ -166,7 +170,7 @@ endif()
 #       but located in different directories, are used for the same target.
 #
 function(__build_spir targetName sourceFile binaryDir fileCounter)
-  
+
   # Retrieve source file name.
   get_filename_component(sourceFileName ${sourceFile} NAME)
 
@@ -174,10 +178,14 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   set(outputSyclFile ${binaryDir}/${sourceFileName}.sycl)
 
   # Add any user-defined include to the device compiler
+  set(device_compiler_includes "")
   get_property(includeDirectories DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY
     INCLUDE_DIRECTORIES)
-  set(device_compiler_includes "")
   foreach(directory ${includeDirectories})
+    set(device_compiler_includes "-I${directory}" ${device_compiler_includes})
+  endforeach()
+  get_target_property(targetIncludeDirectories ${targetName} INCLUDE_DIRECTORIES)
+  foreach(directory ${targetIncludeDirectories})
     set(device_compiler_includes "-I${directory}" ${device_compiler_includes})
   endforeach()
   if (CMAKE_INCLUDE_PATH)
@@ -187,6 +195,9 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     endforeach()
   endif()
 
+  set(COMPUTECPP_DEVICE_COMPILER_FLAGS
+    ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+    ${COMPUTECPP_USER_FLAGS})
   # Convert argument list format
   separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
@@ -203,10 +214,12 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     DEPENDS ${WORKING_DIRECTORY}/${sourceFile}
     IMPLICIT_DEPENDS CXX ${WORKING_DIRECTORY}/${sourceFile}
     WORKING_DIRECTORY ${binaryDir}
-  COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
+    COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
-  # Name: (user-defined name)_(source file)_(counter for same source file name)_integration_header
-  set(headerTargetName ${targetName}_${sourceFileName}_${fileCounter}_integration_header)
+  # Name:
+  # (user-defined name)_(source file)_(counter)_integration_header
+  set(headerTargetName
+    ${targetName}_${sourceFileName}_${fileCounter}_integration_header)
   
   # Add a custom target for the generated integration header
   add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
@@ -252,4 +265,3 @@ function(add_sycl_to_target targetName binaryDir sourceFiles)
                         PUBLIC ${OpenCL_LIBRARIES})
 
 endfunction(add_sycl_to_target)
-
