@@ -33,13 +33,11 @@ using namespace cl::sycl;
  * hierarchical parallel_for_work_item context */
 static inline cl::sycl::id<1> get_global_id(cl::sycl::group<1>& group,
                                             cl::sycl::item<1>& item) {
-  cl::sycl::range<1> globalR = group.get_global_range();
+  cl::sycl::id<1> groupID = group.get();
   cl::sycl::range<1> localR = item.get_range();
-  cl::sycl::id<1> lID = item.get();
-  return cl::sycl::id<1>(group.get(0) * localR.get(0) + lID.get(0));
+  cl::sycl::id<1> localID = item.get();
+  return cl::sycl::id<1>(groupID.get(0) * localR.get(0) + localID.get(0));
 }
-
-class PrivateMemory;
 
 /* This sample showcases the syntax of the private_memory interface. */
 int main() {
@@ -60,33 +58,36 @@ int main() {
     buffer<int, 1> buf(data, range<1>(nItems));
 
     /* This command group enqueues a kernel on myQueue
-     * that adds the thread id to each element of the
-     * data array. */
+     * that adds the work-item id to each element of the
+     * data array. Effectively, it creates an array of
+     * consecutive integers. */
     myQueue.submit([&](handler& cgh) {
       auto ptr = buf.get_access<access::mode::read_write>(cgh);
       /* We create a linear (one dimensional) group range, which
-       * creates a thread per element of the vector. */
+       * creates a work-item per element of the vector. */
       auto groupRange = range<1>(nItems / nLocals);
       /* We create a linear (one dimensional) local range which defines the
        * workgroup size. */
       auto localRange = range<1>(nLocals);
-      /* Kernel functions executed by a parallel_for that takes an
-       * nd_range receive a single parameter of type item. */
+
+      /* Kernel functions executed by a hierarchical parallel_for receive
+       * a single parameter of group type to parallel_for_work_group
+       * and then a parameter of item type to parallel_for_work_item. */
       auto hierarchicalKernel = [=](group<1> groupID) {
-        /* Unlike variables allocated in a parallel_for_work_group scope,
-         * privateObj is allocated per workitem and lives in thread-private
+        /* Unlike variables of any other type allocated in a parallel_for_work_group
+         * scope, privateObj is allocated per work-item and lives in work-item-private
          * memory. */
         private_memory<int> privateObj(groupID);
 
         parallel_for_work_item(groupID, [&](item<1> itemID) {
-          /* Assign the thread global id into private memory. */
+          /* Assign the work-item global id into private memory. */
           privateObj(itemID) = get_global_id(groupID, itemID).get(0);
         });
 
         parallel_for_work_item(groupID, [&](item<1> itemID) {
           /* Retrieve the global id stored in the previous
            * parallel_for_work_item call and store it in global memory. */
-          ptr[get_global_id(groupID, itemID).get(0)] = privateObj(itemID);
+          ptr[privateObj(itemID)] = privateObj(itemID);
         });
       };
       cgh.parallel_for_work_group<class PrivateMemory>(groupRange, localRange,
