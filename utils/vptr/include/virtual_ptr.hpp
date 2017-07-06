@@ -26,6 +26,7 @@
  *
  *    Ruyman Reyes   Codeplay Software Ltd.
  *    Mehdi Goli     Codeplay Software Ltd.
+ *    Vanya Yaneva   Codeplay Software Ltd.
  *
  **************************************************************************/
 
