@@ -33,18 +33,18 @@ using namespace cl::sycl;
  * hierarchical parallel_for_work_item context */
 static inline cl::sycl::id<1> get_global_id(cl::sycl::group<1>& group,
                                             cl::sycl::item<1>& item) {
-  cl::sycl::id<1> groupID = group.get();
-  cl::sycl::range<1> localR = item.get_range();
-  cl::sycl::id<1> localID = item.get();
+  auto groupID = group.get();
+  auto localR = item.get_range();
+  auto localID = item.get();
   return cl::sycl::id<1>(groupID.get(0) * localR.get(0) + localID.get(0));
 }
 
 /* This sample showcases the syntax of the private_memory interface. */
 int main() {
   int ret = 0;
-  const int nItems = 64;
-  const int nLocals = 16;
-  int data[nItems] = {0};
+  const size_t nItems = 64;
+  const size_t nLocals = 16;
+  cl_int data[nItems] = {0};
 
   /* Any data on the device will be copied back to the host
    * after the block ends. */
@@ -55,7 +55,7 @@ int main() {
 
     /* We need to create a buffer in order to access data
      * from the SYCL devices. */
-    buffer<int, 1> buf(data, range<1>(nItems));
+    buffer<cl_int, 1> buf(data, range<1>(nItems));
 
     /* This command group enqueues a kernel on myQueue
      * that adds the work-item id to each element of the
@@ -77,7 +77,7 @@ int main() {
         /* Unlike variables of any other type allocated in a parallel_for_work_group
          * scope, privateObj is allocated per work-item and lives in work-item-private
          * memory. */
-        private_memory<int> privateObj(groupID);
+        private_memory<cl_int> privateObj(groupID);
 
         parallel_for_work_item(groupID, [&](item<1> itemID) {
           /* Assign the work-item global id into private memory. */
@@ -87,7 +87,8 @@ int main() {
         parallel_for_work_item(groupID, [&](item<1> itemID) {
           /* Retrieve the global id stored in the previous
            * parallel_for_work_item call and store it in global memory. */
-          ptr[privateObj(itemID)] = privateObj(itemID);
+		      auto globalID = privateObj(itemID);
+          ptr[globalID] = globalID;
         });
       };
       cgh.parallel_for_work_group<class PrivateMemory>(groupRange, localRange,
@@ -95,7 +96,7 @@ int main() {
     });
   }
 
-  for (int i = 0; i < nItems; i++) {
+  for (cl_int i = 0; i < cl_int(nItems); i++) {
     if (data[i] != i) {
       ret = 1;
     }
