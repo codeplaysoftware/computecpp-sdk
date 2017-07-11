@@ -42,6 +42,9 @@ Contents
     - Useful tools for working with SYCL code and ComputeCpp. Includes a
       simple driver script for compiling SYCL code with ComputeCpp, an
       example Makefile and other utilities.
+* util/
+    - Example utility code that we expect will be useful for other projects
+      as either a starting point or helper to achieve common tasks.
 
 Setup
 -----
