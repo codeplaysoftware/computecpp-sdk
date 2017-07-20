@@ -1,4 +1,6 @@
 CUDA to SYCL example
-================================
+====================
 
-This folder contains code for a simple vector addition with a version of the code in CUDA and a version of the code in SYCL
+This util demonstrates the differences and similarities between CUDA and
+SYCL through a simple addition example. The makefile provided should
+build both successfully by default.
