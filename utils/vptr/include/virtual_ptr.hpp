@@ -20,7 +20,7 @@
  *  virtual_ptr.hpp
  *
  *  Description:
- *    Interface for SYCL buffers to behave as a non-deferrenciable pointer
+ *    Interface for SYCL buffers to behave as a non-dereferenceable pointer
  *
  * Authors:
  *
@@ -54,11 +54,7 @@ using sycl_acc_mode = cl::sycl::access::mode;
  */
 class PointerMapper {
  public:
-  /* pointer information definitions
-   */
-  static const unsigned long ADDRESS_BITS = sizeof(void *) * 8;
-
-  using base_ptr_t = uintptr_t;
+  using base_ptr_t = std::uintptr_t;
 
   /* Structure of a virtual pointer
    *
@@ -72,8 +68,7 @@ class PointerMapper {
     base_ptr_t m_contents;
 
     /** Conversions from virtual_pointer_t to
-     * the void * should just reinterpret_cast the integer
-     * number
+     * void * should just reinterpret_cast the integer number
      */
     operator void *() const { return reinterpret_cast<void *>(m_contents); }
 
@@ -173,7 +168,7 @@ class PointerMapper {
     typename pointerMap_t::iterator retVal;
     bool reuse = false;
     if (!m_freeList.empty()) {
-      // lets try to re-use an existing block
+      // try to re-use an existing block
       for (auto freeElem : m_freeList) {
         if (freeElem->second._size >= requiredSize) {
           retVal = freeElem;
@@ -192,9 +187,8 @@ class PointerMapper {
 
   /**
    * Returns an iterator to the node that stores the information
-   * of the given virtual pointer from the given pointer map
-   * structure.
-   * If pointer asked is not found, throws std::out_of_range.
+   * of the given virtual pointer from the given pointer map structure.
+   * If pointer is not found, throws std::out_of_range.
    * If the pointer map structure is empty, throws std::out_of_range
    *
    * \param pMap the pointerMap_t structure storing all the pointers
@@ -450,10 +444,6 @@ class PointerMapper {
   }
 
  private:
-  /* Maps the pointer addresses to buffer and size pairs.
-    */
-  pointerMap_t m_pointerMap;
-
   /**
    * Compare two iterators to pointer map entries according to
    * the size of the allocation on the device.
@@ -465,6 +455,10 @@ class PointerMapper {
              ((a->first < b->first) && (b->second <= a->second));
     }
   };
+
+  /* Maps the pointer addresses to buffer and size pairs.
+    */
+  pointerMap_t m_pointerMap;
 
   /* List of free nodes available for re-using
    */
@@ -499,8 +493,7 @@ inline void SYCLfree(void *ptr, PointerMapper &pMap) {
 }
 
 /**
- * Frees all interface to the pointer mapper.
- * clear all the memory allocared to the SYCL.
+ * Clear all the memory allocated by SYCL.
  */
 template <typename PointerMapper>
 inline void SYCLfreeAll(PointerMapper &pMap) {

@@ -60,7 +60,7 @@ TEST(runtime, basic_test) {
 
   ASSERT_EQ(pMap.count(), 1u);
 
-  // Regiester it in the runtime
+  // Register it in the runtime
   cl::sycl::detail::register_pointer_mapper(&pMap);
 
   // Ensure that the pointer mapper in the runtime now isn't null

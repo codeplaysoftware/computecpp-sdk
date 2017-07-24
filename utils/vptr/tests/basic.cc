@@ -29,6 +29,7 @@
 
 #include <CL/sycl.hpp>
 #include <iostream>
+#include <random>
 
 #include "pointer_alias.hpp"
 #include "virtual_ptr.hpp"
@@ -146,7 +147,7 @@ TEST(pointer_mapper, reuse_ptr) {
     ASSERT_FALSE(PointerMapper::is_nullptr(initial));
     ASSERT_EQ(pMap.count(), 1u);
 
-    // Now we insert a small one, that we'll be reused
+    // Now we insert a small one, that will be reused
     void *reused = SYCLmalloc(10 * sizeof(int), pMap);
     ASSERT_NE(reused, nullptr);
     ASSERT_FALSE(PointerMapper::is_nullptr(reused));

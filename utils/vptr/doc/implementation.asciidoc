@@ -1,10 +1,8 @@
 == Software Managed Virtual Pointer Implementation
 
-This document contains implementation details of the software-managed
-virtual pointer which facilitates a pointer interface for SYCL buffers.
+This document contains implementation details of the software-managed virtual pointer which facilitates a pointer interface for SYCL buffers.
 
-Information on the usage of the virtual pointer can be found in 
-the link:../README.adoc[README file].
+Information on the usage of the virtual pointer can be found in the link:../README.adoc[README file].
 
 === Data structures
 
@@ -18,12 +16,13 @@ The implementations of `SYCLmalloc()` and `SYCLfree()` add and remove virtual po
 
 === Pointer reuse
 
-`PointerMapper` tries to reuse virtual pointers, which have been allocated and freed, in order to minimise the risk of running out of possible virtual addresses. The implementation also ensures that minimal fragmentation occurs in the virtual address space which avoids possible memory leaks (they could occur when the freed blocks are too small to allocate new pointers, but are still kept in the list of free pointers). 
+`PointerMapper` tries to reuse virtual pointers, which have been allocated and freed, in order to minimise the risk of running out of possible virtual addresses. 
+The implementation also ensures that minimal fragmentation occurs in the virtual address space which avoids possible memory leaks (they could occur when the freed blocks are too small to allocate new pointers, but are still kept in the list of free pointers). 
 
 * *Pointer reuse* is implemented in `SYCLmalloc()`. 
-When a new virtual pointer is allocated, the implementation looks for a freed pointer with enough size. 
+When a new virtual pointer is allocated, the implementation looks for a sufficiently large free pointer.
 If it finds one, it reuses it. 
-If the available pointer has more free size than necessary, the implementation creates a new free pointer of the remaining size and adds it to the set of freed pointers, so it can be reused in the future.
+If the available pointer is larger than the size requested, the implementation creates a new free pointer of the remaining size and adds it to the set of freed pointers, so it can be reused in the future.
 
 * *Minimised fragmentation* is implemented in `SYCLfree()`.
 When a pointer is being freed, the implementation flags it as free and adds it to the set of freed pointers.
