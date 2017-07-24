@@ -25,6 +25,7 @@
 #
 #  Authors:
 #    Stephen McGroarty <stephen@codeplay.com>
+#    Wojciech Nawrocki <wojciech.nawrocki@codeplay.com>
 #
 
 import os
