@@ -1,0 +1,5 @@
+# IR Extraction Utility
+
+`extract_ir.py` is a Python script which is able to extract the IR (SPIR 1.2 or otherwise) kernel bytecode
+binary from a ComputeCpp integration header. If a path to the `llvm-dis` executable is provided, it can also
+disassemble the bytecode using the binary, which results in a human-readable IR text.
