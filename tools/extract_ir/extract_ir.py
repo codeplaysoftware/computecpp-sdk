@@ -40,7 +40,9 @@ import struct
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description='Finds an IR module in a SYCL integration header and writes it out to a binary file. If path to llvm-dis is provided, tries to disassemble the binary and write the disassembled text into the output file instead.')
+        description='''Finds an IR module in a SYCL integration header and writes it out to a binary
+                       file. If path to llvm-dis is provided, tries to disassemble the binary and write
+                       the disassembled text into the output file instead.''')
 
     parser.add_argument('-i', '--input-file',
                         required=False,
