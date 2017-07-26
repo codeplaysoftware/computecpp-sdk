@@ -40,7 +40,7 @@ const sycl_acc_target sycl_acc_host = sycl_acc_target::host_buffer;
 using sycl_acc_mode = cl::sycl::access::mode;
 const sycl_acc_mode sycl_acc_rw = sycl_acc_mode::read_write;
 
-using namespace codeplay;
+using namespace cl::sycl::codeplay;
 
 TEST(pointer_mapper, basic_test) {
   PointerMapper pMap;
@@ -91,15 +91,14 @@ TEST(pointer_mapper, two_buffers) {
     ASSERT_EQ(pMap.count(), 2u);
 
     // Obtain the buffer
-    // Note that the scope of this buffer ends when the buffer
-    // is freed
+    // Note that the scope of this buffer ends when the pointer is freed
     try {
       auto b2 = pMap.get_buffer(ptrB);
       auto b1 = pMap.get_buffer(ptrA);
 
-#ifdef __COMPUTECPP__
+#ifdef COMPUTECPP_INTERFACE
       ASSERT_NE(b2.get_impl().get(), b1.get_impl().get());
-#endif  // __COMPUTECPP__
+#endif  // COMPUTECPP_INTERFACE
 
       cl::sycl::queue q([&](cl::sycl::exception_list e) {
         std::cout << "Error " << std::endl;
@@ -209,5 +208,5 @@ TEST(pointer_mapper, multiple_alloc_free) {
   }
 
   pMap.clear();
-  ASSERT_EQ(pMap.count(), 0);
+  ASSERT_EQ(pMap.count(), 0u);
 }

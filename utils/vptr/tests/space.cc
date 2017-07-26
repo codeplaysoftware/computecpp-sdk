@@ -40,7 +40,7 @@ const sycl_acc_target sycl_acc_buffer = sycl_acc_target::global_buffer;
 using sycl_acc_mode = cl::sycl::access::mode;
 const sycl_acc_mode sycl_acc_rw = sycl_acc_mode::read_write;
 
-using namespace codeplay;
+using namespace cl::sycl::codeplay;
 
 using buffer_t = PointerMapper::buffer_t;
 
@@ -171,7 +171,7 @@ TEST(space, fragmentation) {
     // Remove the second pointer
     SYCLfree(ptr2, pMap);
     // The pointer is freed
-    ASSERT_TRUE(pMap.get_node(ptr2)->second._free);
+    ASSERT_TRUE(pMap.get_node(ptr2)->second.m_free);
 
     /** Test fragmentation of free space when new node is added
      *  to a free space of larger size **/
@@ -184,8 +184,8 @@ TEST(space, fragmentation) {
     // The remaining space is freed and of correct size
     auto ptrFree = ptr5 + length5;
     auto freeSize = length2 * sizeof(float) - size5;
-    ASSERT_TRUE(pMap.get_node(ptrFree)->second._free);
-    ASSERT_EQ(freeSize, pMap.get_node(ptrFree)->second._size);
+    ASSERT_TRUE(pMap.get_node(ptrFree)->second.m_free);
+    ASSERT_EQ(freeSize, pMap.get_node(ptrFree)->second.m_size);
 
     /** Test fuse back when removing nodes **/
     // Free the node **after** the new free space
@@ -197,7 +197,7 @@ TEST(space, fragmentation) {
     // and are of the same size
     ASSERT_EQ(pMap.get_node(ptr3), pMap.get_node(ptrFree));
     freeSize += length3 * sizeof(float);
-    ASSERT_EQ(freeSize, pMap.get_node(ptrFree)->second._size);
+    ASSERT_EQ(freeSize, pMap.get_node(ptrFree)->second.m_size);
 
     /** Test fuse forward when removing nodes **/
     // Free the node **before** the free space
@@ -210,6 +210,6 @@ TEST(space, fragmentation) {
     ASSERT_EQ(pMap.get_node(ptr5), pMap.get_node(ptrFree));
     ptrFree = ptr5;
     freeSize += size5;
-    ASSERT_EQ(freeSize, pMap.get_node(ptrFree)->second._size);
+    ASSERT_EQ(freeSize, pMap.get_node(ptrFree)->second.m_size);
   }
 }

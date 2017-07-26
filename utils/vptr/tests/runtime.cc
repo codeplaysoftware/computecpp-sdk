@@ -39,7 +39,7 @@ const sycl_acc_target sycl_acc_host = sycl_acc_target::host_buffer;
 using sycl_acc_mode = cl::sycl::access::mode;
 const sycl_acc_mode sycl_acc_rw = sycl_acc_mode::read_write;
 
-using namespace codeplay;
+using namespace cl::sycl::codeplay;
 
 TEST(runtime, basic_test) {
   // Ensure that the pointer mapper in the runtime is null

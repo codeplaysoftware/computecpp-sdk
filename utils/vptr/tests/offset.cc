@@ -40,12 +40,12 @@ const sycl_acc_target sycl_acc_buffer = sycl_acc_target::global_buffer;
 using sycl_acc_mode = cl::sycl::access::mode;
 const sycl_acc_mode sycl_acc_rw = sycl_acc_mode::read_write;
 
-using namespace codeplay;
+using namespace cl::sycl::codeplay;
 
 using buffer_t = PointerMapper::buffer_t;
 
 struct kernel {
-  using acc_type = cl::sycl::accessor<codeplay::buffer_data_type, 1,
+  using acc_type = cl::sycl::accessor<buffer_data_type, 1,
                                       sycl_acc_rw, sycl_acc_buffer>;
   acc_type accB_;
   int i_;
