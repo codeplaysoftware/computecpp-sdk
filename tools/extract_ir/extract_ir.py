@@ -67,8 +67,8 @@ def try_disassemble_spir(llvm_dis_path, input_file_name, output_file_name='-'):
     """
     code = subprocess.call(
         [llvm_dis_path,
-         input_file,
-         '-o=' + output_file])
+         input_file_name,
+         '-o=' + output_file_name])
 
     if code != 0:
         raise RuntimeError('Error running llvm-dis! Error: ' + str(code))
