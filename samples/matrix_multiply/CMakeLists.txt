@@ -20,3 +20,7 @@ add_test(
   NAME ${SOURCE_NAME}_sycl
   COMMAND ${SOURCE_NAME} 64 sycl
 )
+install(
+  TARGETS ${SOURCE_NAME}
+  RUNTIME DESTINATION bin
+)

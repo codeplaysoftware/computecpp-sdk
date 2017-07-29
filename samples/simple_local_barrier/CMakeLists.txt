@@ -12,3 +12,7 @@ add_test(
   NAME ${SOURCE_NAME}
   COMMAND ${SOURCE_NAME}
 )
+install(
+  TARGETS ${SOURCE_NAME}
+  RUNTIME DESTINATION bin
+)
