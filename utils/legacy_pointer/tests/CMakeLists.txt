@@ -16,13 +16,9 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
                  ${CMAKE_BINARY_DIR}/googletest-build)
 
-include_directories(${gtest_SOURCE_DIR}/include)
-
-include(FindOpenCL)
 include(FindComputeCpp)
 
-
-include_directories(${COMPUTECPP_INCLUDE_DIRECTORY}) 
+include_directories(${gtest_SOURCE_DIR}/include)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 message(STATUS "Include dirs: ${gtest_SOURCE_DIR}")
 
@@ -47,6 +43,3 @@ add_dependencies(offset gtest_main)
 add_dependencies(offset gtest)
 add_sycl_to_target(offset ${CMAKE_CURRENT_SOURCE_DIR}/offset.cc ${CMAKE_CURRENT_BINARY_DIR})
 add_test(OffsetTests offset)
-
-
-

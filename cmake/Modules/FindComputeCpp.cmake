@@ -67,8 +67,6 @@ mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
-# OpenCL headers are used by ComputeCpp and necessary
-include_directories(SYSTEM ${OpenCL_INCLUDE_DIR})
 
 # Find ComputeCpp package
 if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
@@ -254,6 +252,11 @@ function(add_sycl_to_target targetName binaryDir sourceFiles)
 
   set(sourceFiles ${sourceFiles} ${ARGN})
   set(fileCounter 0)
+  target_include_directories(
+    ${targetName} SYSTEM
+    PRIVATE ${OpenCL_INCLUDE_DIR}
+    PRIVATE ${COMPUTECPP_INCLUDE_DIRECTORY}
+  )
   # Add custom target to run compute++ and generate the integration header
   foreach(sourceFile ${sourceFiles})
     __build_spir(${targetName} ${sourceFile} ${binaryDir} ${fileCounter})

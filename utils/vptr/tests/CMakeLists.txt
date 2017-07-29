@@ -19,7 +19,6 @@ add_subdirectory(${CMAKE_BINARY_DIR}/googletest-src
 include_directories(${gtest_SOURCE_DIR}/include)
 include(FindComputeCpp)
 
-include_directories(${COMPUTECPP_INCLUDE_DIRECTORY}) 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(basic basic.cc)
