@@ -60,7 +60,7 @@ building - COMPUTECPP_PACKAGE_ROOT_DIR. This variable should be the root
 directory of the ComputeCpp install (i.e. the directory with the the folders
 bin, include, lib and so on).
 
-You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_DIR to
+You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_PREFIX to
 choose a Debug or Release build and the location you'd like to be used when
 the "install" target is built.
 
