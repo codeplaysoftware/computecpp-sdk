@@ -213,10 +213,10 @@ class PointerMapper {
   /* get_buffer.
    * Returns a buffer from the map using the pointer address
    */
-  cl::sycl::buffer<buffer_data_type, 1, cl::sycl::detail::base_allocator>
-  get_buffer(const virtual_pointer_t ptr) {
-    using buffer_t =
-        cl::sycl::buffer<buffer_data_type, 1, cl::sycl::detail::base_allocator>;
+  template <typename buffer_allocator = cl::sycl::detail::base_allocator>
+  cl::sycl::buffer<buffer_data_type, 1, buffer_allocator> get_buffer(
+      const virtual_pointer_t ptr) {
+    using buffer_t = cl::sycl::buffer<buffer_data_type, 1, buffer_allocator>;
 
     // get_node() returns a `buffer_mem`, so we need to cast it to a `buffer<>`.
     // We can do this without the `buffer_mem` being a pointer, as we
@@ -430,7 +430,7 @@ class PointerMapper {
  * \throw cl::sycl::exception if error while creating the buffer
  */
 template <
-    typename buffer_allocator = cl::sycl::default_allocator<buffer_data_type> >
+    typename buffer_allocator = cl::sycl::default_allocator<buffer_data_type>>
 inline void *SYCLmalloc(size_t size, PointerMapper &pMap) {
   // Create a generic buffer of the given size
   using buffer_t = cl::sycl::buffer<buffer_data_type, 1, buffer_allocator>;
