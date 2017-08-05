@@ -51,7 +51,7 @@ script:
     - mkdir build
     - cd build 
     # Use the latest CE edition
-    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.2.1-Linux/ -DCMAKE_MODULE_PATH=../../cmake/Modules -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1
+    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.3.0-Linux/ -DCMAKE_MODULE_PATH=../../cmake/Modules -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1
     - make 
     - COMPUTECPP_TARGET="host" ctest -E opencl
 
