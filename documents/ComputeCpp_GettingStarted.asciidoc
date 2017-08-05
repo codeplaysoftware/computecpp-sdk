@@ -1,7 +1,6 @@
 :toc:
 :homepage: http://www.codeplay.com/computecpp
 :doctype: article
-:version: 0.2.1
 :author: Codeplay Software Ltd. <sycl@codeplay.com>
 :source-highlighter: coderay
 :coderay-css: style
@@ -82,15 +81,11 @@ image::{imageComputeCppLogo}[ComputeCpp (TM)]
 ==  ComputeCpp(TM) Community Edition (CE): Beta Release
  
 ComputeCpp Community Edition (CE) is a heterogeneous parallel programming
-platform that provides a beta pre-conformant implementantion of SYCL(TM) 1.2
-Khronos link:{syclSpecUrl}[specification].
+platform that provides a beta pre-conformant implementantion of the SYCL(TM)
+1.2 Khronos link:{syclSpecUrl}[specification].
  
-ComputeCpp CE {version} beta release includes the ComputeCpp CE Package version
-{version} and ComputeCpp CE SDK version {version}. The supported OpenCL 1.2
-platforms for ComputeCpp CE beta release, are AMD(TM) and Intel(TM).
- 
-This ComputeCpp Package version {version} supports SYCL pass:[C++] libraries 
-for better integration with pass:[C++] frameworks and applications like 
+ComputeCpp supports SYCL pass:[C++] libraries for better integration with
+pass:[C++] frameworks and applications like the
 link:{syclParallelStlUrl}[SYCL Parallel STL], math libraries like 
 link:{eigenSYCLUrl}[SYCL Eigen Tensor Library] and machine vision libraries. 
  
@@ -136,7 +131,7 @@ The output of this command will look something like this.
 ```
 ********************************************************************************
 
-ComputeCpp Info (CE 0.2.1)
+ComputeCpp Info (CE 0.3.0)
 
 ********************************************************************************
 

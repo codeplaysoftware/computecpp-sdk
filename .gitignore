@@ -4,6 +4,7 @@
 # YCM files
 *.ycm_extra_conf.py
 *.ycm_extra_conf.pyc
+.color_coded
 
 # build folder
 build/
