@@ -1,8 +1,7 @@
-== Community Edition (Beta) v. 0.2.1
+== Community Edition (Beta)
 :toc:
 :homepage: http://www.codeplay.com/computecpp
 :doctype: article
-:version: 0.2.1
 :author: Codeplay Software Ltd. <sycl@codeplay.com>
 :source-highlighter: coderay
 :coderay-css: style

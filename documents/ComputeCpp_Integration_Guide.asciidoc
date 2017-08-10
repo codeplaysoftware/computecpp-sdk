@@ -3,7 +3,6 @@ ComputeCpp : ComputeCpp Integration Guide
 
 :Cplusplus: C++
 :computePP: compute++
-:version: 0.2.1
 
 ifdef::env-github[]
 // Includes do not work on GitHub
@@ -63,7 +62,7 @@ The following sections delve into further details on the above topics.
 
 == What is ComputeCpp?
 
-The ComputeCpp(TM) Community Edition {version} targets the SYCL(TM) 1.2 Khronos
+The ComputeCpp(TM) Community Edition targets the SYCL(TM) 1.2 Khronos
 link:{syclSpecUrl}[specification]. This release provides a pre-conformance beta
 edition for OpenCL(TM) 1.2 devices with {glossarySpir} 1.2 support.
 ComputeCpp supports AMD(TM) and Intel(TM) OpenCL 1.2 devices with compatible
