@@ -32,7 +32,6 @@
 
 #include <CL/sycl.hpp>
 
-#include <iostream>
 #include <queue>
 #include <set>
 #include <unordered_map>
