@@ -32,6 +32,7 @@
 
 #include <CL/sycl.hpp>
 
+#include <iostream>
 #include <queue>
 #include <set>
 #include <unordered_map>
@@ -40,7 +41,7 @@ namespace cl {
 namespace sycl {
 namespace codeplay {
 
-using buffer_data_type = uint8_t;
+using buffer_data_type_t = uint8_t;
 using sycl_acc_target = cl::sycl::access::target;
 using sycl_acc_mode = cl::sycl::access::mode;
 
@@ -208,13 +209,15 @@ class PointerMapper {
       }
       --node;
     }
+
     return node;
   }
 
   /* get_buffer.
    * Returns a buffer from the map using the pointer address
    */
-  template <typename buffer_allocator = cl::sycl::detail::base_allocator>
+  template <typename buffer_data_type = buffer_data_type_t,
+            typename buffer_allocator = cl::sycl::detail::base_allocator>
   cl::sycl::buffer<buffer_data_type, 1, buffer_allocator> get_buffer(
       const virtual_pointer_t ptr) {
     using buffer_t = cl::sycl::buffer<buffer_data_type, 1, buffer_allocator>;
@@ -224,6 +227,7 @@ class PointerMapper {
     // only declare member variables in the base class (`buffer_mem`) and not in
     // the child class (`buffer<>).
     buffer_t buf(*(static_cast<buffer_t *>(&get_node(ptr)->second.m_buffer)));
+
     return buf;
   }
 
@@ -234,10 +238,12 @@ class PointerMapper {
    * @param ptr The virtual pointer
    */
   template <sycl_acc_mode access_mode,
-            sycl_acc_target access_target = sycl_acc_target::global_buffer>
+            sycl_acc_target access_target = sycl_acc_target::global_buffer,
+            typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr) {
-    return get_buffer(ptr).get_access<access_mode, access_target>();
+    return (get_buffer<buffer_data_type>(ptr))
+        .get_access<access_mode, access_target>();
   }
 
   /**
@@ -249,10 +255,12 @@ class PointerMapper {
    * @param cgh Reference to the command group scope
    */
   template <sycl_acc_mode access_mode,
-            sycl_acc_target access_target = sycl_acc_target::global_buffer>
+            sycl_acc_target access_target = sycl_acc_target::global_buffer,
+            typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr, cl::sycl::handler &cgh) {
-    return get_buffer(ptr).get_access<access_mode, access_target>(cgh);
+    return (get_buffer<buffer_data_type>(ptr))
+        .get_access<access_mode, access_target>(cgh);
   }
 
   /*
@@ -295,6 +303,7 @@ class PointerMapper {
       m_pointerMap.emplace(initialVal, p);
       return initialVal;
     }
+
     auto lastElemIter = get_insertion_point(bufSize);
     // We are recovering an existing free node
     if (lastElemIter->second.m_free) {
@@ -431,6 +440,7 @@ class PointerMapper {
  * \throw cl::sycl::exception if error while creating the buffer
  */
 template <
+    typename buffer_data_type = buffer_data_type_t,
     typename buffer_allocator = cl::sycl::default_allocator<buffer_data_type>>
 inline void *SYCLmalloc(size_t size, PointerMapper &pMap) {
   // Create a generic buffer of the given size
