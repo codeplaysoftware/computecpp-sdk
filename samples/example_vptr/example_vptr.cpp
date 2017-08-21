@@ -18,7 +18,7 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  example_sycl_application.cpp
+ *  example_vptr.cpp
  *
  *  Description:
  *    Sample code that walks through the basics of executing matrix addition
@@ -62,10 +62,10 @@ int main() {
     /* This kernel enqueue will initialise buffer a. The accessor "A" has
      * write access. */
     myQueue.submit([&](handler& cgh) {
-      auto A = pMap.get_access<access::mode::write>(a, cgh);
-      cgh.parallel_for<class init_a>(range<1>(N*M), [=](id<1> index) {
-          A[index] = index[0] * 2;
-      });
+      auto A = pMap.get_access<access::mode::write,
+                               access::target::global_buffer, float>(a, cgh);
+      cgh.parallel_for<class init_a>(
+          range<1>(N * M), [=](id<1> index) { A[index] = index[0] * 2; });
     });
 
     /* This kernel enqueue will likewise initialise buffer b. The only
@@ -74,10 +74,10 @@ int main() {
      * actually independent of each other. Therefore, they can be enqueued
      * to the device with no dependencies between each other. */
     myQueue.submit([&](handler& cgh) {
-      auto B = pMap.get_access<access::mode::write>(b, cgh);
-      cgh.parallel_for<class init_b>(range<1>{N*M}, [=](id<1> index) {
-          B[index] = index[0] * 2014;
-      });
+      auto B = pMap.get_access<access::mode::write,
+                               access::target::global_buffer, float>(b, cgh);
+      cgh.parallel_for<class init_b>(
+          range<1>{N * M}, [=](id<1> index) { B[index] = index[0] * 2014; });
     });
 
     /* This kernel will actually perform the computation C = A * B. Since
@@ -87,12 +87,15 @@ int main() {
      * or on the host, the SYCL runtime would ensure that the data were
      * copied between contexts etc. properly. */
     myQueue.submit([&](handler& cgh) {
-      auto A = pMap.get_access<access::mode::write>(a, cgh);
-      auto B = pMap.get_access<access::mode::write>(b, cgh);
-      auto C = pMap.get_access<access::mode::write>(c, cgh);
-      cgh.parallel_for<class matrix_add>(
-          range<1>{N*M}, [=](id<1> index) { 
-              C[index] = A[index] + B[index]; });
+      auto A = pMap.get_access<access::mode::write,
+                               access::target::global_buffer, float>(a, cgh);
+      auto B = pMap.get_access<access::mode::write,
+                               access::target::global_buffer, float>(b, cgh);
+      auto C = pMap.get_access<access::mode::write,
+                               access::target::global_buffer, float>(c, cgh);
+      cgh.parallel_for<class matrix_add>(range<1>{N * M}, [=](id<1> index) {
+        C[index] = A[index] + B[index];
+      });
     });
 
     /* A host accessor will copy data from the device and, under most
@@ -107,17 +110,15 @@ int main() {
      * were we to use buffer c on the device again, no copy would be issued
      * (and in fact, the operator[]() exposed here does not return an lvalue,
      * and cannot be assigned to).*/
-    auto cAcc = pMap.get_access<access::mode::read, access::target::host_buffer>(c);
-    auto C = cl::sycl::codeplay::get_host_ptr_as<float>(cAcc);
-    std::cout << "Result:" << std::endl;
-    for (size_t i = 0; i < N*M; i++) {
-      //for (size_t j = 0; j < M; j++) {
-        std::cout << C[i] << std::endl;
-        if (C[i] != (i) * (2 + 2014)) {
-          std::cout << "Wrong value " << C[i] << " for element " << i << std::endl;
-          return -1;
-        }
-      //}
+    auto C =
+        pMap.get_access<access::mode::read, access::target::host_buffer, float>(
+            c);
+    for (size_t i = 0; i < N * M; i++) {
+      if (C[i] != (i) * (2 + 2014)) {
+        std::cout << "Wrong value " << C[i] << " for element " << i
+                  << std::endl;
+        return -1;
+      }
     }
     /* End scope of myQueue, this waits for any remaining operations on the
      * queue to complete. */

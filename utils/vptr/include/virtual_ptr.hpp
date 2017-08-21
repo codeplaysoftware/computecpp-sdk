@@ -225,9 +225,7 @@ class PointerMapper {
     // We can do this without the `buffer_mem` being a pointer, as we
     // only declare member variables in the base class (`buffer_mem`) and not in
     // the child class (`buffer<>).
-    buffer_t buf(*(static_cast<buffer_t *>(&get_node(ptr)->second.m_buffer)));
-
-    return buf;
+    return *(static_cast<buffer_t *>(&get_node(ptr)->second.m_buffer));
   }
 
   /**
@@ -241,8 +239,8 @@ class PointerMapper {
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr) {
-    return (get_buffer<buffer_data_type>(ptr))
-        .get_access<access_mode, access_target>();
+    auto buf = get_buffer<buffer_data_type>(ptr);
+    return buf.template get_access<access_mode, access_target>();
   }
 
   /**
@@ -258,8 +256,8 @@ class PointerMapper {
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr, cl::sycl::handler &cgh) {
-    return (get_buffer<buffer_data_type>(ptr))
-        .get_access<access_mode, access_target>(cgh);
+    auto buf = get_buffer<buffer_data_type>(ptr);
+    return buf.template get_access<access_mode, access_target>(cgh);
   }
 
   /*

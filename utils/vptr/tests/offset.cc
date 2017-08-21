@@ -45,7 +45,7 @@ using namespace cl::sycl::codeplay;
 using buffer_t = PointerMapper::buffer_t;
 
 struct kernel {
-  using acc_type = cl::sycl::accessor<buffer_data_type, 1,
+  using acc_type = cl::sycl::accessor<buffer_data_type_t, 1,
                                       sycl_acc_rw, sycl_acc_buffer>;
   acc_type accB_;
   int i_;
