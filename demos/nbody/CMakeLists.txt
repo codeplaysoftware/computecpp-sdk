@@ -1,0 +1,15 @@
+project(NBodyApp)
+
+set(SOURCES
+  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
+  "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp")
+
+ci_make_app(
+  APP_NAME "NBody"
+  SOURCES "${SOURCES}"
+  LIBRARIES "${OpenCL_LIBRARIES}"
+  LIBRARIES "${COMPUTECPP_RUNTIME_LIBRARY}"
+  LIBRARIES cinder_imgui
+  CINDER_PATH "${CINDER_PATH}")
+
+__build_spir("NBody" "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp" "${CMAKE_CURRENT_BINARY_DIR}" 1)
