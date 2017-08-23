@@ -267,7 +267,12 @@ class PointerMapper {
   /**
    * Constructs the PointerMapper structure.
    */
-  PointerMapper() : m_pointerMap{}, m_freeList{} {};
+  PointerMapper(base_ptr_t baseAddress = 4096)
+      : m_pointerMap{}, m_freeList{}, m_baseAddress{baseAddress} {
+    if (m_baseAddress == 0) {
+      throw std::out_of_range(std::string("Base address cannot be zero"));
+    }
+  };
 
   /**
    * PointerMapper cannot be copied or moved
@@ -291,7 +296,7 @@ class PointerMapper {
     pMapNode_t p{b, bufSize, false};
     // If this is the first pointer:
     if (m_pointerMap.empty()) {
-      virtual_pointer_t initialVal{1};
+      virtual_pointer_t initialVal{m_baseAddress};
       m_pointerMap.emplace(initialVal, p);
       return initialVal;
     }
@@ -421,6 +426,10 @@ class PointerMapper {
   /* List of free nodes available for re-using
    */
   std::set<typename pointerMap_t::iterator, SortBySize> m_freeList;
+
+  /* Base address used when issuing the first virtual pointer, allows users
+   * to specify alignment. Cannot be zero. */
+  size_t m_baseAddress;
 };
 
 /**
