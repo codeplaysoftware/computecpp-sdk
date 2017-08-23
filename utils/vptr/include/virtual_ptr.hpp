@@ -34,6 +34,7 @@
 
 #include <queue>
 #include <set>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace cl {
@@ -270,7 +271,7 @@ class PointerMapper {
   PointerMapper(base_ptr_t baseAddress = 4096)
       : m_pointerMap{}, m_freeList{}, m_baseAddress{baseAddress} {
     if (m_baseAddress == 0) {
-      throw std::out_of_range(std::string("Base address cannot be zero"));
+      throw std::invalid_argument(std::string("Base address cannot be zero"));
     }
   };
 
