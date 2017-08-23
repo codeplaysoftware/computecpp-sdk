@@ -33,6 +33,7 @@
 #include <CL/sycl.hpp>
 
 #include <queue>
+#include <set>
 #include <unordered_map>
 
 namespace cl {
