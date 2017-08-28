@@ -40,9 +40,16 @@ namespace cl {
 namespace sycl {
 namespace codeplay {
 
-using buffer_data_type_t = uint8_t;
 using sycl_acc_target = cl::sycl::access::target;
 using sycl_acc_mode = cl::sycl::access::mode;
+
+/**
+ * Default values for template arguments
+ */
+using buffer_data_type_t = uint8_t;
+using buffer_allocator_t = cl::sycl::default_allocator<buffer_data_type_t>;
+const sycl_acc_target default_acc_target = sycl_acc_target::global_buffer;
+const sycl_acc_mode default_acc_mode = sycl_acc_mode::read_write;
 
 /**
  * PointerMapper
@@ -234,8 +241,8 @@ class PointerMapper {
    * @param accessTarget
    * @param ptr The virtual pointer
    */
-  template <sycl_acc_mode access_mode,
-            sycl_acc_target access_target = sycl_acc_target::global_buffer,
+  template <sycl_acc_mode access_mode = default_acc_mode,
+            sycl_acc_target access_target = default_acc_target,
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr) {
@@ -251,8 +258,8 @@ class PointerMapper {
    * @param ptr The virtual pointer
    * @param cgh Reference to the command group scope
    */
-  template <sycl_acc_mode access_mode,
-            sycl_acc_target access_target = sycl_acc_target::global_buffer,
+  template <sycl_acc_mode access_mode = default_acc_mode,
+            sycl_acc_target access_target = default_acc_target,
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr, cl::sycl::handler &cgh) {
