@@ -215,7 +215,8 @@ class PointerMapper {
   /* get_buffer.
    * Returns a buffer from the map using the pointer address
    */
-  template <typename buffer_allocator = cl::sycl::detail::base_allocator>
+  template <
+      typename buffer_allocator = cl::sycl::buffer_allocator<buffer_data_type>>
   cl::sycl::buffer<buffer_data_type, 1, buffer_allocator> get_buffer(
       const virtual_pointer_t ptr) {
     using buffer_t = cl::sycl::buffer<buffer_data_type, 1, buffer_allocator>;
