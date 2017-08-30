@@ -47,7 +47,8 @@ using sycl_acc_mode = cl::sycl::access::mode;
  * Default values for template arguments
  */
 using buffer_data_type_t = uint8_t;
-using buffer_allocator_t = cl::sycl::default_allocator<buffer_data_type_t>;
+using buffer_allocator_base_t = cl::sycl::detail::base_allocator;
+using buffer_allocator_default_t = cl::sycl::default_allocator<buffer_data_type_t>;
 const sycl_acc_target default_acc_target = sycl_acc_target::global_buffer;
 const sycl_acc_mode default_acc_mode = sycl_acc_mode::read_write;
 
@@ -222,7 +223,7 @@ class PointerMapper {
   /* get_buffer.
    * Returns a buffer from the map using the pointer address
    */
-  template <typename buffer_allocator = cl::sycl::detail::base_allocator,
+  template <typename buffer_allocator = buffer_allocator_base_t,
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::buffer<buffer_data_type, 1, buffer_allocator> get_buffer(
       const virtual_pointer_t ptr) {
@@ -246,7 +247,7 @@ class PointerMapper {
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr) {
-    auto buf = get_buffer<buffer_data_type>(ptr);
+    auto buf = get_buffer<buffer_allocator_base_t, buffer_data_type>(ptr);
     return buf.template get_access<access_mode, access_target>();
   }
 
@@ -263,7 +264,7 @@ class PointerMapper {
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr, cl::sycl::handler &cgh) {
-    auto buf = get_buffer<buffer_data_type>(ptr);
+    auto buf = get_buffer<buffer_allocator_base_t, buffer_data_type>(ptr);
     return buf.template get_access<access_mode, access_target>(cgh);
   }
 
@@ -443,12 +444,10 @@ class PointerMapper {
  * \param size Size in bytes of the desired allocation
  * \throw cl::sycl::exception if error while creating the buffer
  */
-template <
-    typename buffer_data_type = buffer_data_type_t,
-    typename buffer_allocator = cl::sycl::default_allocator<buffer_data_type>>
+template <typename buffer_allocator = buffer_allocator_default_t>
 inline void *SYCLmalloc(size_t size, PointerMapper &pMap) {
   // Create a generic buffer of the given size
-  using buffer_t = cl::sycl::buffer<buffer_data_type, 1, buffer_allocator>;
+  using buffer_t = cl::sycl::buffer<buffer_data_type_t, 1, buffer_allocator>;
   auto thePointer = pMap.add_pointer(buffer_t(cl::sycl::range<1>{size}));
   // Store the buffer on the global list
   return static_cast<void *>(thePointer);
