@@ -58,7 +58,7 @@ struct identity<T, std::logical_and<T>> {
 };
 
 // Dummy struct to generate unique kernel name types
-template <typename T, typename U, size_t N>
+template <typename T, typename U, typename V>
 struct kernel_name {};
 
 /* Performs an inclusive scan with the given associative binary operation `Op`
@@ -125,7 +125,7 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
         temp(wgroup_size * 2, cgh);
 
     // Use dummy struct as the unique kernel name.
-    cgh.parallel_for<kernel_name<T, Op, 0>>(
+    cgh.parallel_for<kernel_name<T, Op, class scan_segments>>(
         sycl::nd_range<1>(half_in_size, wgroup_size),
         [=](sycl::nd_item<1> item) {
           /* Two-phase exclusive scan algorithm due to Guy E. Blelloch in
@@ -209,7 +209,7 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
     auto elems =
         ends.template get_access<sycl::access::mode::discard_write>(cgh);
 
-    cgh.parallel_for<kernel_name<T, Op, 1>>(
+    cgh.parallel_for<kernel_name<T, Op, class copy_ends>>(
         sycl::range<1>(n_segments), [=](sycl::item<1> item) {
           auto id = item.get_linear_id();
           // Offset into the last element of each segment.
@@ -225,7 +225,7 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
     auto ends_scan = ends.template get_access<sycl::access::mode::read>(cgh);
     auto data = in.template get_access<sycl::access::mode::read_write>(cgh);
 
-    cgh.parallel_for<kernel_name<T, Op, 2>>(
+    cgh.parallel_for<kernel_name<T, Op, class add_ends>>(
         // Work with one less work-group, since the first segment is correct.
         sycl::nd_range<1>(half_in_size - wgroup_size, wgroup_size),
         [=](sycl::nd_item<1> item) {
@@ -246,24 +246,24 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
 /* Tests the scan with an addition operation, which is its most common use.
  * Returns 0 if successful, a nonzero value otherwise. */
 int test_sum(sycl::queue& q) {
-  constexpr size_t SIZE = 512;
+  constexpr size_t size = 512;
 
   // Initializes a vector of sequentially increasing values.
-  std::vector<int32_t> in(SIZE);
+  std::vector<int32_t> in(size);
   std::iota(in.begin(), in.end(), 1);
 
   // Compute the prefix sum using SYCL.
-  std::vector<int32_t> sum(SIZE);
+  std::vector<int32_t> sum(in.size());
   {
     // Read from `in`, but write into `sum`.
-    sycl::buffer<int32_t, 1> buf(in.data(), sycl::range<1>(SIZE));
+	  sycl::buffer<int32_t, 1> buf(in.data(), sycl::range<1>(in.size()));
     buf.set_final_data(sum.data());
 
     par_scan<int32_t, std::plus<int32_t>>(buf, q);
   }
 
   // Compute the same operation using the standard library.
-  std::vector<int32_t> test_sum(SIZE);
+  std::vector<int32_t> test_sum(in.size());
   std::partial_sum(in.begin(), in.end(), test_sum.begin());
 
   // Check if the results are correct.
@@ -288,24 +288,24 @@ int test_sum(sycl::queue& q) {
  * Returns 0 if successful, a nonzero value otherwise. */
 int test_factorial(sycl::queue& q) {
   // Anything above this size overflows the int64_t type
-  constexpr size_t SIZE = 16;
+  constexpr size_t size = 16;
 
   // Initializes a vector of sequentially increasing values.
-  std::vector<int64_t> in(SIZE);
+  std::vector<int64_t> in(size);
   std::iota(in.begin(), in.end(), 1);
 
   // Compute a sequence of factorials using SYCL.
-  std::vector<int64_t> fact(SIZE);
+  std::vector<int64_t> fact(in.size());
   {
     // Read from `in`, but write into `fact`.
-    sycl::buffer<int64_t, 1> buf(in.data(), sycl::range<1>(SIZE));
+	  sycl::buffer<int64_t, 1> buf(in.data(), sycl::range<1>(in.size()));
     buf.set_final_data(fact.data());
 
     par_scan<int64_t, std::multiplies<int64_t>>(buf, q);
   }
 
   // Compute the same operation using the standard library.
-  std::vector<int64_t> test_fact(SIZE);
+  std::vector<int64_t> test_fact(in.size());
   std::partial_sum(in.begin(), in.end(), test_fact.begin(),
                    std::multiplies<int64_t>{});
 
