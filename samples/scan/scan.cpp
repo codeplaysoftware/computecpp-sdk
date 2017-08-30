@@ -82,8 +82,9 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
     throw std::runtime_error("Input size exceeds device global memory size.");
   }
 
-  // Check if local memory is available.
-  if (dev.get_info<sycl::info::device::local_mem_type>() ==
+  /* Check if local memory is available. On host no local memory is fine, since
+   * it is emulated. */
+  if (!dev.is_host() && dev.get_info<sycl::info::device::local_mem_type>() ==
       sycl::info::local_mem_type::none) {
     throw std::runtime_error("Device does not have local memory.");
   }
