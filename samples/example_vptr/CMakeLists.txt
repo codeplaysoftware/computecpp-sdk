@@ -1,15 +1,5 @@
 set(SOURCE_NAME "example_vptr")
 
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED on)
-
-if(NOT COMPUTECPP_SDK_VIRTUAL_POINTER_PREFIX)
-  message (FATAL_ERROR
-    "ComputeCpp SDK Virtual Pointer not found! (please set COMPUTECPP_SDK_VIRTUAL_POINTER_PREFIX)")
-else()
-  include_directories(${COMPUTECPP_SDK_VIRTUAL_POINTER_PREFIX}/include)
-endif()
-
 add_executable(
   ${SOURCE_NAME}
   ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
