@@ -49,12 +49,6 @@ int main() {
     queue myQueue;
     cl::sycl::codeplay::PointerMapper pMap;
 
-    /* Create device-only 2D buffers of floats for the matrices. */
-    /*
-    buffer<float, 2> a(range<2>{N, M});
-    buffer<float, 2> b(range<2>{N, M});
-    buffer<float, 2> c(range<2>{N, M});
-    */
     float* a = static_cast<float*>(SYCLmalloc(N * M * sizeof(float), pMap));
     float* b = static_cast<float*>(SYCLmalloc(N * M * sizeof(float), pMap));
     float* c = static_cast<float*>(SYCLmalloc(N * M * sizeof(float), pMap));
@@ -110,14 +104,23 @@ int main() {
      * were we to use buffer c on the device again, no copy would be issued
      * (and in fact, the operator[]() exposed here does not return an lvalue,
      * and cannot be assigned to).*/
-    auto C =
-        pMap.get_access<access::mode::read, access::target::host_buffer, float>(
-            c);
-    for (size_t i = 0; i < N * M; i++) {
-      if (C[i] != (i) * (2 + 2014)) {
-        std::cout << "Wrong value " << C[i] << " for element " << i
-                  << std::endl;
-        return -1;
+
+    /* Access matrix c row by row, using pointer arithmetics on the virtual
+     * pointer. */
+    float* c_row = c;
+    for (size_t i = 0; i < N; i++) {
+      // Get the number of elements by which the row is offset.
+      auto row_offset = pMap.get_offset(c_row) / sizeof(float);
+
+      auto C = pMap.get_access<access::mode::read, access::target::host_buffer,
+                               float>(c_row);
+      for (size_t j = 0; j < M; j++) {
+        if (C[row_offset + j] != (i * M + j) * (2 + 2014)) {
+          std::cout << "Wrong value " << C[row_offset + j] << " for element "
+                    << i * M + j << std::endl;
+          return -1;
+        }
+        c_row++;
       }
     }
     /* End scope of myQueue, this waits for any remaining operations on the
