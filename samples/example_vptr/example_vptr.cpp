@@ -59,7 +59,7 @@ int main() {
      * has write access. We retrieve it directly from the PointerMapper, using
      * the virtual pointer.*/
     myQueue.submit([&](handler& cgh) {
-      auto A = pMap.get_access<access::mode::write,
+      auto A = pMap.get_access<access::mode::discard_write,
                                access::target::global_buffer, float>(a, cgh);
       cgh.parallel_for<class init_a>(
           range<1>{N * M}, [=](item<1> index) { A[index] = index[0] * 2; });
@@ -67,7 +67,7 @@ int main() {
 
     /* Similarly, this kernel will initialise the buffer pointed to by b. */
     myQueue.submit([&](handler& cgh) {
-      auto B = pMap.get_access<access::mode::write,
+      auto B = pMap.get_access<access::mode::discard_write,
                                access::target::global_buffer, float>(b, cgh);
       cgh.parallel_for<class init_b>(
           range<1>{N * M}, [=](item<1> index) { B[index] = index[0] * 2014; });
@@ -79,7 +79,7 @@ int main() {
                                access::target::global_buffer, float>(a, cgh);
       auto B = pMap.get_access<access::mode::read,
                                access::target::global_buffer, float>(b, cgh);
-      auto C = pMap.get_access<access::mode::write,
+      auto C = pMap.get_access<access::mode::discard_write,
                                access::target::global_buffer, float>(c, cgh);
       cgh.parallel_for<class matrix_add>(range<1>{N * M}, [=](item<1> index) {
         C[index] = A[index] + B[index];
