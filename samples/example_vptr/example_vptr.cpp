@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *  Copyright (C) 2016 Codeplay Software Limited
+ *  Copyright (C) 2017 Codeplay Software Limited
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
@@ -21,8 +21,8 @@
  *  example_vptr.cpp
  *
  *  Description:
- *    Sample code that walks through the basics of executing matrix addition
- *    using the virtual pointer in SYCL.
+ *    Sample code that demonstrates the use of the virtual pointer intrface in
+ *SYCL on matrix addition.
  *
  **************************************************************************/
 
@@ -30,7 +30,6 @@
 
 #include <iostream>
 
-#include "pointer_alias.hpp"
 #include "virtual_ptr.hpp"
 
 using namespace cl::sycl;
@@ -38,23 +37,27 @@ using namespace cl::sycl;
 const size_t N = 100;
 const size_t M = 150;
 
-/* This sample creates three device-only arrays, then initialises them
- * on the device. After that, it adds two of them together, storing the
- * result in the third buffer. It then verifies the result of the kernel
- * on the host by using a host accessor to gain access to the data. */
+/* This sample allocates three device-only matrices, using the virtual pointer
+ * and SYCLmalloc. It initalises the first two in parallel on the device. After
+ * that, it adds them together, storing the result in the third matrix. It then
+ * verifies the result on the host by using:
+ *  - pointer arithmetic on the virtual pointer to index the matrix
+ *  - host accessor to gain access to the data. */
 int main() {
-  /* Destroying SYCL objects like queues and buffers blocks until all work
-   * associated with those objects is completed. */
   {
     queue myQueue;
     cl::sycl::codeplay::PointerMapper pMap;
 
+    /* Allocate the matrices using SYCLmalloc. a, b and c are virtual pointers,
+     * pointing to device buffers.
+     */
     float* a = static_cast<float*>(SYCLmalloc(N * M * sizeof(float), pMap));
     float* b = static_cast<float*>(SYCLmalloc(N * M * sizeof(float), pMap));
     float* c = static_cast<float*>(SYCLmalloc(N * M * sizeof(float), pMap));
 
-    /* This kernel enqueue will initialise buffer a. The accessor "A" has
-     * write access. */
+    /* This kernel will initialise the buffer pointed to by a. The accessor "A"
+     * has write access. We retrieve it directly from the PointerMapper, using
+     * the virtual pointer.*/
     myQueue.submit([&](handler& cgh) {
       auto A = pMap.get_access<access::mode::write,
                                access::target::global_buffer, float>(a, cgh);
@@ -62,11 +65,7 @@ int main() {
           range<1>(N * M), [=](id<1> index) { A[index] = index[0] * 2; });
     });
 
-    /* This kernel enqueue will likewise initialise buffer b. The only
-     * accessor it specifies is a write accessor to b, so the runtime
-     * can use this information to recognise that these kernels are
-     * actually independent of each other. Therefore, they can be enqueued
-     * to the device with no dependencies between each other. */
+    /* Similarly, this kernel will initialise the buffer pointed to by b. */
     myQueue.submit([&](handler& cgh) {
       auto B = pMap.get_access<access::mode::write,
                                access::target::global_buffer, float>(b, cgh);
@@ -74,16 +73,11 @@ int main() {
           range<1>{N * M}, [=](id<1> index) { B[index] = index[0] * 2014; });
     });
 
-    /* This kernel will actually perform the computation C = A * B. Since
-     * A and B are only read from, we specify read accessors for those two
-     * buffers, which the SYCL runtime recognises as a dependency on the
-     * previous kernels. If the data were initialised on a different device,
-     * or on the host, the SYCL runtime would ensure that the data were
-     * copied between contexts etc. properly. */
+    /* This kernel will perform the computation C = A + B. */
     myQueue.submit([&](handler& cgh) {
-      auto A = pMap.get_access<access::mode::write,
+      auto A = pMap.get_access<access::mode::read,
                                access::target::global_buffer, float>(a, cgh);
-      auto B = pMap.get_access<access::mode::write,
+      auto B = pMap.get_access<access::mode::read,
                                access::target::global_buffer, float>(b, cgh);
       auto C = pMap.get_access<access::mode::write,
                                access::target::global_buffer, float>(c, cgh);
@@ -92,26 +86,15 @@ int main() {
       });
     });
 
-    /* A host accessor will copy data from the device and, under most
-     * circumstances, allocate space for it for the user (it will not
-     * allocate space when the map_allocator is used and an initial host
-     * pointer is provided, as this instructs the runtime to map the data
-     * into the host's memory). Since this code is attempting to access
-     * buffer c, which had write access in the third kernel, the device is
-     * assumed to have the most recent copy. Therefore, the runtime will
-     * wait for the device to finish executing the third kernel before
-     * copying data from the device to the host. Because it is read only,
-     * were we to use buffer c on the device again, no copy would be issued
-     * (and in fact, the operator[]() exposed here does not return an lvalue,
-     * and cannot be assigned to).*/
-
-    /* Access matrix c row by row, using pointer arithmetics on the virtual
-     * pointer. */
+    /* On the host, the result stored in the buffer of virtual pointer "c" are
+     * checked. The matrix is accessed row by row, using pointer arithmetics on
+     * the virtual pointer. */
     float* c_row = c;
     for (size_t i = 0; i < N; i++) {
-      // Get the number of elements by which the row is offset.
+      /* Get the number of elements by which the row is offset. */
       auto row_offset = pMap.get_offset(c_row) / sizeof(float);
 
+      /* Create a host accessor to access the data on the host. */
       auto C = pMap.get_access<access::mode::read, access::target::host_buffer,
                                float>(c_row);
       for (size_t j = 0; j < M; j++) {
