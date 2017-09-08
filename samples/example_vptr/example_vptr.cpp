@@ -89,10 +89,10 @@ int main() {
     /* On the host, the result stored in the buffer of virtual pointer "c" are
      * checked. The matrix is accessed row by row, using pointer arithmetics on
      * the virtual pointer. */
-    float* c_row = c;
+    auto c_row = c;
     for (size_t i = 0; i < N; i++) {
       /* Get the number of elements by which the row is offset. */
-      auto row_offset = pMap.get_offset(c_row) / sizeof(float);
+      auto row_offset = pMap.get_element_offset<float>(c_row);
 
       /* Create a host accessor to access the data on the host. */
       auto accC = pMap.get_access<access::mode::read, access::target::host_buffer,

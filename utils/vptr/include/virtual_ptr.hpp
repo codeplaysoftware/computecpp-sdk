@@ -48,7 +48,8 @@ using sycl_acc_mode = cl::sycl::access::mode;
  */
 using buffer_data_type_t = uint8_t;
 using buffer_allocator_base_t = cl::sycl::detail::base_allocator;
-using buffer_allocator_default_t = cl::sycl::default_allocator<buffer_data_type_t>;
+using buffer_allocator_default_t =
+    cl::sycl::default_allocator<buffer_data_type_t>;
 const sycl_acc_target default_acc_target = sycl_acc_target::global_buffer;
 const sycl_acc_mode default_acc_mode = sycl_acc_mode::read_write;
 
@@ -277,6 +278,15 @@ class PointerMapper {
     return (ptr - get_node(ptr)->first);
   }
 
+  /*
+   * Returns the number of elements by which the given pointer is offset from
+   * the base address.
+   */
+  template <typename buffer_data_type>
+  inline size_t get_element_offset(const virtual_pointer_t ptr) {
+    return get_offset(ptr) / sizeof(buffer_data_type);
+  }
+
   /**
    * Constructs the PointerMapper structure.
    */
@@ -288,7 +298,7 @@ class PointerMapper {
   PointerMapper(const PointerMapper &) = delete;
 
   /**
-  *	empty the pointer list
+  * Empty the pointer list
   */
   inline void clear() {
     m_freeList.clear();
