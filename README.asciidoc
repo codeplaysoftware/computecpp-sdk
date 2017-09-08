@@ -1,12 +1,7 @@
 ComputeCpp SDK Readme
 =====================
 
-ifdef::env-github[]
-image:https://raw.githubusercontent.com/wiki/codeplaysoftware/computecpp-sdk/images/ComputeCpp.png[ComputeCpp(TM)]
-endif::env-github[]
-ifndef::env-github[]
-image:documents/images/ComputeCpp.svg[ComputeCpp(TM)]
-endif::env-github[]
+image:https://www.codeplay.com/public/uploaded/public/computecpp_logo.png[ComputeCpp(TM)]
 
 Introduction
 ------------
@@ -31,9 +26,6 @@ Contents
     - Contains useful files for integrating ComputeCpp with existing
       projects. See later in this document for a description of the CMake
       modules provided.
-* documentation/
-    - Documentation for the SDK (including CMake and samples) written in
-      ASCIIDoc.
 * samples/
     - A collection of sample SYCL code, tested on ComputeCpp, provided as
       a learning resource and starting point for new SYCL software. CMake
@@ -64,11 +56,12 @@ You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_PREFIX to
 choose a Debug or Release build and the location you'd like to be used when
 the "install" target is built.
 
-In the documents directory there is a
-link:documents/ComputeCpp_GettingStarted.asciidoc[getting started guide]
-that serves as an introduction to SYCL and ComputeCpp. Additionally, there
-is an link:documents/ComputeCpp_Integration_Guide.asciidoc[Integration
-guide] should you wish to add ComputeCpp to existing projects.
+On the Codeplay website there is a
+link:https://developer.codeplay.com/computecppce/latest/getting-started-guide[
+getting started guide] that serves as an introduction to SYCL and ComputeCpp.
+Additionally, there is an
+link:https://developer.codeplay.com/computecppce/latest/integration-guide[
+Integration guide] should you wish to add ComputeCpp to existing projects.
 
 
 
@@ -95,7 +88,8 @@ website].
 Frequently Asked Questions
 --------------------------
 
-We have a link:documents/ComputeCpp_FAQ.asciidoc[FAQ document] available online.
+We have a link:https://developer.codeplay.com/computecppce/latest/faq[FAQ
+document] available online.
 
 Maintainers
 -----------
