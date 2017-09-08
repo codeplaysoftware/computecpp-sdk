@@ -230,8 +230,10 @@ TEST(pointer_mapper, default_access) {
       });
     });
 
-    auto hostAcc = pMap.get_access<sycl_acc_rw, sycl_acc_host>(myPtr);
-    ASSERT_EQ(hostAcc[0], 1.0f);
+    {
+      auto hostAcc = pMap.get_access<sycl_acc_rw, sycl_acc_host>(myPtr);
+      ASSERT_EQ(hostAcc[0], 1.0f);
+    }
 
     SYCLfree(myPtr, pMap);
     ASSERT_EQ(pMap.count(), 0u);

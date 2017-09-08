@@ -21,7 +21,7 @@
  *  example_vptr.cpp
  *
  *  Description:
- *    Sample code that demonstrates the use of the virtual pointer intrface in
+ *  Sample code that demonstrates the use of the virtual pointer intrface in
  *SYCL on matrix addition.
  *
  **************************************************************************/
@@ -59,30 +59,30 @@ int main() {
      * has write access. We retrieve it directly from the PointerMapper, using
      * the virtual pointer.*/
     myQueue.submit([&](handler& cgh) {
-      auto A = pMap.get_access<access::mode::discard_write,
+      auto accA = pMap.get_access<access::mode::discard_write,
                                access::target::global_buffer, float>(a, cgh);
       cgh.parallel_for<class init_a>(
-          range<1>{N * M}, [=](item<1> index) { A[index] = index[0] * 2; });
+          range<1>{N * M}, [=](item<1> index) { accA[index] = index[0] * 2; });
     });
 
     /* Similarly, this kernel will initialise the buffer pointed to by b. */
     myQueue.submit([&](handler& cgh) {
-      auto B = pMap.get_access<access::mode::discard_write,
+      auto accB = pMap.get_access<access::mode::discard_write,
                                access::target::global_buffer, float>(b, cgh);
       cgh.parallel_for<class init_b>(
-          range<1>{N * M}, [=](item<1> index) { B[index] = index[0] * 2014; });
+          range<1>{N * M}, [=](item<1> index) { accB[index] = index[0] * 2014; });
     });
 
-    /* This kernel will perform the computation C = A + B. */
+    /* This kernel will perform the computation c = a + b. */
     myQueue.submit([&](handler& cgh) {
-      auto A = pMap.get_access<access::mode::read,
+      auto accA = pMap.get_access<access::mode::read,
                                access::target::global_buffer, float>(a, cgh);
-      auto B = pMap.get_access<access::mode::read,
+      auto accB = pMap.get_access<access::mode::read,
                                access::target::global_buffer, float>(b, cgh);
-      auto C = pMap.get_access<access::mode::discard_write,
+      auto accC = pMap.get_access<access::mode::discard_write,
                                access::target::global_buffer, float>(c, cgh);
       cgh.parallel_for<class matrix_add>(range<1>{N * M}, [=](item<1> index) {
-        C[index] = A[index] + B[index];
+        accC[index] = accA[index] + accB[index];
       });
     });
 
@@ -95,11 +95,11 @@ int main() {
       auto row_offset = pMap.get_offset(c_row) / sizeof(float);
 
       /* Create a host accessor to access the data on the host. */
-      auto C = pMap.get_access<access::mode::read, access::target::host_buffer,
+      auto accC = pMap.get_access<access::mode::read, access::target::host_buffer,
                                float>(c_row);
       for (size_t j = 0; j < M; j++) {
-        if (C[row_offset + j] != (i * M + j) * (2 + 2014)) {
-          std::cout << "Wrong value " << C[row_offset + j] << " for element "
+        if (accC[row_offset + j] != (i * M + j) * (2 + 2014)) {
+          std::cout << "Wrong value " << accC[row_offset + j] << " for element "
                     << i * M + j << std::endl;
           return -1;
         }
