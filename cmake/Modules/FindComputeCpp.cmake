@@ -193,6 +193,21 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     endforeach()
   endif()
 
+  # Obtain language standard of the file
+  set(device_compiler_cxx_standard)
+  get_target_property(targetCxxStandard ${targetName} CXX_STANDARD)
+  if (targetCxxStandard MATCHES 17)
+    set(device_compiler_cxx_standard "-std=c++1z")
+  elseif (targetCxxStandard MATCHES 14)
+    set(device_compiler_cxx_standard "-std=c++14")
+  elseif (targetCxxStandard MATCHES 11)
+    set(device_compiler_cxx_standard "-std=c++11")
+  elseif (targetCxxStandard MATCHES 98)
+    message(FATAL_ERROR "SYCL implementations cannot be compiled using C++98")
+  else ()
+    set(device_compiler_cxx_standard "")
+  endif()
+
   set(COMPUTECPP_DEVICE_COMPILER_FLAGS
     ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
     ${COMPUTECPP_USER_FLAGS})
@@ -204,6 +219,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     OUTPUT ${outputSyclFile}
     COMMAND ${COMPUTECPP_DEVICE_COMPILER}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+            ${device_compiler_cxx_standard}
             -isystem ${COMPUTECPP_INCLUDE_DIRECTORY}
             ${COMPUTECPP_PLATFORM_SPECIFIC_ARGS}
             ${device_compiler_includes}
