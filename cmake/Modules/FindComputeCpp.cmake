@@ -50,8 +50,8 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
       message(STATUS "host compiler - clang ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
 else()
-  message(WARNING
-    "host compiler - Not found! (ComputeCpp supports GCC and Clang, see readme)")
+  set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
+  #message(WARNING "host compiler - Not found! (ComputeCpp supports GCC and Clang, see readme)")
 endif()
 
 set(COMPUTECPP_64_BIT_DEFAULT ON)
@@ -97,7 +97,9 @@ else()
 endif()
 
 # Obtain the path to the ComputeCpp runtime library
-find_library(COMPUTECPP_RUNTIME_LIBRARY ComputeCpp PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
+find_library(COMPUTECPP_RUNTIME_LIBRARY
+  NAMES ComputeCpp ComputeCpp_vs2015
+  PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
   HINTS ${COMPUTECPP_PACKAGE_ROOT_DIR}/lib PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library" NO_DEFAULT_PATH)
 
@@ -173,7 +175,10 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   get_filename_component(sourceFileName ${sourceFile} NAME)
 
   # Set the path to the Sycl file.
+  message (STATUS "binaryDir = ${binaryDir}")
   set(outputSyclFile ${binaryDir}/${sourceFileName}.sycl)
+  message (STATUS "outputSyclFile = ${binaryDir}/${sourceFileName}.sycl")
+  message (STATUS "DEPENDS ${WORKING_DIRECTORY}/${sourceFile}")
 
   # Add any user-defined include to the device compiler
   set(device_compiler_includes "")
@@ -225,8 +230,8 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
             ${device_compiler_includes}
             -o ${outputSyclFile}
             -c ${sourceFile}
-    DEPENDS ${WORKING_DIRECTORY}/${sourceFile}
-    IMPLICIT_DEPENDS CXX ${WORKING_DIRECTORY}/${sourceFile}
+    DEPENDS ${sourceFile}
+    IMPLICIT_DEPENDS CXX ${sourceFile}
     WORKING_DIRECTORY ${binaryDir}
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
@@ -242,7 +247,11 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   add_dependencies(${targetName} ${headerTargetName})
 
   # Force inclusion of the integration header for the host compiler
-  set(compileFlags -include ${outputSyclFile})
+  if(MSVC)
+    set(compileFlags /FI ${outputSyclFile})
+  else()
+    set(compileFlags -include ${outputSyclFile})
+  endif()
   target_compile_options(${targetName} PUBLIC ${compileFlags})
   
   # Disable GCC dual ABI on GCC 5.1 and higher
@@ -275,6 +284,7 @@ function(add_sycl_to_target targetName binaryDir sourceFiles)
   )
   # Add custom target to run compute++ and generate the integration header
   foreach(sourceFile ${sourceFiles})
+    message (STATUS "binaryDir = ${binaryDir}")
     __build_spir(${targetName} ${sourceFile} ${binaryDir} ${fileCounter})
     MATH(EXPR fileCounter "${fileCounter} + 1")
   endforeach()
