@@ -105,9 +105,21 @@ find_library(COMPUTECPP_RUNTIME_LIBRARY
 
 if (EXISTS ${COMPUTECPP_RUNTIME_LIBRARY})
   mark_as_advanced(COMPUTECPP_RUNTIME_LIBRARY)
-  message(STATUS "libComputeCpp.so - Found")
+  message(STATUS "${COMPUTECPP_RUNTIME_LIBRARY} - Found")
 else()
-  message(FATAL_ERROR "libComputeCpp.so - Not found!")
+  message(FATAL_ERROR "ComputeCpp Runtime Library - Not found!")
+endif()
+
+find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
+  NAMES ComputeCpp ComputeCpp_vs2015_d
+  PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
+  HINTS ${COMPUTECPP_PACKAGE_ROOT_DIR}/lib PATH_SUFFIXES lib
+  DOC "ComputeCpp Debug Runtime Library" NO_DEFAULT_PATH)
+if (EXISTS ${COMPUTECPP_RUNTIME_LIBRARY_DEBUG})
+  mark_as_advanced(COMPUTECPP_RUNTIME_LIBRARY_DEBUG)
+  message(STATUS "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG} - Found")
+else()
+message(FATAL_ERROR "ComputeCpp Debug Runtime Library - Not found!")
 endif()
 
 # Obtain the ComputeCpp include directory
@@ -175,10 +187,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   get_filename_component(sourceFileName ${sourceFile} NAME)
 
   # Set the path to the Sycl file.
-  message (STATUS "binaryDir = ${binaryDir}")
   set(outputSyclFile ${binaryDir}/${sourceFileName}.sycl)
-  message (STATUS "outputSyclFile = ${binaryDir}/${sourceFileName}.sycl")
-  message (STATUS "DEPENDS ${WORKING_DIRECTORY}/${sourceFile}")
 
   # Add any user-defined include to the device compiler
   set(device_compiler_includes "")
@@ -290,7 +299,8 @@ function(add_sycl_to_target targetName binaryDir sourceFiles)
   endforeach()
 
   # Link with the ComputeCpp runtime library
-  target_link_libraries(${targetName} PUBLIC ${COMPUTECPP_RUNTIME_LIBRARY}
-                        PUBLIC ${OpenCL_LIBRARIES})
+  target_link_libraries(${targetName} PUBLIC $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}>
+                                             $<$<NOT:$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>>:${COMPUTECPP_RUNTIME_LIBRARY}>
+                                             ${OpenCL_LIBRARIES})
 
 endfunction(add_sycl_to_target)
