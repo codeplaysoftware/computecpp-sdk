@@ -49,8 +49,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     else()
       message(STATUS "host compiler - clang ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
-else()
-  set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
 endif()
 
 set(COMPUTECPP_64_BIT_DEFAULT ON)
@@ -63,6 +61,13 @@ mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
+
+# Platform-specific arguments
+if(MSVC)
+  # Workaround to an unfixed Clang bug, rationale:
+  # https://github.com/codeplaysoftware/computecpp-sdk/pull/51#discussion_r139399093
+  set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
+endif()
 
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
