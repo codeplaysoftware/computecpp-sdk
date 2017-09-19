@@ -264,11 +264,11 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
 
   # Force inclusion of the integration header for the host compiler
   if(MSVC)
-    set(compileFlags /FI ${outputSyclFile})
+    set(forceIncludeFlags /FI ${outputSyclFile})
   else()
-    set(compileFlags -include ${outputSyclFile})
+    set(forceIncludeFlags -include ${outputSyclFile})
   endif()
-  target_compile_options(${targetName} PUBLIC ${compileFlags})
+  target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
   
   # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
