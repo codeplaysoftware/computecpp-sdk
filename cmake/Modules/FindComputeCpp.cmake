@@ -277,7 +277,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
       set(forceIncludeFlags /FI ${outputSyclFile})
     endif()
   else()
-    set(forceIncludeFlags "-include ${outputSyclFile}")
+    set(forceIncludeFlags -include ${outputSyclFile})
   endif()
   target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
   
