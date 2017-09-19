@@ -49,9 +49,6 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     else()
       message(STATUS "host compiler - clang ${CMAKE_CXX_COMPILER_VERSION}")
     endif()
-else()
-  message(WARNING
-    "host compiler - Not found! (ComputeCpp supports GCC and Clang, see readme)")
 endif()
 
 set(COMPUTECPP_64_BIT_DEFAULT ON)
@@ -64,6 +61,13 @@ mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
+
+# Platform-specific arguments
+if(MSVC)
+  # Workaround to an unfixed Clang bug, rationale:
+  # https://github.com/codeplaysoftware/computecpp-sdk/pull/51#discussion_r139399093
+  set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
+endif()
 
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
@@ -97,15 +101,37 @@ else()
 endif()
 
 # Obtain the path to the ComputeCpp runtime library
-find_library(COMPUTECPP_RUNTIME_LIBRARY ComputeCpp PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
+find_library(COMPUTECPP_RUNTIME_LIBRARY
+  NAMES ComputeCpp ComputeCpp_vs2015
+  PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
   HINTS ${COMPUTECPP_PACKAGE_ROOT_DIR}/lib PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library" NO_DEFAULT_PATH)
 
 if (EXISTS ${COMPUTECPP_RUNTIME_LIBRARY})
   mark_as_advanced(COMPUTECPP_RUNTIME_LIBRARY)
-  message(STATUS "libComputeCpp.so - Found")
 else()
-  message(FATAL_ERROR "libComputeCpp.so - Not found!")
+  message(FATAL_ERROR "ComputeCpp Runtime Library - Not found!")
+endif()
+
+find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
+  NAMES ComputeCpp ComputeCpp_vs2015_d
+  PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
+  HINTS ${COMPUTECPP_PACKAGE_ROOT_DIR}/lib PATH_SUFFIXES lib
+  DOC "ComputeCpp Debug Runtime Library" NO_DEFAULT_PATH)
+
+if (EXISTS ${COMPUTECPP_RUNTIME_LIBRARY_DEBUG})
+  mark_as_advanced(COMPUTECPP_RUNTIME_LIBRARY_DEBUG)
+else()
+  message(FATAL_ERROR "ComputeCpp Debug Runtime Library - Not found!")
+endif()
+
+# NOTE: Having two sets of libraries is Windows specific, not MSVC specific.
+# Compiling with Clang on Windows would still require linking to both of them.
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  message(STATUS "ComputeCpp runtime (Release): ${COMPUTECPP_RUNTIME_LIBRARY} - Found")
+  message(STATUS "ComputeCpp runtime  (Debug) : ${COMPUTECPP_RUNTIME_LIBRARY_DEBUG} - Found")
+else()
+  message(STATUS "ComputeCpp runtime: ${COMPUTECPP_RUNTIME_LIBRARY} - Found")
 endif()
 
 # Obtain the ComputeCpp include directory
@@ -225,8 +251,8 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
             ${device_compiler_includes}
             -o ${outputSyclFile}
             -c ${sourceFile}
-    DEPENDS ${WORKING_DIRECTORY}/${sourceFile}
-    IMPLICIT_DEPENDS CXX ${WORKING_DIRECTORY}/${sourceFile}
+    DEPENDS ${sourceFile}
+    IMPLICIT_DEPENDS CXX ${sourceFile}
     WORKING_DIRECTORY ${binaryDir}
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
@@ -242,8 +268,18 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   add_dependencies(${targetName} ${headerTargetName})
 
   # Force inclusion of the integration header for the host compiler
-  set(compileFlags -include ${outputSyclFile})
-  target_compile_options(${targetName} PUBLIC ${compileFlags})
+  if(MSVC)
+    # NOTE: The Visual Studio generators parse compile flags differently,
+    # hence the different argument syntax
+    if(CMAKE_GENERATOR MATCHES "Visual Studio")
+      set(forceIncludeFlags "/FI\"${outputSyclFile}\"")
+    else()
+      set(forceIncludeFlags /FI ${outputSyclFile})
+    endif()
+  else()
+    set(forceIncludeFlags -include ${outputSyclFile})
+  endif()
+  target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
   
   # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
@@ -280,7 +316,8 @@ function(add_sycl_to_target targetName binaryDir sourceFiles)
   endforeach()
 
   # Link with the ComputeCpp runtime library
-  target_link_libraries(${targetName} PUBLIC ${COMPUTECPP_RUNTIME_LIBRARY}
-                        PUBLIC ${OpenCL_LIBRARIES})
+  target_link_libraries(${targetName} PUBLIC $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}>
+                                             $<$<NOT:$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>>:${COMPUTECPP_RUNTIME_LIBRARY}>
+                                             ${OpenCL_LIBRARIES})
 
 endfunction(add_sycl_to_target)
