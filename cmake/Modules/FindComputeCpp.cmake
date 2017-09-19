@@ -269,9 +269,15 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
 
   # Force inclusion of the integration header for the host compiler
   if(MSVC)
-    set(forceIncludeFlags /FI ${outputSyclFile})
+    # NOTE: The Visual Studio generators parse compile flags differently,
+    # hence the different argument syntax
+    if(CMAKE_GENERATOR MATCHES "Visual Studio")
+      set(forceIncludeFlags "/FI\"${outputSyclFile}\"")
+    else()
+      set(forceIncludeFlags /FI ${outputSyclFile})
+    endif()
   else()
-    set(forceIncludeFlags -include ${outputSyclFile})
+    set(forceIncludeFlags "-include ${outputSyclFile}")
   endif()
   target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
   
