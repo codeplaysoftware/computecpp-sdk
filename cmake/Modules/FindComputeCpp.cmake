@@ -104,7 +104,6 @@ find_library(COMPUTECPP_RUNTIME_LIBRARY
 
 if (EXISTS ${COMPUTECPP_RUNTIME_LIBRARY})
   mark_as_advanced(COMPUTECPP_RUNTIME_LIBRARY)
-  message(STATUS "${COMPUTECPP_RUNTIME_LIBRARY} - Found")
 else()
   message(FATAL_ERROR "ComputeCpp Runtime Library - Not found!")
 endif()
@@ -114,11 +113,20 @@ find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
   PATHS ${COMPUTECPP_PACKAGE_ROOT_DIR}
   HINTS ${COMPUTECPP_PACKAGE_ROOT_DIR}/lib PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library" NO_DEFAULT_PATH)
+
 if (EXISTS ${COMPUTECPP_RUNTIME_LIBRARY_DEBUG})
   mark_as_advanced(COMPUTECPP_RUNTIME_LIBRARY_DEBUG)
-  message(STATUS "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG} - Found")
 else()
-message(FATAL_ERROR "ComputeCpp Debug Runtime Library - Not found!")
+  message(FATAL_ERROR "ComputeCpp Debug Runtime Library - Not found!")
+endif()
+
+# NOTE: Having two sets of libraries is Windows specific, not MSVC specific.
+# Compiling with Clang on Windows would still require linking to both of them.
+if (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  message(STATUS "ComputeCpp runtime (Release): ${COMPUTECPP_RUNTIME_LIBRARY} - Found")
+  message(STATUS "ComputeCpp runtime  (Debug) : ${COMPUTECPP_RUNTIME_LIBRARY_DEBUG} - Found")
+else()
+  message(STATUS "ComputeCpp runtime: ${COMPUTECPP_RUNTIME_LIBRARY} - Found")
 endif()
 
 # Obtain the ComputeCpp include directory
