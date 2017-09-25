@@ -210,3 +210,32 @@ TEST(pointer_mapper, multiple_alloc_free) {
   pMap.clear();
   ASSERT_EQ(pMap.count(), 0u);
 }
+
+TEST(pointer_mapper, default_access) {
+  PointerMapper pMap;
+  {
+    ASSERT_EQ(pMap.count(), 0u);
+    void *myPtr = SYCLmalloc(100 * sizeof(float), pMap);
+    ASSERT_NE(myPtr, nullptr);
+
+    ASSERT_FALSE(PointerMapper::is_nullptr(myPtr));
+    ASSERT_TRUE(PointerMapper::is_nullptr(nullptr));
+    ASSERT_EQ(pMap.count(), 1u);
+
+    cl::sycl::queue q;
+    q.submit([&](cl::sycl::handler &h) {
+      auto accDev = pMap.get_access(myPtr, h);
+      h.single_task<class foo3>([=]() {
+        accDev[0] = 1.0f;
+      });
+    });
+
+    {
+      auto hostAcc = pMap.get_access<sycl_acc_rw, sycl_acc_host>(myPtr);
+      ASSERT_EQ(hostAcc[0], 1.0f);
+    }
+
+    SYCLfree(myPtr, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
+  }
+}
