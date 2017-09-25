@@ -123,7 +123,7 @@ TEST(accessor, two_buffers) {
 
 TEST(accessor, allocator) {
   // an allocator type
-  using alloc_t = cl::sycl::detail::aligned_mem::aligned_allocator<uint8_t>;
+  using alloc_t = cl::sycl::buffer_allocator<uint8_t>;
 
   PointerMapper pMap;
   {
