@@ -235,6 +235,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   endif()
 
   set(COMPUTECPP_DEVICE_COMPILER_FLAGS
+    ${device_compiler_cxx_standard}
     ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
     ${COMPUTECPP_USER_FLAGS})
   # Convert argument list format
@@ -245,7 +246,6 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     OUTPUT ${outputSyclFile}
     COMMAND ${COMPUTECPP_DEVICE_COMPILER}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-            ${device_compiler_cxx_standard}
             -isystem ${COMPUTECPP_INCLUDE_DIRECTORY}
             ${COMPUTECPP_PLATFORM_SPECIFIC_ARGS}
             ${device_compiler_includes}
