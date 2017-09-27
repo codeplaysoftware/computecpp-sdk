@@ -11,11 +11,11 @@ include(FindComputeCpp)
 set(COMPUTECPP_SDK_VIRTUAL_POINTER_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/../utils/vptr/include)
 include_directories(${COMPUTECPP_SDK_VIRTUAL_POINTER_PREFIX})
 
-# Set the host compiler C++ standard to C++11
+# Set the host compiler C++ standard to C++14
 # This should be set as a global property, since it can be
 # set as a target property, but this doesn't work in 3.2.2
 # testing locally. Instead, we set this directly.
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
 # Set include ComputeCpp directories
 include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
