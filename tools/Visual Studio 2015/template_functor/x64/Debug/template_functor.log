@@ -1,0 +1,42 @@
+﻿  template_functor.cpp
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2766): warning C4244: '=': conversion from 'const float' to 'int', possible loss of data
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2780): note: see reference to function template instantiation 'void std::_Fill_unchecked1<_FwdIt,_Ty>(_FwdIt,_FwdIt,const _Ty &,std::false_type)' being compiled
+          with
+          [
+              _FwdIt=int *,
+              _Ty=float
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xutility(2788): note: see reference to function template instantiation 'void std::_Fill_unchecked<int*,_Ty>(_FwdIt,_FwdIt,const _Ty &)' being compiled
+          with
+          [
+              _Ty=float,
+              _FwdIt=int *
+          ]
+  ..\..\..\samples\template_functor\template_functor.cpp(120): note: see reference to function template instantiation 'void std::fill<std::_Vector_iterator<std::_Vector_val<std::_Simple_types<int>>>,float>(_FwdIt,_FwdIt,const _Ty &)' being compiled
+          with
+          [
+              _FwdIt=std::_Vector_iterator<std::_Vector_val<std::_Simple_types<int>>>,
+              _Ty=float
+          ]
+C:\Program Files\Codeplay\ComputeCpp\include\SYCL/accessor.h(363): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ..\..\..\samples\template_functor\template_functor.cpp(64): note: see reference to function template instantiation 'int &cl::sycl::detail::accessor_common<elemT,1,cl::sycl::access::mode::write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<1>) const' being compiled
+          with
+          [
+              elemT=int
+          ]
+  ..\..\..\samples\template_functor\template_functor.cpp(64): note: see reference to function template instantiation 'int &cl::sycl::detail::accessor_common<elemT,1,cl::sycl::access::mode::write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<1>) const' being compiled
+          with
+          [
+              elemT=int
+          ]
+  ..\..\..\samples\template_functor\template_functor.cpp(62): note: while compiling class template member function 'void vector_add_functor<int>::operator ()(cl::sycl::item<1>)'
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\type_traits(1375): note: see reference to function template instantiation 'void vector_add_functor<int>::operator ()(cl::sycl::item<1>)' being compiled
+  ..\..\..\samples\template_functor\template_functor.cpp(82): note: see reference to class template instantiation 'vector_add_functor<int>' being compiled
+  ..\..\..\samples\template_functor\template_functor.cpp(130): note: see reference to function template instantiation 'void vector_add<int>(cl::sycl::buffer<int,1,cl::sycl::detail::aligned_mem::aligned_allocator<_Ty>> *,cl::sycl::buffer<int,1,cl::sycl::detail::aligned_mem::aligned_allocator<_Ty>> *,cl::sycl::buffer<int,1,cl::sycl::detail::aligned_mem::aligned_allocator<_Ty>> *,int,cl::sycl::handler &)' being compiled
+          with
+          [
+              _Ty=int
+          ]
+  ==================================
+  template_functor.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\template_functor.exe
+  template_functor.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\template_functor.pdb (Full PDB)

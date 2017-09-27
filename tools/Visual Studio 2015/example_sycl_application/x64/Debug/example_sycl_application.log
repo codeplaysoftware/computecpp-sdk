@@ -1,0 +1,17 @@
+﻿  example_sycl_application.cpp
+..\..\..\samples\example_sycl_application\example_sycl_application.cpp(58): warning C4244: '=': conversion from 'std::size_t' to 'float', possible loss of data
+..\..\..\samples\example_sycl_application\example_sycl_application.cpp(70): warning C4244: '=': conversion from 'std::size_t' to 'float', possible loss of data
+C:\Program Files\Codeplay\ComputeCpp\include\SYCL/accessor.h(363): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ..\..\..\samples\example_sycl_application\example_sycl_application.cpp(58): note: see reference to function template instantiation 'float &cl::sycl::detail::accessor_common<elemT,2,cl::sycl::access::mode::write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<2>) const' being compiled
+          with
+          [
+              elemT=float
+          ]
+  ..\..\..\samples\example_sycl_application\example_sycl_application.cpp(58): note: see reference to function template instantiation 'float &cl::sycl::detail::accessor_common<elemT,2,cl::sycl::access::mode::write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<2>) const' being compiled
+          with
+          [
+              elemT=float
+          ]
+  ==================================
+  example_sycl_application.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\example_sycl_application.exe
+  example_sycl_application.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\example_sycl_application.pdb (Full PDB)

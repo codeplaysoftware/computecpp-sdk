@@ -1,0 +1,15 @@
+﻿  simple_private_memory.cpp
+..\..\..\samples\simple_private_memory\simple_private_memory.cpp(47): error C2872: 'cl_int': ambiguous symbol
+  C:\Intel\OpenCL\sdk\include\CL/cl_platform.h(182): note: could be 'int cl_int'
+  C:\Program Files\Codeplay\ComputeCpp\include\SYCL/cl_types.h(37): note: or       'cl::sycl::cl_int'
+..\..\..\samples\simple_private_memory\simple_private_memory.cpp(58): error C2872: 'cl_int': ambiguous symbol
+  C:\Intel\OpenCL\sdk\include\CL/cl_platform.h(182): note: could be 'int cl_int'
+  C:\Program Files\Codeplay\ComputeCpp\include\SYCL/cl_types.h(37): note: or       'cl::sycl::cl_int'
+..\..\..\samples\simple_private_memory\simple_private_memory.cpp(80): error C2872: 'cl_int': ambiguous symbol
+  C:\Intel\OpenCL\sdk\include\CL/cl_platform.h(182): note: could be 'int cl_int'
+  C:\Program Files\Codeplay\ComputeCpp\include\SYCL/cl_types.h(37): note: or       'cl::sycl::cl_int'
+..\..\..\samples\simple_private_memory\simple_private_memory.cpp(84): warning C4267: '=': conversion from 'size_t' to 'cl_int', possible loss of data
+..\..\..\samples\simple_private_memory\simple_private_memory.cpp(99): error C2872: 'cl_int': ambiguous symbol
+  C:\Intel\OpenCL\sdk\include\CL/cl_platform.h(182): note: could be 'int cl_int'
+  C:\Program Files\Codeplay\ComputeCpp\include\SYCL/cl_types.h(37): note: or       'cl::sycl::cl_int'
+LINK : fatal error LNK1104: cannot open file 'x64\Debug\simple_private_memory.obj'

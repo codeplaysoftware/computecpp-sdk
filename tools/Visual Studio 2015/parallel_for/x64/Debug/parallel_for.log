@@ -1,0 +1,16 @@
+﻿  parallel_for.cpp
+..\..\..\samples\parallel_for\parallel_for.cpp(79): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+C:\Program Files\Codeplay\ComputeCpp\include\SYCL/accessor.h(363): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ..\..\..\samples\parallel_for\parallel_for.cpp(79): note: see reference to function template instantiation 'int &cl::sycl::detail::accessor_common<elemT,1,cl::sycl::access::mode::read_write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<1>) const' being compiled
+          with
+          [
+              elemT=int
+          ]
+  ..\..\..\samples\parallel_for\parallel_for.cpp(79): note: see reference to function template instantiation 'int &cl::sycl::detail::accessor_common<elemT,1,cl::sycl::access::mode::read_write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<1>) const' being compiled
+          with
+          [
+              elemT=int
+          ]
+  ==================================
+  parallel_for.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\parallel_for.exe
+  parallel_for.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\parallel_for.pdb (Full PDB)

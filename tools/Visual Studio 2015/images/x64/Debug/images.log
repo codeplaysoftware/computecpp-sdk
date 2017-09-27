@@ -1,0 +1,42 @@
+﻿  images.cpp
+C:\Program Files\Codeplay\ComputeCpp\include\SYCL/vec.h(689): warning C4267: 'argument': conversion from 'size_t' to 'cl::sycl::cl_int', possible loss of data
+  ..\..\..\samples\images\images.cpp(87): note: see reference to function template instantiation 'cl::sycl::vec<cl::sycl::cl_int,2>::vec<std::size_t,std::size_t,>(std::recurseT0,std::recurseT1)' being compiled
+          with
+          [
+              recurseT0=std::size_t,
+              recurseT1=std::size_t
+          ]
+  ..\..\..\samples\images\images.cpp(87): note: see reference to function template instantiation 'cl::sycl::vec<cl::sycl::cl_int,2>::vec<std::size_t,std::size_t,>(std::recurseT0,std::recurseT1)' being compiled
+          with
+          [
+              recurseT0=std::size_t,
+              recurseT1=std::size_t
+          ]
+C:\Program Files\Codeplay\ComputeCpp\include\SYCL/vec.h(1700): warning C4267: 'argument': conversion from 'size_t' to 'cl::sycl::cl_int', possible loss of data
+  C:\Program Files\Codeplay\ComputeCpp\include\SYCL/vec.h(689): note: see reference to function template instantiation 'void cl::sycl::vec<cl::sycl::cl_int,2>::add_arg<0,std::recurseT1>(dataT,std::recurseT1)' being compiled
+          with
+          [
+              recurseT1=std::size_t,
+              dataT=cl::sycl::cl_int
+          ]
+  C:\Program Files\Codeplay\ComputeCpp\include\SYCL/vec.h(689): note: see reference to function template instantiation 'void cl::sycl::vec<cl::sycl::cl_int,2>::add_arg<0,std::recurseT1>(dataT,std::recurseT1)' being compiled
+          with
+          [
+              recurseT1=std::size_t,
+              dataT=cl::sycl::cl_int
+          ]
+  ..\..\..\samples\images\images.cpp(87): note: see reference to function template instantiation 'cl::sycl::vec<cl::sycl::cl_int,2>::vec<std::size_t,std::size_t,>(std::recurseT0,std::recurseT1)' being compiled
+          with
+          [
+              recurseT0=std::size_t,
+              recurseT1=std::size_t
+          ]
+  ..\..\..\samples\images\images.cpp(87): note: see reference to function template instantiation 'cl::sycl::vec<cl::sycl::cl_int,2>::vec<std::size_t,std::size_t,>(std::recurseT0,std::recurseT1)' being compiled
+          with
+          [
+              recurseT0=std::size_t,
+              recurseT1=std::size_t
+          ]
+  ==================================
+  images.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\images.exe
+  images.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\images.pdb (Full PDB)

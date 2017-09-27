@@ -1,0 +1,14 @@
+﻿  matrix_multiply.cpp
+..\..\..\samples\matrix_multiply\matrix_multiply.cpp(131): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+  ..\..\..\samples\matrix_multiply\matrix_multiply.cpp(348): note: see reference to function template instantiation 'bool local_mxm<float>(cl::sycl::queue &,T *,T *,T *,int)' being compiled
+          with
+          [
+              T=float
+          ]
+..\..\..\samples\matrix_multiply\matrix_multiply.cpp(168): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+..\..\..\samples\matrix_multiply\matrix_multiply.cpp(169): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+..\..\..\samples\matrix_multiply\matrix_multiply.cpp(172): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+..\..\..\samples\matrix_multiply\matrix_multiply.cpp(173): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ==================================
+  matrix_multiply.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\matrix_multiply.exe
+  matrix_multiply.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\matrix_multiply.pdb (Full PDB)

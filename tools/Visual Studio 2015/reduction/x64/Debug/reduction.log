@@ -1,0 +1,11 @@
+﻿  reduction.cpp
+..\..\..\samples\reduction\reduction.cpp(110): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ..\..\..\samples\reduction\reduction.cpp(168): note: see reference to function template instantiation 'T sycl_reduce<int>(const std::vector<int,std::allocator<_Ty>> &)' being compiled
+          with
+          [
+              T=int,
+              _Ty=int
+          ]
+  ==================================
+  reduction.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\reduction.exe
+  reduction.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\reduction.pdb (Full PDB)
