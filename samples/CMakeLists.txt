@@ -35,3 +35,7 @@ foreach(_FILE ${_ALL_FILES})
     endif()
   endif()
 endforeach()
+
+if(MSVC)
+  set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+endif()
