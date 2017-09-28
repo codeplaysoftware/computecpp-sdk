@@ -21,7 +21,11 @@ set(CMAKE_CXX_STANDARD 14)
 include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
 
 # warnings for SDK software
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif()
 
 # Enable testing
 enable_testing()
