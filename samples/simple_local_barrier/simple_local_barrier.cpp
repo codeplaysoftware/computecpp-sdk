@@ -52,7 +52,7 @@ int main() {
     myQueue.submit([&](handler& cgh) {
       auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
-      accessor<cl_int, 1, access::mode::read_write, access::target::local> tile(
+      accessor<cl::sycl::cl_int, 1, access::mode::read_write, access::target::local> tile(
           range<1>(2), cgh);
 
       cgh.parallel_for<class example_kernel>(

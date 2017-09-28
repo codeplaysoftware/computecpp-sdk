@@ -33,10 +33,10 @@
 using namespace cl::sycl;
 
 int main() {
-  const int nElems = 12;
+  const unsigned int nElems = 12;
   std::shared_ptr<int> p(new int[nElems]);
   bool correct = true;
-  for (int i = 0; i < nElems; i++) {
+  for (unsigned int i = 0; i < nElems; i++) {
     p.get()[i] = 0;
   }
 
@@ -67,7 +67,7 @@ int main() {
             buf.get_access<access::mode::read, access::target::host_buffer>();
 
         int sum = 0;
-        for (int i = 0; i < nElems; i++) {
+        for (unsigned int i = 0; i < nElems; i++) {
           sum += hA[i];
         }
 
@@ -80,7 +80,7 @@ int main() {
     /* Data now available in the original pointer, because the buffer
      * has been destroyed. */
     int sum = 0;
-    for (int i = 0; i < nElems; i++) {
+    for (unsigned int i = 0; i < nElems; i++) {
       sum += p.get()[i];
     }
 
@@ -111,7 +111,7 @@ int main() {
 
     /* The buffers have now been destroyed, and the data copied in to p. */
     int sum = 0;
-    for (int i = 0; i < nElems; i++) {
+    for (unsigned int i = 0; i < nElems; i++) {
       sum += p.get()[i];
     }
 
@@ -146,7 +146,7 @@ int main() {
             buf.get_access<access::mode::read, access::target::host_buffer>();
 
         int sum = 0;
-        for (int i = 0; i < nElems; i++) {
+        for (unsigned int i = 0; i < nElems; i++) {
           sum += p.get()[i];
         }
 

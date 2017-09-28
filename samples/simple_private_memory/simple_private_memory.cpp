@@ -44,7 +44,7 @@ int main() {
   int ret = 0;
   const size_t nItems = 64;
   const size_t nLocals = 16;
-  cl_int data[nItems] = {0};
+  int data[nItems] = {0};
 
   /* Any data on the device will be copied back to the host
    * after the block ends. */
@@ -55,7 +55,7 @@ int main() {
 
     /* We need to create a buffer in order to access data
      * from the SYCL devices. */
-    buffer<cl_int, 1> buf(data, range<1>(nItems));
+    buffer<int, 1> buf(data, range<1>(nItems));
 
     /* This command group enqueues a kernel on myQueue
      * that adds the work-item id to each element of the
@@ -77,7 +77,7 @@ int main() {
         /* Unlike variables of any other type allocated in a parallel_for_work_group
          * scope, privateObj is allocated per work-item and lives in work-item-private
          * memory. */
-        private_memory<cl_int> privateObj(groupID);
+        private_memory<int> privateObj(groupID);
 
         parallel_for_work_item(groupID, [&](item<1> itemID) {
           /* Assign the work-item global id into private memory. */
@@ -96,7 +96,7 @@ int main() {
     });
   }
 
-  for (cl_int i = 0; i < cl_int(nItems); i++) {
+  for (int i = 0; i < int(nItems); i++) {
     if (data[i] != i) {
       ret = 1;
     }

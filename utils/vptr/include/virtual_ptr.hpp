@@ -32,6 +32,7 @@
 
 #include <CL/sycl.hpp>
 
+#include <cstddef>
 #include <queue>
 #include <set>
 #include <stdexcept>
@@ -90,20 +91,23 @@ class PointerMapper {
      */
     virtual_pointer_t operator+(size_t off) { return m_contents + off; }
 
-    /**
-     * Numerical order for sorting pointers in containers.
-     */
+    /* Numerical order for sorting pointers in containers. */
     bool operator<(virtual_pointer_t rhs) const {
-      return (reinterpret_cast<base_ptr_t>(m_contents) <
-              reinterpret_cast<base_ptr_t>(rhs.m_contents));
+      return (static_cast<base_ptr_t>(m_contents) <
+              static_cast<base_ptr_t>(rhs.m_contents));
+    }
+
+    bool operator>(virtual_pointer_t rhs) const {
+      return (static_cast<base_ptr_t>(m_contents) >
+              static_cast<base_ptr_t>(rhs.m_contents));
     }
 
     /**
      * Numerical order for sorting pointers in containers
      */
     bool operator==(virtual_pointer_t rhs) const {
-      return (reinterpret_cast<base_ptr_t>(m_contents) ==
-              reinterpret_cast<base_ptr_t>(rhs.m_contents));
+      return (static_cast<base_ptr_t>(m_contents) ==
+              static_cast<base_ptr_t>(rhs.m_contents));
     }
 
     /**
@@ -273,7 +277,7 @@ class PointerMapper {
   /*
    * Returns the offset from the base address of this pointer.
    */
-  inline off_t get_offset(const virtual_pointer_t ptr) {
+  inline std::ptrdiff_t get_offset(const virtual_pointer_t ptr) {
     // The previous element to the lower bound is the node that
     // holds this memory address
     return (ptr - get_node(ptr)->first);
@@ -438,7 +442,7 @@ class PointerMapper {
    */
   struct SortBySize {
     bool operator()(typename pointerMap_t::iterator a,
-                    typename pointerMap_t::iterator b) {
+                    typename pointerMap_t::iterator b) const {
       return ((a->first < b->first) && (a->second <= b->second)) ||
              ((a->first < b->first) && (b->second <= a->second));
     }
