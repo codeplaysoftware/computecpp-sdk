@@ -59,6 +59,9 @@ mark_as_advanced(COMPUTECPP_64_BIT_CODE)
 option(COMPUTECPP_DISABLE_GCC_DUAL_ABI "Compile with pre-5.1 ABI" OFF)
 mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 
+option(COMPUTECPP_FORCE_INCLUDE_SYCL_FILE "Automatically include the generated sycl file" ON)
+mark_as_advanced(COMPUTECPP_FORCE_INCLUDE_SYCL_FILE)
+
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
@@ -260,7 +263,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   # (user-defined name)_(source file)_(counter)_integration_header
   set(headerTargetName
     ${targetName}_${sourceFileName}_${fileCounter}_ih)
-  
+
   # Add a custom target for the generated integration header
   add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
 
@@ -268,19 +271,21 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   add_dependencies(${targetName} ${headerTargetName})
 
   # Force inclusion of the integration header for the host compiler
-  if(MSVC)
-    # NOTE: The Visual Studio generators parse compile flags differently,
-    # hence the different argument syntax
-    if(CMAKE_GENERATOR MATCHES "Visual Studio")
-      set(forceIncludeFlags "/FI\"${outputSyclFile}\"")
+  if(COMPUTECPP_FORCE_INCLUDE_SYCL_FILE)
+    if(MSVC)
+      # NOTE: The Visual Studio generators parse compile flags differently,
+      # hence the different argument syntax
+      if(CMAKE_GENERATOR MATCHES "Visual Studio")
+        set(forceIncludeFlags "/FI\"${outputSyclFile}\"")
+      else()
+        set(forceIncludeFlags /FI ${outputSyclFile})
+      endif()
     else()
-      set(forceIncludeFlags /FI ${outputSyclFile})
+      set(forceIncludeFlags -include ${outputSyclFile})
     endif()
-  else()
-    set(forceIncludeFlags -include ${outputSyclFile})
+    target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
   endif()
-  target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
-  
+
   # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
     set_property(TARGET ${targetName} APPEND PROPERTY COMPILE_DEFINITIONS
