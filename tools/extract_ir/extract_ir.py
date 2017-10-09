@@ -70,7 +70,7 @@ def disassemble_spir(disassembler_path, input_file_name, output_file_name):
     the output file.
     """
     code = subprocess.call(
-        [disassembler_path, input_file_name, '-o=' + output_file_name])
+        [disassembler_path, '-o ' + output_file_name, input_file_name])
 
     if code != 0:
         raise RuntimeError('Error running disassembler! Error: ' + str(code))
@@ -147,7 +147,7 @@ def main():
             if output_file_name == '':
                 output_file_name = '-'
             disassemble_spir(
-                llvm_dis_path,
+                disassembler_path,
                 bin_output_file.name,
                 output_file_name)
         else:
