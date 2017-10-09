@@ -21,7 +21,7 @@
 #  extract_ir.py
 #
 #  Description:
-#    Script to extract SPIR or other IR from a SYCL integration header.
+#    Script to extract SPIR, SPIR-V, or other IR from a SYCL integration header.
 #
 #  Authors:
 #    Alistair Low <alistair@codeplay.com>
@@ -42,9 +42,10 @@ import struct
 def parse_args():
     parser = argparse.ArgumentParser(
         description='''Finds an IR module in a SYCL integration header and
-                       writes it out to a binary file. If path to llvm-dis is
-                       provided, tries to disassemble the binary and write
-                       the disassembled text into the output file instead.''')
+                       writes it out to a binary file. If path to llvm-dis or
+                       spirv-dis is provided, tries to disassemble the binary
+                       and write the disassembled text into the output file
+                       instead.''')
 
     parser.add_argument('-i', '--input-file',
                         required=False,
