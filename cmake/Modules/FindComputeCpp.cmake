@@ -179,6 +179,19 @@ else()
   endif()
 endif()
 
+# This property allows targets to specify that their sources should be
+# compiled with the integration header included after the user's
+# sources, not before (e.g. when an enum is used in a kernel name, this
+# is not technically valid SYCL code but can work with ComputeCpp)
+define_property(
+  TARGET PROPERTY COMPUTECPP_INCLUDE_AFTER
+  BRIEF_DOCS "Include integration header after user source"
+  FULL_DOCS "Changes compiler arguments such that the source file is
+  actually the integration header, and the .cpp file is included on
+  the command line so that it is seen by the compiler first. Enables
+  non-standards-conformant SYCL code to compile with ComputeCpp."
+)
+
 ####################
 #   __build_sycl
 ####################
@@ -257,7 +270,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
   # Name:
-  # (user-defined name)_(source file)_(counter)_integration_header
+  # (user-defined name)_(source file)_(counter)_ih
   set(headerTargetName
     ${targetName}_${sourceFileName}_${fileCounter}_ih)
   
@@ -277,7 +290,20 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
       set(forceIncludeFlags /FI ${outputSyclFile})
     endif()
   else()
-    set(forceIncludeFlags -include ${outputSyclFile})
+    # This property can be set on a per-target basis to indicate that the
+    # integration header should appear after the main source listing
+    get_property(includeAfter TARGET ${targetName}
+        PROPERTY COMPUTECPP_INCLUDE_AFTER)
+    if(includeAfter)
+      # Change the source file to the integration header - i.e.
+      # g++ -c source_file_name.cpp.sycl
+      set_property(TARGET ${targetName} PROPERTY SOURCES ${outputSyclFile})
+      # CMake/gcc don't know what language a .sycl file is, so tell them
+      set_property(SOURCE ${outputSyclFile} PROPERTY LANGUAGE CXX)
+      set(forceIncludeFlags -include ${sourceFile} -x c++)
+    else()
+      set(forceIncludeFlags -include ${outputSyclFile})
+    endif()
   endif()
   target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
   
