@@ -40,14 +40,15 @@ using namespace cl::sycl;
  * standard layout (see C++ specification for details or use the C++11 type
  * trait is_standard_layout<class> to check). */
 class my_functor {
+  using rw_acc_t =
+      accessor<int, 1, access::mode::read_write, access::target::global_buffer>;
+
  public:
   /* Here we construct the functor object with the accessor that we intend to
    * pass to the kernel. Just as with lambdas the accessor must be available
    * inside the functor, either by being constructed internally or by being
    * passed in on construction. */
-  my_functor(accessor<int, 1, access::mode::read_write,
-                      access::target::global_buffer> ptr)
-      : m_ptr(ptr) {
+  my_functor(rw_acc_t ptr) : m_ptr(ptr) {
     /* Generate a random number in [1, 100]. This is executed on host. */
     std::random_device hwRand;
     std::uniform_int_distribution<> r(1, 100);
@@ -67,8 +68,7 @@ class my_functor {
  private:
   /* We define an accessor that will be initialized on construction of the
    * functor object and made available in the kernel on the device. */
-  accessor<int, 1, access::mode::read_write, access::target::global_buffer>
-      m_ptr;
+  rw_acc_t m_ptr;
 
   int m_randumNum;
 };

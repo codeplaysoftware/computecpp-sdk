@@ -84,8 +84,9 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
 
   /* Check if local memory is available. On host no local memory is fine, since
    * it is emulated. */
-  if (!dev.is_host() && dev.get_info<sycl::info::device::local_mem_type>() ==
-      sycl::info::local_mem_type::none) {
+  if (!dev.is_host() &&
+      dev.get_info<sycl::info::device::local_mem_type>() ==
+          sycl::info::local_mem_type::none) {
     throw std::runtime_error("Device does not have local memory.");
   }
 
@@ -257,7 +258,7 @@ int test_sum(sycl::queue& q) {
   std::vector<int32_t> sum(in.size());
   {
     // Read from `in`, but write into `sum`.
-	  sycl::buffer<int32_t, 1> buf(in.data(), sycl::range<1>(in.size()));
+    sycl::buffer<int32_t, 1> buf(in.data(), sycl::range<1>(in.size()));
     buf.set_final_data(sum.data());
 
     par_scan<int32_t, std::plus<int32_t>>(buf, q);
@@ -299,7 +300,7 @@ int test_factorial(sycl::queue& q) {
   std::vector<int64_t> fact(in.size());
   {
     // Read from `in`, but write into `fact`.
-	  sycl::buffer<int64_t, 1> buf(in.data(), sycl::range<1>(in.size()));
+    sycl::buffer<int64_t, 1> buf(in.data(), sycl::range<1>(in.size()));
     buf.set_final_data(fact.data());
 
     par_scan<int64_t, std::multiplies<int64_t>>(buf, q);

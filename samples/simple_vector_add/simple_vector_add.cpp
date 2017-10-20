@@ -41,15 +41,15 @@ template <typename T>
 class SimpleVadd;
 
 template <typename T, size_t N>
-void simple_vadd(const std::array<T, N> &VA, const std::array<T, N> &VB,
-                 std::array<T, N> &VC) {
+void simple_vadd(const std::array<T, N>& VA, const std::array<T, N>& VB,
+                 std::array<T, N>& VC) {
   cl::sycl::queue deviceQueue;
   cl::sycl::range<1> numOfItems{N};
   cl::sycl::buffer<T, 1> bufferA(VA.data(), numOfItems);
   cl::sycl::buffer<T, 1> bufferB(VB.data(), numOfItems);
   cl::sycl::buffer<T, 1> bufferC(VC.data(), numOfItems);
 
-  deviceQueue.submit([&](cl::sycl::handler &cgh) {
+  deviceQueue.submit([&](cl::sycl::handler& cgh) {
     auto accessorA = bufferA.template get_access<sycl_read>(cgh);
     auto accessorB = bufferB.template get_access<sycl_read>(cgh);
     auto accessorC = bufferC.template get_access<sycl_write>(cgh);
@@ -71,13 +71,13 @@ int main() {
   simple_vadd(D, E, F);
   for (unsigned int i = 0; i < array_size; i++) {
     if (C[i] != A[i] + B[i]) {
-      std::cout << "The results are incorrect (element " << i << " is "
-                << C[i] << "!\n";
+      std::cout << "The results are incorrect (element " << i << " is " << C[i]
+                << "!\n";
       return 1;
     }
     if (F[i] != D[i] + E[i]) {
-      std::cout << "The results are incorrect (element " << i << " is "
-                << F[i] << "!\n";
+      std::cout << "The results are incorrect (element " << i << " is " << F[i]
+                << "!\n";
       return 1;
     }
   }

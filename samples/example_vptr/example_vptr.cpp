@@ -60,7 +60,7 @@ int main() {
      * the virtual pointer.*/
     myQueue.submit([&](handler& cgh) {
       auto accA = pMap.get_access<access::mode::discard_write,
-                               access::target::global_buffer, float>(a, cgh);
+                                  access::target::global_buffer, float>(a, cgh);
       cgh.parallel_for<class init_a>(
           range<1>{N * M}, [=](item<1> index) { accA[index] = index[0] * 2; });
     });
@@ -68,19 +68,20 @@ int main() {
     /* Similarly, this kernel will initialise the buffer pointed to by b. */
     myQueue.submit([&](handler& cgh) {
       auto accB = pMap.get_access<access::mode::discard_write,
-                               access::target::global_buffer, float>(b, cgh);
-      cgh.parallel_for<class init_b>(
-          range<1>{N * M}, [=](item<1> index) { accB[index] = index[0] * 2014; });
+                                  access::target::global_buffer, float>(b, cgh);
+      cgh.parallel_for<class init_b>(range<1>{N * M}, [=](item<1> index) {
+        accB[index] = index[0] * 2014;
+      });
     });
 
     /* This kernel will perform the computation c = a + b. */
     myQueue.submit([&](handler& cgh) {
       auto accA = pMap.get_access<access::mode::read,
-                               access::target::global_buffer, float>(a, cgh);
+                                  access::target::global_buffer, float>(a, cgh);
       auto accB = pMap.get_access<access::mode::read,
-                               access::target::global_buffer, float>(b, cgh);
+                                  access::target::global_buffer, float>(b, cgh);
       auto accC = pMap.get_access<access::mode::discard_write,
-                               access::target::global_buffer, float>(c, cgh);
+                                  access::target::global_buffer, float>(c, cgh);
       cgh.parallel_for<class matrix_add>(range<1>{N * M}, [=](item<1> index) {
         accC[index] = accA[index] + accB[index];
       });
@@ -95,8 +96,8 @@ int main() {
       auto row_offset = pMap.get_element_offset<float>(c_row);
 
       /* Create a host accessor to access the data on the host. */
-      auto accC = pMap.get_access<access::mode::read, access::target::host_buffer,
-                               float>(c_row);
+      auto accC = pMap.get_access<access::mode::read,
+                                  access::target::host_buffer, float>(c_row);
       for (size_t j = 0; j < M; j++) {
         if (accC[row_offset + j] != (i * M + j) * (2 + 2014)) {
           std::cout << "Wrong value " << accC[row_offset + j] << " for element "

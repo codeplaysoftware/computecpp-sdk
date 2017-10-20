@@ -72,8 +72,8 @@ class vector_add_functor {
 
 /* This function will be bound to later on in the kernel submission code. */
 template <typename dataT>
-void vector_add(buffer<dataT, 1> *a, buffer<dataT, 1> *b, buffer<dataT, 1> *c,
-                int count, handler &cgh) {
+void vector_add(buffer<dataT, 1>* a, buffer<dataT, 1>* b, buffer<dataT, 1>* c,
+                int count, handler& cgh) {
   auto a_dev = a->template get_access<access::mode::read>(cgh);
   auto b_dev = b->template get_access<access::mode::read>(cgh);
   auto c_dev = c->template get_access<access::mode::write>(cgh);

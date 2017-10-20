@@ -74,10 +74,10 @@ int main() {
   myQueue.submit([&](handler& cgh) {
     auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
-    cgh.parallel_for<class example_kernel>(dataRange, ([=](item<1> item) {
+    cgh.parallel_for<class example_kernel>(dataRange, [=](item<1> item) {
       size_t idx = item.get_linear_id();
       ptr[item.get_linear_id()] = static_cast<float>(idx);
-    }));
+    });
   });
 
   /* A host accessor can be used to force an update from the device to the

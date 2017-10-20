@@ -74,9 +74,9 @@ int main() {
        * a single parameter of group type to parallel_for_work_group
        * and then a parameter of item type to parallel_for_work_item. */
       auto hierarchicalKernel = [=](group<1> groupID) {
-        /* Unlike variables of any other type allocated in a parallel_for_work_group
-         * scope, privateObj is allocated per work-item and lives in work-item-private
-         * memory. */
+        /* Unlike variables of any other type allocated in a
+         * parallel_for_work_group scope, privateObj is allocated
+         * per work-item and lives in work-item-private memory. */
         private_memory<int> privateObj(groupID);
 
         parallel_for_work_item(groupID, [&](item<1> itemID) {
@@ -87,7 +87,7 @@ int main() {
         parallel_for_work_item(groupID, [&](item<1> itemID) {
           /* Retrieve the global id stored in the previous
            * parallel_for_work_item call and store it in global memory. */
-		      auto globalID = privateObj(itemID);
+          auto globalID = privateObj(itemID);
           ptr[globalID] = globalID;
         });
       };

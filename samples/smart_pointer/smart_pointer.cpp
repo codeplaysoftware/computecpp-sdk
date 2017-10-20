@@ -50,13 +50,13 @@ int main() {
     {
       buffer<int, 1> buf(p, range<1>(nElems));
 
-      myQueue.submit([&](handler &cgh) {
+      myQueue.submit([&](handler& cgh) {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
 
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
         cgh.parallel_for<class kernel0>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] =
-              (int)(itemID.get_global_linear_id());
+              (int) (itemID.get_global_linear_id());
         });
       });
       {
@@ -94,12 +94,12 @@ int main() {
      * https://github.com/charles-salvia/charles/blob/master/stack_allocator.hpp
      */
     {
-      buffer<int, 1, stack_allocator<int, nElems> > buf{range<1>{nElems}};
+      buffer<int, 1, stack_allocator<int, nElems>> buf{range<1>{nElems}};
       /* buffer::set_final_data() tells the runtime that the data should be
        * copied to p when the buffer is destroyed. */
       buf.set_final_data(p);
 
-      myQueue.submit([&](handler &cgh) {
+      myQueue.submit([&](handler& cgh) {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
 
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
@@ -127,15 +127,15 @@ int main() {
      * user-given host memory. This can benefit performance, though you
      * should always profile to see if it actually makes a difference. */
     {
-      buffer<int, 1, map_allocator<int> > buf(p, range<1>(nElems));
+      buffer<int, 1, map_allocator<int>> buf(p, range<1>(nElems));
 
-      myQueue.submit([&](handler &cgh) {
+      myQueue.submit([&](handler& cgh) {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
 
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
         cgh.parallel_for<class kernel2>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] =
-              (int)(itemID.get_global_linear_id());
+              (int) (itemID.get_global_linear_id());
         });
       });
 

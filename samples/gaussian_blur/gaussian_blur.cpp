@@ -75,7 +75,7 @@ range<2> get_optimal_local_range(cl::sycl::range<2> globalSize,
   return optimalLocalSize;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   /* The image dimensions will be set by the library, as will the number of
    * channels. However, passing a number of channels will force the image
    * data to be returned in that format, regardless of what the original image
@@ -88,8 +88,8 @@ int main(int argc, char *argv[]) {
    * restrictions, we must use it as a void *. Data is deallocated on program
    * exit. */
   const int numChannels = 4;
-  void *inputData = nullptr;
-  void *outputData = nullptr;
+  void* inputData = nullptr;
+  void* outputData = nullptr;
 
   if (argc < 2) {
     std::cout
@@ -117,7 +117,7 @@ int main(int argc, char *argv[]) {
     image<2> image_in(inputData, co::RGBA, ct::UNORM_INT8, imgRange);
     image<2> image_out(outputData, co::RGBA, ct::UNORM_INT8, imgRange);
 
-    myQueue.submit([&](handler &cgh) {
+    myQueue.submit([&](handler& cgh) {
       /* The nd_range contains the total work (as mentioned previously) as
        * well as the local work size (i.e. the number of threads in the local
        * group). Here, we attempt to find a range close to the device's
@@ -135,23 +135,25 @@ int main(int argc, char *argv[]) {
       sampler smpl(false, sampler_addressing_mode::clamp,
                    sampler_filter_mode::nearest);
 
-      cgh.parallel_for<class GaussianKernel>(myRange, ([=](nd_item<2> itemID) {
-        const int blendMask = 10;
-        float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
+      cgh.parallel_for<class GaussianKernel>(
+          myRange, ([=](nd_item<2> itemID) {
+            const int blendMask = 10;
+            float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-        for (int x = -(blendMask / 2); x < (blendMask / 2); x++) {
-          for (int y = -(blendMask / 2); y < (blendMask / 2); y++) {
-            auto inputCoords =
-                int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
-            newPixel += inPtr(smpl)[inputCoords];
-          }
-        }
+            for (int x = -(blendMask / 2); x < (blendMask / 2); x++) {
+              for (int y = -(blendMask / 2); y < (blendMask / 2); y++) {
+                auto inputCoords =
+                    int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
+                newPixel += inPtr(smpl)[inputCoords];
+              }
+            }
 
-        newPixel /= (float)(blendMask * blendMask);
+            newPixel /= (float) (blendMask * blendMask);
 
-        auto outputCoords = int2(itemID.get_global(0), itemID.get_global(1));
-        outPtr[outputCoords] = newPixel;
-      }));
+            auto outputCoords =
+                int2(itemID.get_global(0), itemID.get_global(1));
+            outPtr[outputCoords] = newPixel;
+          }));
     });
   }
 

@@ -33,14 +33,14 @@
 
 #include <CL/sycl.hpp>
 
-#include <iostream>
-#include <ctime>
 #include <chrono>
 #include <cmath>
+#include <ctime>
+#include <iostream>
 
 using namespace cl::sycl;
 
-void display_matrix(float *m, int matSize) {
+void display_matrix(float* m, int matSize) {
   if (matSize > 16) {
     return;
   }
@@ -59,7 +59,7 @@ void display_matrix(float *m, int matSize) {
 /* Implements a host C++ version of the matrix multiplication.
  * If compiler supports OpenMP, code is parallelized. Scheduling
  * uses static chunks of block_size. */
-void block_host(float *MA, float *MB, float *MC, int matSize) {
+void block_host(float* MA, float* MB, float* MC, int matSize) {
   /* We set the block size to 32 for simplicity, though the optimal
    * value will depend on the platform this is run on. */
   int block_size = 32;
@@ -77,8 +77,8 @@ void block_host(float *MA, float *MB, float *MC, int matSize) {
         for (int bi = i; bi < std::min(i + block_size, matSize); bi++)
           for (int bj = j; bj < std::min(j + block_size, matSize); bj++)
             for (int bk = k; bk < std::min(k + block_size, matSize); bk++) {
-              MC[(bi)*matSize + (bj)] +=
-                  MA[(bi)*matSize + (bk)] * MB[(bk)*matSize + (bj)];
+              MC[bi * matSize + bj] +=
+                  MA[bi * matSize + bk] * MB[bk * matSize + bj];
             }
       }
 }
@@ -104,7 +104,9 @@ inline int prevPowerOfTwo(int x) {
  * If there are bits sets to one after AND with the
  * previous number, then it is not a power of two.
  */
-inline bool isPowerOfTwo(int x) { return (x & (x - 1)) == 0; }
+inline bool isPowerOfTwo(int x) {
+  return (x & (x - 1)) == 0;
+}
 
 /* Function template that performs the matrix * matrix operation. (It is
  * a template because only some OpenCL devices support double-precision
@@ -117,7 +119,7 @@ inline bool isPowerOfTwo(int x) { return (x & (x - 1)) == 0; }
  * Note that this example only works for powers of two.
  * */
 template <typename T>
-bool local_mxm(cl::sycl::queue &q, T *MA, T *MB, T *MC, int matSize) {
+bool local_mxm(cl::sycl::queue& q, T* MA, T* MB, T* MC, int matSize) {
   // Make sure it is power of two before running
   if (!isPowerOfTwo(matSize)) {
     std::cout << " This example only works with power of two sizes "
@@ -145,11 +147,11 @@ bool local_mxm(cl::sycl::queue &q, T *MA, T *MB, T *MC, int matSize) {
      * device that shares memory with the host (for example a CPU
      * implementation), "zero-copy" memory optimisations could be used by
      * the implementation. */
-    buffer<T, 1, map_allocator<T> > bA(MA, dimensions);
-    buffer<T, 1, map_allocator<T> > bB(MB, dimensions);
-    buffer<T, 1, map_allocator<T> > bC(MC, dimensions);
+    buffer<T, 1, map_allocator<T>> bA(MA, dimensions);
+    buffer<T, 1, map_allocator<T>> bB(MB, dimensions);
+    buffer<T, 1, map_allocator<T>> bC(MC, dimensions);
 
-    q.submit([&](handler &cgh) {
+    q.submit([&](handler& cgh) {
       auto pA = bA.template get_access<access::mode::read>(cgh);
       auto pB = bB.template get_access<access::mode::read>(cgh);
       auto pC = bC.template get_access<access::mode::write>(cgh);
@@ -221,10 +223,10 @@ void usage(std::string programName) {
             << " Default is to use both " << std::endl;
 }
 
-int main(int argc, char *argv[]) {
-  float *MA;
-  float *MB;
-  float *MC;
+int main(int argc, char* argv[]) {
+  float* MA;
+  float* MB;
+  float* MC;
   bool sycl = true;
   bool omp = true;
   bool error = false;
@@ -291,8 +293,9 @@ int main(int argc, char *argv[]) {
       auto start = std::chrono::steady_clock::now();
       block_host(MA, MB, MC, matSize);
       auto end = std::chrono::steady_clock::now();
-      auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                      end - start).count();
+      auto time =
+          std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+              .count();
       std::cout << "Time: " << time << std::endl;
       float flops =
           (2.0f * matSize * matSize * matSize / (time / 1000.0f)) * 1.0e-9f;
@@ -335,7 +338,7 @@ int main(int argc, char *argv[]) {
          * called. */
         queue q([&](exception_list eL) {
           try {
-            for (auto &e : eL) {
+            for (auto& e : eL) {
               std::rethrow_exception(e);
             }
           } catch (cl::sycl::exception e) {
@@ -348,8 +351,9 @@ int main(int argc, char *argv[]) {
         error = local_mxm(q, MA, MB, MC, matSize);
         q.wait_and_throw();
         auto end = std::chrono::steady_clock::now();
-        auto time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                        end - start).count();
+        auto time =
+            std::chrono::duration_cast<std::chrono::milliseconds>(end - start)
+                .count();
         std::cout << "SYCL: ";
         std::cout << "Time: " << time << std::endl;
         float flops =
