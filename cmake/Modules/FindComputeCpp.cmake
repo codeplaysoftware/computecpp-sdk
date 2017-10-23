@@ -154,9 +154,16 @@ else()
 endif()
 
 # Obtain the device compiler flags
-execute_process(COMMAND ${COMPUTECPP_INFO_TOOL} "--dump-device-compiler-flags"
+set(USE_SPIRV "")
+if (COMPUTECPP_USE_SPIRV) 
+  set(USE_SPIRV "--use-spirv")
+endif()
+
+execute_process(COMMAND ${COMPUTECPP_INFO_TOOL} 
+  "${USE_SPIRV} --dump-device-compiler-flags"
   OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
   RESULT_VARIABLE COMPUTECPP_INFO_TOOL_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+
 if(NOT COMPUTECPP_INFO_TOOL_RESULT EQUAL "0")
   message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
 else()
