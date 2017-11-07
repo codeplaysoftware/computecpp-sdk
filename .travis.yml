@@ -44,10 +44,8 @@ script:
     ###########################
     # Build ComputeCpp SDK
     ###########################
-    - cd samples
     - mkdir build
-    - cd build 
-    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.3.2-Linux/ -DCMAKE_MODULE_PATH=../../cmake/Modules -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1
-    - make 
+    - cd build
+    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.3.3-Ubuntu.14.04-64bit -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1 -DCOMPUTECPP_SDK_BUILD_TESTS=1
+    - make -j2
     - COMPUTECPP_TARGET="host" ctest -V -E opencl
-
