@@ -9,7 +9,7 @@ Introduction
 image:https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master["Build Status", link="https://travis-ci.org/codeplaysoftware/computecpp-sdk"]
 
 This is the README for the ComputeCpp SDK, a collection of sample code,
-utilities and documentation for Codeplay's ComputeCpp, an implementation
+utilities and tools for Codeplay's ComputeCpp, an implementation
 of the SYCL programming standard. You can find more information at:
 
  * http://computecpp.codeplay.com/
@@ -23,20 +23,25 @@ Contents
 * README.adoc
     - This readme file
 * cmake/
-    - Contains useful files for integrating ComputeCpp with existing
+    - Contains a Cmake module for integrating ComputeCpp with existing
       projects. See later in this document for a description of the CMake
-      modules provided.
+      module provided.
+* include/
+    - add this directory to your include search path to be able to use SDK
+      code in your own projects (for example, the virtual pointer utility).
 * samples/
     - A collection of sample SYCL code, tested on ComputeCpp, provided as
-      a learning resource and starting point for new SYCL software. CMake
-      files are also provided for most samples.
+      a learning resource and starting point for new SYCL software. The
+      samples are built with CMake.
+* tests/
+    - Tests for the utilities in the SDK.
 * tools/
     - Useful tools for working with SYCL code and ComputeCpp. Includes a
       simple driver script for compiling SYCL code with ComputeCpp, an
       example Makefile and other utilities.
 * util/
     - Example utility code that we expect will be useful for other projects
-      as either a starting point or helper to achieve common tasks.
+      as a useful starting point.
 
 Setup
 -----
@@ -44,8 +49,6 @@ Setup
 CMake files are provided as a build system for this software. CMake version
 3.2.2 is required at minimum, though later versions of CMake should continue
 to be compatible.
-
-The CMakeLists.txt file is located in the samples/ directory.
 
 At minimum, one CMake variable is required to get the sample code
 building - COMPUTECPP_PACKAGE_ROOT_DIR. This variable should be the root
@@ -62,8 +65,6 @@ getting started guide] that serves as an introduction to SYCL and ComputeCpp.
 Additionally, there is an
 link:https://developer.codeplay.com/computecppce/latest/integration-guide[
 Integration guide] should you wish to add ComputeCpp to existing projects.
-
-
 
 Requirements
 ------------
@@ -110,4 +111,3 @@ Contributions
 This SDK is licensed under the Apache 2.0 license. Patches are very welcome!
 If you have an idea for a new sample, different build system integration or
 even a fix for something that is broken, please get in contact.
-
