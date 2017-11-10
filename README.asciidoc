@@ -18,6 +18,9 @@ of the SYCL programming standard. You can find more information at:
 Contents
 --------
 
+* CMakeLists.txt
+    - The entry point for this project's CMake configuration. Adds samples/
+      subdirectory and optionally adds tests.
 * LICENSE.txt
     - The license this package is available under: Apache 2.0
 * README.adoc
@@ -53,11 +56,15 @@ to be compatible.
 At minimum, one CMake variable is required to get the sample code
 building - COMPUTECPP_PACKAGE_ROOT_DIR. This variable should be the root
 directory of the ComputeCpp install (i.e. the directory with the the folders
-bin, include, lib and so on).
+bin, include, lib and so on). You can also specify COMPUTECPP_SDK_BUILD_TESTS
+to add the tests/ subdirectory to the build, which will causes Gtest-based
+programs testing the legacy pointer and virtual pointer classes to be
+emitted.
 
 You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_PREFIX to
 choose a Debug or Release build and the location you'd like to be used when
-the "install" target is built.
+the "install" target is built. The install target currently will copy all
+the sample binaries to the directory of your choosing.
 
 On the Codeplay website there is a
 link:https://developer.codeplay.com/computecppce/latest/getting-started-guide[
@@ -72,9 +79,12 @@ Requirements
 * The samples should work with any SYCL 1.2 implementation, though have
   only been tested with the ComputeCpp CE Public Beta
 
-* OpenCL 1.2-capable hardware and drivers with SPIR 1.2 support
+* OpenCL 1.2-capable hardware and drivers with SPIR 1.2/SPIR-V support
 
-* pass:[C++11-compliant compiler and libstdc++ on GNU/Linux (GCC 4.9+, Clang 3.6+)]
+* pass:[C++11-compliant compiler and libstdc++ on GNU/Linux (GCC 4.9+,
+  Clang 3.6+)]
+
+* Microsoft Visual pass:[C++] 2015 on Windows
 
 * CMake 3.2.2 and newer
 
