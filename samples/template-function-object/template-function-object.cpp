@@ -21,7 +21,7 @@
  *  template-function-object.cpp
  *
  *  Description:
- *    Sample code that demonstrates how to template functors in SYCL.
+ *    Sample code that demonstrates how to template function objects in SYCL.
  *
  **************************************************************************/
 
@@ -35,28 +35,28 @@
 using namespace cl::sycl;
 using namespace std::placeholders;
 
-/* In SYCL, C++ classes can be used as kernel functors - not just lambdas. One
+/* In SYCL, C++ classes can be used as kernels - not just lambdas. One
  * requirement is that the class must be standard layout, which is used
- * to provide certain guarantees to the runtime. CPP Reference has a good
+ * to provide certain guarantees to the runtime. C++ Reference has a good
  * description of standard layout at:
  * http://en.cppreference.com/w/cpp/language/data_members#Standard_layout
  *
- * This template class defines a kernel functor that performs a vector add.
+ * This template class defines a kernel function that performs a vector add.
  * It contains three accessors: two inputs that are access::mode::read and an
  * output that is access::mode::write. A templated class allows you to have a
- * generic kernel functor that can be instantiated over different types. */
+ * generic kernel that can be instantiated over different types. */
 template <typename dataT>
-class vector_add_functor {
+class vector_add_kernel {
  public:
   using read_accessor =
       accessor<dataT, 1, access::mode::read, access::target::global_buffer>;
   using write_accessor =
       accessor<dataT, 1, access::mode::write, access::target::global_buffer>;
-  vector_add_functor(read_accessor ptrA, read_accessor ptrB,
+  vector_add_kernel(read_accessor ptrA, read_accessor ptrB,
                      write_accessor ptrC)
       : m_ptrA(ptrA), m_ptrB(ptrB), m_ptrC(ptrC) {}
 
-  /* We define this functor's function call operator to match the parallel_for
+  /* We define this object's function call operator to match the parallel_for
    * call which takes a range rather than an nd_range. operator()() takes an
    * item rather than an nd_item. */
   void operator()(item<1> item) {
@@ -79,7 +79,7 @@ void vector_add(buffer<dataT, 1>* a, buffer<dataT, 1>* b, buffer<dataT, 1>* c,
   auto c_dev = c->template get_access<access::mode::write>(cgh);
 
   cgh.parallel_for(range<1>(count),
-                   vector_add_functor<dataT>(a_dev, b_dev, c_dev));
+                   vector_add_kernel<dataT>(a_dev, b_dev, c_dev));
 };
 
 /* Using the code above, two vector additions are performed: one on ints,
@@ -100,9 +100,9 @@ int main() {
       buffer<float, 1> bufB(b.data(), range<1>(count));
       buffer<float, 1> bufC(c.data(), range<1>(count));
 
-      /* We create a functor for the command_group by using std::bind with the
-       * vector_add function template and the accessor and scalar parameters.
-       * This submission instantiates the template with float. */
+      /* We create a function object for the command_group by using std::bind
+       * with the vector_add function template and the accessor and scalar
+       * parameters. This submission instantiates the template with float. */
       myQueue.submit(
           std::bind(vector_add<float>, &bufA, &bufB, &bufC, count, _1));
     }

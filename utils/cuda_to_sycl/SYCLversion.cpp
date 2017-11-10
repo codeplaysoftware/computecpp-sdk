@@ -40,7 +40,7 @@ int main(void) {
       auto aY = y.get_access<mode::read_write>(cgh);
 
       // Run kernel on 1M elements on the OpenCL GPU
-      cgh.parallel_for<class add_functor>(
+      cgh.parallel_for<class add_kernel>(
           cl::sycl::nd_range<1>(cl::sycl::range<1>(N), cl::sycl::range<1>(256)),
           [=](cl::sycl::nd_item<1> it) { add(it, N, aX, aY); });
     });

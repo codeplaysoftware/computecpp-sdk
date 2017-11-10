@@ -48,7 +48,7 @@ int main() {
   bool error = false;
   unsigned nTimesCall = 0;
 
-  /* An async handler functor can be used to handle SYCL asynchronous
+  /* An async handler object can be used to handle SYCL asynchronous
    * errors (i.e., errors that happen while the command group is
    * executing on the device and cannot trigger a normal exception).
    * The async_handler is called when the cl::sycl::queue::wait_and_throw()

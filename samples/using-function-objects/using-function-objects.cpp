@@ -21,8 +21,8 @@
  *  using-function-objects.cpp
  *
  *  Description:
- *    Sample code that demonstrates how to use function objects as kernel
- *    functors in SYCL.
+ *    Sample code that demonstrates how to use function objects as kernels
+ *    in SYCL.
  *
  **************************************************************************/
 
@@ -35,20 +35,20 @@
 using namespace cl::sycl;
 
 /* Here we define a function object, i.e. an object that has a function call
- * operator. Functors can be used to define kernels in SYCL instead of lambdas.
- * The only requirements on the functor objects you define is that they must be
- * standard layout (see C++ specification for details or use the C++11 type
- * trait is_standard_layout<class> to check). */
-class my_functor {
+ * operator. Function objects can be used to define kernels in SYCL instead of
+ * lambdas. The only requirements on the function objects you define is that
+ * they must be standard layout (see C++ specification for details or use the
+ * C++11 type trait is_standard_layout<class> to check). */
+class my_function_object {
   using rw_acc_t =
       accessor<int, 1, access::mode::read_write, access::target::global_buffer>;
 
  public:
-  /* Here we construct the functor object with the accessor that we intend to
+  /* Here we construct the function object with the accessor that we intend to
    * pass to the kernel. Just as with lambdas the accessor must be available
-   * inside the functor, either by being constructed internally or by being
-   * passed in on construction. */
-  my_functor(rw_acc_t ptr) : m_ptr(ptr) {
+   * inside the function object, either by being constructed internally or by
+   * being passed in on construction. */
+  my_function_object(rw_acc_t ptr) : m_ptr(ptr) {
     /* Generate a random number in [1, 100]. This is executed on host. */
     std::random_device hwRand;
     std::uniform_int_distribution<> r(1, 100);
@@ -61,13 +61,13 @@ class my_functor {
    * number to the accessor. */
   void operator()(item<1> item) { m_ptr[item.get()] = m_randumNum; }
 
-  /* A member function to retrieve the random number. Functors are still
+  /* A member function to retrieve the random number. Function objects are still
    * standard C++ classes and can be used as normal on the host. */
   int get_random() { return m_randumNum; }
 
  private:
   /* We define an accessor that will be initialized on construction of the
-   * functor object and made available in the kernel on the device. */
+   * function object and made available in the kernel on the device. */
   rw_acc_t m_ptr;
 
   int m_randumNum;
@@ -89,17 +89,17 @@ int main() {
 
       auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
-      /* We create an instance of the functor object, passing it the accessor
-       * created just before. */
-      my_functor functor(ptr);
+      /* We create an instance of the function object, passing it the
+       * accessor created just before. */
+      my_function_object function_object(ptr);
 
       /* We retrieve the random number that is generated when constructing the
-       * functor, as this is just a standard C++ object. */
-      randomNumber = functor.get_random();
+       * function object, as this is just a standard C++ object. */
+      randomNumber = function_object.get_random();
 
-      /* Here we call the parallel_for() API with an instance of the functor
-       * instead of a lambda as seen in other samples. */
-      cgh.parallel_for(range<1>(size), functor);
+      /* Here we call the parallel_for() API with an instance of the function
+       * object instead of a lambda as seen in other samples. */
+      cgh.parallel_for(range<1>(size), function_object);
     });
   } catch (exception e) {
     std::cout << "SYCL exception caught: " << e.what();
