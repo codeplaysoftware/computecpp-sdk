@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.2.2)
 
 project(ComputeCpp-SDK)
 
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 include(FindComputeCpp)
 
 # Set the host compiler C++ standard to C++ 14
