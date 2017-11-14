@@ -34,7 +34,7 @@ float * c = a + 5;
 assert(pMap.get_buffer(a) == pMap.get_buffer(c))
 // Substracting the value of the offset from the base address of the
 // buffer recovers the offset into it
-assert(pMap.get_offset(c) == 5)
+assert(pMap.get_offset(c) == 5 * sizeof(float))
 
 // Invalid usage: no-dereference on the host
 // float myVal = *c;
@@ -46,8 +46,8 @@ assert(pMap.get_offset(c) == 5)
 }
 
 // Free the pointers
-SYCLfree(a);
-SYCLfree(b);
+SYCLfree(a, pMap);
+SYCLfree(b, pMap);
 --
 
 Developers looking for a simple replacement of malloc/free functions should
