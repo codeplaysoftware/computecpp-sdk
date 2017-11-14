@@ -316,48 +316,17 @@ class PointerMapper {
   }
 
   /* add_pointer.
+   * Adds an existing pointer to the map and returns the virtual pointer id.
+   */
+  inline virtual_pointer_t add_pointer(buffer_t &b) {
+    return add_pointer_impl(b);
+  }
+
+  /* add_pointer.
    * Adds a pointer to the map and returns the virtual pointer id.
    */
-  virtual_pointer_t add_pointer(buffer_t &&b) {
-    virtual_pointer_t retVal = nullptr;
-    size_t bufSize = b.get_count();
-    pMapNode_t p{b, bufSize, false};
-    // If this is the first pointer:
-    if (m_pointerMap.empty()) {
-      virtual_pointer_t initialVal{m_baseAddress};
-      m_pointerMap.emplace(initialVal, p);
-      return initialVal;
-    }
-
-    auto lastElemIter = get_insertion_point(bufSize);
-    // We are recovering an existing free node
-    if (lastElemIter->second.m_free) {
-      lastElemIter->second.m_buffer = b;
-      lastElemIter->second.m_free = false;
-
-      // If the recovered node is bigger than the inserted one
-      // add a new free node with the remaining space
-      if (lastElemIter->second.m_size > bufSize) {
-        // create a new node with the remaining space
-        auto remainingSize = lastElemIter->second.m_size - bufSize;
-        pMapNode_t p2{b, remainingSize, true};
-
-        // update size of the current node
-        lastElemIter->second.m_size = bufSize;
-
-        // add the new free node
-        auto newFreePtr = lastElemIter->first + bufSize;
-        auto freeNode = m_pointerMap.emplace(newFreePtr, p2).first;
-        m_freeList.emplace(freeNode);
-      }
-
-      retVal = lastElemIter->first;
-    } else {
-      size_t lastSize = lastElemIter->second.m_size;
-      retVal = lastElemIter->first + lastSize;
-      m_pointerMap.emplace(retVal, p);
-    }
-    return retVal;
+  inline virtual_pointer_t add_pointer(buffer_t &&b) {
+    return add_pointer_impl(b);
   }
 
   /**
@@ -436,6 +405,54 @@ class PointerMapper {
   size_t count() const { return (m_pointerMap.size() - m_freeList.size()); }
 
  private:
+
+  /* add_pointer_impl.
+   * Adds a pointer to the map and returns the virtual pointer id.
+   * BufferT is either a buffer_t& or a buffer_t&&.
+   */
+  template <class BufferT>
+  virtual_pointer_t add_pointer_impl(BufferT b) {
+    virtual_pointer_t retVal = nullptr;
+    size_t bufSize = b.get_count();
+    pMapNode_t p{b, bufSize, false};
+    // If this is the first pointer:
+    if (m_pointerMap.empty()) {
+      virtual_pointer_t initialVal{m_baseAddress};
+      m_pointerMap.emplace(initialVal, p);
+      return initialVal;
+    }
+
+    auto lastElemIter = get_insertion_point(bufSize);
+    // We are recovering an existing free node
+    if (lastElemIter->second.m_free) {
+      lastElemIter->second.m_buffer = b;
+      lastElemIter->second.m_free = false;
+
+      // If the recovered node is bigger than the inserted one
+      // add a new free node with the remaining space
+      if (lastElemIter->second.m_size > bufSize) {
+        // create a new node with the remaining space
+        auto remainingSize = lastElemIter->second.m_size - bufSize;
+        pMapNode_t p2{b, remainingSize, true};
+
+        // update size of the current node
+        lastElemIter->second.m_size = bufSize;
+
+        // add the new free node
+        auto newFreePtr = lastElemIter->first + bufSize;
+        auto freeNode = m_pointerMap.emplace(newFreePtr, p2).first;
+        m_freeList.emplace(freeNode);
+      }
+
+      retVal = lastElemIter->first;
+    } else {
+      size_t lastSize = lastElemIter->second.m_size;
+      retVal = lastElemIter->first + lastSize;
+      m_pointerMap.emplace(retVal, p);
+    }
+    return retVal;
+  }
+
   /**
    * Compare two iterators to pointer map entries according to
    * the size of the allocation on the device.
