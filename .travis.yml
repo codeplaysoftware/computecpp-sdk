@@ -1,5 +1,4 @@
 language: cpp
-compiler: g++
 sudo: required
 dist: trusty
 os:
@@ -7,11 +6,11 @@ os:
 
 compiler:
   - gcc
+  - clang
 
 branches:
   only:
     - master
-    - travis-ci
 
 env:
   - IMPL=COMPUTECPP
@@ -46,6 +45,6 @@ script:
     ###########################
     - mkdir build
     - cd build
-    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.3.3-Ubuntu.14.04-64bit -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1 -DCOMPUTECPP_SDK_BUILD_TESTS=1
+    - cmake ../ -DCOMPUTECPP_PACKAGE_ROOT_DIR=/tmp/ComputeCpp-CE-0.4.0-Ubuntu-14.04-64bit -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1 -DCOMPUTECPP_SDK_BUILD_TESTS=1
     - make -j2
     - COMPUTECPP_TARGET="host" ctest -V -E opencl
