@@ -318,7 +318,7 @@ class PointerMapper {
   /* add_pointer.
    * Adds an existing pointer to the map and returns the virtual pointer id.
    */
-  inline virtual_pointer_t add_pointer(buffer_t &b) {
+  inline virtual_pointer_t add_pointer(const buffer_t &b) {
     return add_pointer_impl(b);
   }
 
@@ -408,7 +408,7 @@ class PointerMapper {
 
   /* add_pointer_impl.
    * Adds a pointer to the map and returns the virtual pointer id.
-   * BufferT is either a buffer_t& or a buffer_t&&.
+   * BufferT is either a const buffer_t& or a buffer_t&&.
    */
   template <class BufferT>
   virtual_pointer_t add_pointer_impl(BufferT b) {
