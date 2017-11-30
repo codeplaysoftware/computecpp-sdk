@@ -378,7 +378,9 @@ class PointerMapper {
 
   /* remove_pointer.
    * Removes the given pointer from the map.
+   * The pointer is allowed to be reused only if ReUse if true.
    */
+  template <bool ReUse = true>
   void remove_pointer(const virtual_pointer_t ptr) {
     auto node = this->get_node(ptr);
 
@@ -478,6 +480,15 @@ class PointerMapper {
   size_t m_baseAddress;
 };
 
+/* remove_pointer.
+ * Removes the given pointer from the map.
+ * The pointer is allowed to be reused only if ReUse if true.
+ */
+template <>
+void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
+  m_pointerMap.erase(this->get_node(ptr));
+}
+
 /**
  * Malloc-like interface to the pointer-mapper.
  * Given a size, creates a byte-typed buffer and returns a
@@ -498,10 +509,12 @@ inline void *SYCLmalloc(size_t size, PointerMapper &pMap) {
  * Free-like interface to the pointer mapper.
  * Given a fake-pointer created with the virtual-pointer malloc,
  * destroys the buffer and remove it from the list.
+ * If ReUse is false, the pointer is not added to the freeList,
+ * it should be false only for sub-buffers.
  */
-template <typename PointerMapper>
+template <bool ReUse = true, typename PointerMapper>
 inline void SYCLfree(void *ptr, PointerMapper &pMap) {
-  pMap.remove_pointer(ptr);
+  pMap.template remove_pointer<ReUse>(ptr);
 }
 
 /**
