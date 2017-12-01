@@ -167,6 +167,99 @@ TEST(pointer_mapper, reuse_ptr) {
     ASSERT_FALSE(PointerMapper::is_nullptr(shouldBeTheSame));
     ASSERT_EQ(pMap.count(), 3u);
     ASSERT_EQ(shouldBeTheSame, reused);
+
+    SYCLfree(shouldBeTheSame, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+    SYCLfree(end, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(initial, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
+  }
+}
+
+TEST(pointer_mapper, do_not_reuse_ptr) {
+  PointerMapper pMap;
+  {
+    ASSERT_EQ(pMap.count(), 0u);
+
+    // First we insert a large buffer
+    void *initial = SYCLmalloc(100 * sizeof(int), pMap);
+    ASSERT_NE(initial, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(initial));
+    ASSERT_EQ(pMap.count(), 1u);
+
+    // Now we insert a small one, that could have been reused
+    void *not_reused = SYCLmalloc(10 * sizeof(int), pMap);
+    ASSERT_NE(not_reused, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(not_reused));
+    ASSERT_EQ(pMap.count(), 2u);
+
+    // Another large buffer
+    void *end = SYCLmalloc(100 * sizeof(int), pMap);
+    ASSERT_NE(end, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(end));
+    ASSERT_EQ(pMap.count(), 3u);
+
+    // We free the intermediate one and forbid it to be reused
+    SYCLfree<false>(not_reused, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+
+    void *shouldBeNew = SYCLmalloc(10 * sizeof(int), pMap);
+    ASSERT_NE(shouldBeNew, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(shouldBeNew));
+    ASSERT_EQ(pMap.count(), 3u);
+    ASSERT_NE(shouldBeNew, not_reused);
+
+    SYCLfree(shouldBeNew, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+    SYCLfree(end, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(initial, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
+  }
+}
+
+TEST(pointer_mapper, add_existing_buffer) {
+  PointerMapper pMap;
+  {
+    ASSERT_EQ(pMap.count(), 0u);
+
+    // First we insert a large buffer
+    cl::sycl::buffer<buffer_data_type_t, 1> buf1((cl::sycl::range<1>(100 * sizeof(int))));
+    void *initial = static_cast<void*>(pMap.add_pointer(buf1));
+    ASSERT_NE(initial, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(initial));
+    ASSERT_EQ(pMap.count(), 1u);
+
+    // Now we insert a small one, that will be reused
+    cl::sycl::buffer<buffer_data_type_t, 1> buf2((cl::sycl::range<1>(10 * sizeof(int))));
+    void *reused = static_cast<void*>(pMap.add_pointer(buf2));
+    ASSERT_NE(reused, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(reused));
+    ASSERT_EQ(pMap.count(), 2u);
+
+    // Another large buffer, the original malloc can still be used
+    void *end = SYCLmalloc(100 * sizeof(int), pMap);
+    ASSERT_NE(end, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(end));
+    ASSERT_EQ(pMap.count(), 3u);
+
+    // We free the intermediate one
+    SYCLfree(reused, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+
+    void *shouldBeTheSame = SYCLmalloc(10 * sizeof(int), pMap);
+    ASSERT_NE(shouldBeTheSame, nullptr);
+    ASSERT_FALSE(PointerMapper::is_nullptr(shouldBeTheSame));
+    ASSERT_EQ(pMap.count(), 3u);
+    ASSERT_EQ(shouldBeTheSame, reused);
+
+    SYCLfree(shouldBeTheSame, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+    SYCLfree(end, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(initial, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
   }
 }
 
