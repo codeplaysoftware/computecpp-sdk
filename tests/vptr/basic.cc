@@ -167,6 +167,13 @@ TEST(pointer_mapper, reuse_ptr) {
     ASSERT_FALSE(PointerMapper::is_nullptr(shouldBeTheSame));
     ASSERT_EQ(pMap.count(), 3u);
     ASSERT_EQ(shouldBeTheSame, reused);
+
+    SYCLfree(shouldBeTheSame, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+    SYCLfree(end, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(initial, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
   }
 }
 
@@ -193,7 +200,7 @@ TEST(pointer_mapper, do_not_reuse_ptr) {
     ASSERT_FALSE(PointerMapper::is_nullptr(end));
     ASSERT_EQ(pMap.count(), 3u);
 
-    // We free the intermediate one and forbit it to be reuse
+    // We free the intermediate one and forbid it to be reused
     SYCLfree<false>(not_reused, pMap);
     ASSERT_EQ(pMap.count(), 2u);
 
@@ -202,6 +209,13 @@ TEST(pointer_mapper, do_not_reuse_ptr) {
     ASSERT_FALSE(PointerMapper::is_nullptr(shouldBeNew));
     ASSERT_EQ(pMap.count(), 3u);
     ASSERT_NE(shouldBeNew, not_reused);
+
+    SYCLfree(shouldBeNew, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+    SYCLfree(end, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(initial, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
   }
 }
 
@@ -239,6 +253,13 @@ TEST(pointer_mapper, add_existing_buffer) {
     ASSERT_FALSE(PointerMapper::is_nullptr(shouldBeTheSame));
     ASSERT_EQ(pMap.count(), 3u);
     ASSERT_EQ(shouldBeTheSame, reused);
+
+    SYCLfree(shouldBeTheSame, pMap);
+    ASSERT_EQ(pMap.count(), 2u);
+    SYCLfree(end, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(initial, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
   }
 }
 
