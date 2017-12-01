@@ -485,7 +485,7 @@ class PointerMapper {
  * The pointer is allowed to be reused only if ReUse if true.
  */
 template <>
-void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
+inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
   m_pointerMap.erase(this->get_node(ptr));
 }
 
