@@ -52,8 +52,7 @@ class vector_add_kernel {
       accessor<dataT, 1, access::mode::read, access::target::global_buffer>;
   using write_accessor =
       accessor<dataT, 1, access::mode::write, access::target::global_buffer>;
-  vector_add_kernel(read_accessor ptrA, read_accessor ptrB,
-                     write_accessor ptrC)
+  vector_add_kernel(read_accessor ptrA, read_accessor ptrB, write_accessor ptrC)
       : m_ptrA(ptrA), m_ptrB(ptrB), m_ptrC(ptrC) {}
 
   /* We define this object's function call operator to match the parallel_for
@@ -61,7 +60,7 @@ class vector_add_kernel {
    * item rather than an nd_item. */
   void operator()(item<1> item) {
     /* This is a standard vector add, as seen in other samples. */
-    m_ptrC[item.get()] = m_ptrA[item.get()] + m_ptrB[item.get()];
+    m_ptrC[item.get_id()] = m_ptrA[item.get_id()] + m_ptrB[item.get_id()];
   }
 
  private:

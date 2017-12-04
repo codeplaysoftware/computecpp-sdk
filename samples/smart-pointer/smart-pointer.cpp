@@ -121,13 +121,15 @@ int main() {
   }
 
   {
-    /* The special map_allocator maps a host pointer to the device.
-     * All runtime allocations of memory will return the same p pointer.
-     * When using map_allocator, all host accessors update the
-     * user-given host memory. This can benefit performance, though you
-     * should always profile to see if it actually makes a difference. */
     {
-      buffer<int, 1, map_allocator<int>> buf(p, range<1>(nElems));
+      /* The property "use_host_ptr" tells the runtime that the user
+       * pointer passed to the constructor should be used to store all
+       * data, rather than new internal allocations. When using this,
+       * all host accessors update the user-given host memory. This can
+       * improve performance, though you should always profile to see
+       * if it actually makes a difference. */
+      buffer<int, 1> buf(p, range<1>(nElems),
+                         {property::buffer::use_host_ptr()});
 
       myQueue.submit([&](handler& cgh) {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
