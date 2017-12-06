@@ -159,8 +159,13 @@ if (COMPUTECPP_USE_SPIRV)
   set(USE_SPIRV "--use-spirv")
 endif()
 
+set(USE_PTX "")
+if (COMPUTECPP_USE_PTX)
+  set(USE_PTX "--use-ptx")
+endif()
+
 execute_process(COMMAND ${COMPUTECPP_INFO_TOOL}
-  ${USE_SPIRV} "--dump-device-compiler-flags"
+  ${USE_SPIRV} ${USE_PTX} "--dump-device-compiler-flags"
   OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
   RESULT_VARIABLE COMPUTECPP_INFO_TOOL_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
 
