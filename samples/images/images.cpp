@@ -45,10 +45,10 @@ int main() {
      * images are created from a host pointer like buffers, however, instead of
      * specifying a type you provide the channel order and channel type when
      * constructing them. */
-    image<2> srcImage(src, image_format::channel_order::RGBA,
-                      image_format::channel_type::FLOAT, range<2>(16, 16));
-    image<2> destImage(dest, image_format::channel_order::RGBA,
-                       image_format::channel_type::FLOAT, range<2>(16, 16));
+    image<2> srcImage(src, image_channel_order::rgba, image_channel_type::fp32,
+                      range<2>(16, 16));
+    image<2> destImage(dest, image_channel_order::rgba,
+                       image_channel_type::fp32, range<2>(16, 16));
 
     /* We can retrieve the size of the image by calling get_size(). */
     std::cout << "Image size: " << srcImage.get_size() << std::endl;
@@ -77,8 +77,7 @@ int main() {
        * SYCL's images and samplers map very well to the underlying OpenCL
        * constructs. OpenCL documentation has a more full discussion of
        * how images and samplers work. */
-      sampler smpl(false, sampler_addressing_mode::clamp,
-                   sampler_filter_mode::nearest);
+      sampler smpl(false, addressing_mode::clamp, filtering_mode::nearest);
 
       cgh.parallel_for<class mod_image>(range<2>(16, 16), [=](item<2> item) {
 
@@ -89,13 +88,13 @@ int main() {
         /* In SYCL images are read using a subscript operator to provide the
          * coordinates, with an optional function call operator preceding it
          * to provide a sampler. */
-        float4 pixel = inPtr(smpl)[coords];
+        float4 pixel = inPtr.read(coords, smpl);
 
         pixel *= 10.0f;
 
         /* Images are written to in a similar fashion, only without a
          * sampler. */
-        outPtr[coords] = pixel;
+        outPtr.write(coords, pixel);
       });
     });
 

@@ -35,7 +35,7 @@ static inline cl::sycl::id<1> get_global_id(cl::sycl::group<1>& group,
                                             cl::sycl::item<1>& item) {
   auto groupID = group.get();
   auto localR = item.get_range();
-  auto localID = item.get();
+  auto localID = item.get_id();
   return cl::sycl::id<1>(groupID.get(0) * localR.get(0) + localID.get(0));
 }
 

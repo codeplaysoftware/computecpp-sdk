@@ -44,8 +44,8 @@ typedef unsigned int uint;
 using namespace cl::sycl;
 /* It is possible to refer to the enum name in these using statements, used
  * here to make referencing the members more convenient (for example). */
-using co = cl::sycl::image_format::channel_order;
-using ct = cl::sycl::image_format::channel_type;
+using co = cl::sycl::image_channel_order;
+using ct = cl::sycl::image_channel_type;
 
 /* Attempts to determine a good local size. The OpenCL implementation can
  * do the same, but the best way to *control* performance is to choose the
@@ -114,8 +114,8 @@ int main(int argc, char* argv[]) {
     /* Images need a void * pointing to the data, and enums describing the
      * type of the image (since a void * carries no type information). It
      * also needs a range which describes the image's dimensions. */
-    image<2> image_in(inputData, co::RGBA, ct::UNORM_INT8, imgRange);
-    image<2> image_out(outputData, co::RGBA, ct::UNORM_INT8, imgRange);
+    image<2> image_in(inputData, co::rgba, ct::unorm_int8, imgRange);
+    image<2> image_out(outputData, co::rgba, ct::unorm_int8, imgRange);
 
     myQueue.submit([&](handler& cgh) {
       /* The nd_range contains the total work (as mentioned previously) as
@@ -132,8 +132,7 @@ int main(int argc, char* argv[]) {
           image_out, cgh);
       /* The sampler is used to map user-provided co-ordinates to pixels in
        * the image. */
-      sampler smpl(false, sampler_addressing_mode::clamp,
-                   sampler_filter_mode::nearest);
+      sampler smpl(false, addressing_mode::clamp, filtering_mode::nearest);
 
       cgh.parallel_for<class GaussianKernel>(
           myRange, ([=](nd_item<2> itemID) {
@@ -144,7 +143,7 @@ int main(int argc, char* argv[]) {
               for (int y = -(blendMask / 2); y < (blendMask / 2); y++) {
                 auto inputCoords =
                     int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
-                newPixel += inPtr(smpl)[inputCoords];
+                newPixel += inPtr.read(inputCoords, smpl);
               }
             }
 
@@ -152,7 +151,7 @@ int main(int argc, char* argv[]) {
 
             auto outputCoords =
                 int2(itemID.get_global(0), itemID.get_global(1));
-            outPtr[outputCoords] = newPixel;
+            outPtr.write(outputCoords, newPixel);
           }));
     });
   }

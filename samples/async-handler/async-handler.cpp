@@ -97,7 +97,8 @@ int main() {
 
   /* Construct a queue with an async_handler. */
   {
-    queue myQueue(mySelector, asyncHandler);
+    device myDevice(mySelector);
+    queue myQueue(myDevice, asyncHandler);
     myQueue.submit(cgh_error);
 
     /* The asynchronous handler is called at this point.
@@ -118,7 +119,8 @@ int main() {
 
   /* Construct a context without an async_handler. */
   {
-    context myContext(mySelector, false);
+    device myDevice(mySelector);
+    context myContext(myDevice);
     queue myQueue(myContext, mySelector);
     myQueue.submit(cgh_error);
 

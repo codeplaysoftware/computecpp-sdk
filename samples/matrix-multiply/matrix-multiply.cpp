@@ -139,17 +139,17 @@ bool local_mxm(cl::sycl::queue& q, T* MA, T* MB, T* MC, int matSize) {
   blockSize = std::min(matSize, blockSize);
 
   {
+    /* Buffers can be constructed with property lists. In this example,
+     * the buffer is given the property "use host pointer", which tells
+     * the runtime to use the host pointer for all data storage (instead
+     * of making copies internally). Additionally, when running on a
+     * device that shares memory with the host (for example a CPU),
+     * "zero-copy" memory optimisations can be used by the driver. */
     range<1> dimensions(matSize * matSize);
-    /* Buffers optionally take allocators as a template argument. In this
-     * example, the buffer is given the map_allocator, which forces the
-     * runtime to use the host pointer for all data storage (instead of
-     * making copies internally). Additionally, when running on an OpenCL
-     * device that shares memory with the host (for example a CPU
-     * implementation), "zero-copy" memory optimisations could be used by
-     * the implementation. */
-    buffer<T, 1, map_allocator<T>> bA(MA, dimensions);
-    buffer<T, 1, map_allocator<T>> bB(MB, dimensions);
-    buffer<T, 1, map_allocator<T>> bC(MC, dimensions);
+    const property_list props = {property::buffer::use_host_ptr()};
+    buffer<T> bA(MA, dimensions, props);
+    buffer<T> bB(MB, dimensions, props);
+    buffer<T> bC(MC, dimensions, props);
 
     q.submit([&](handler& cgh) {
       auto pA = bA.template get_access<access::mode::read>(cgh);
