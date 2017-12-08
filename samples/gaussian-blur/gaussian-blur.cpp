@@ -30,6 +30,7 @@
 
 #include <CL/sycl.hpp>
 
+#include <cmath>
 #include <iostream>
 
 /* These public-domain headers implement useful image reading and writing
@@ -106,6 +107,9 @@ int main(int argc, char* argv[]) {
   }
   outputData = new char[inputWidth * inputHeight * numChannels];
 
+  const auto pi = std::atan(1) * 4;
+  constexpr auto stddev = 4;
+
   /* This range represents the full amount of work to be done across the
    * image. We dispatch one thread per pixel. */
   range<2> imgRange(inputWidth, inputHeight);
@@ -134,25 +138,24 @@ int main(int argc, char* argv[]) {
        * the image. */
       sampler smpl(false, addressing_mode::clamp, filtering_mode::nearest);
 
-      cgh.parallel_for<class GaussianKernel>(
-          myRange, ([=](nd_item<2> itemID) {
-            const int blendMask = 10;
-            float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
+      cgh.parallel_for<class GaussianKernel>(myRange, [=](nd_item<2> itemID) {
+        float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
 
-            for (int x = -(blendMask / 2); x < (blendMask / 2); x++) {
-              for (int y = -(blendMask / 2); y < (blendMask / 2); y++) {
-                auto inputCoords =
-                    int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
-                newPixel += inPtr.read(inputCoords, smpl);
-              }
-            }
+        for (int x = -3 * stddev; x < 3 * stddev; x++) {
+          for (int y = -3 * stddev; y < 3 * stddev; y++) {
+            auto inputCoords = int2(itemID.get_global(0) + x,
+                                    itemID.get_global(1) + y);
+            newPixel +=
+                inPtr.read(inputCoords, smpl) *
+                exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
+                (2 * pi * stddev * stddev);
+          }
+        }
 
-            newPixel /= (float) (blendMask * blendMask);
-
-            auto outputCoords =
-                int2(itemID.get_global(0), itemID.get_global(1));
-            outPtr.write(outputCoords, newPixel);
-          }));
+        auto outputCoords = int2(itemID.get_global(0), itemID.get_global(1));
+        newPixel.w() = 1.f;
+        outPtr.write(outputCoords, newPixel);
+      });
     });
   }
 
