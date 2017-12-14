@@ -312,13 +312,20 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
       set_property(TARGET ${targetName} PROPERTY SOURCES ${outputSyclFile})
       # CMake/gcc don't know what language a .sycl file is, so tell them
       set_property(SOURCE ${outputSyclFile} PROPERTY LANGUAGE CXX)
-      set(forceIncludeFlags -include ${sourceFile} -x c++)
+      set(forceIncludeFlags "-include ${sourceFile} -x c++")
     else()
-      set(forceIncludeFlags -include ${outputSyclFile})
+      set(forceIncludeFlags "-include ${outputSyclFile}")
     endif()
   endif()
-  target_compile_options(${targetName} PUBLIC ${forceIncludeFlags})
-  
+  # Seems that target_compile_options remove duplicated flags, which
+  # does not work for -include which cannot be removed (CMake bug #15826)
+  #   target_compile_options(${targetName} BEFORE PUBLIC ${forceIncludeFlags})
+  # To avoid the problem, we get the value of the property and manually append
+  # it to the previous status.
+  get_property(currentFlags TARGET ${targetName} PROPERTY COMPILE_FLAGS)
+  set_property(TARGET ${targetName} PROPERTY COMPILE_FLAGS
+                  "${forceIncludeFlags} ${currentFlags}")
+
   # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
     set_property(TARGET ${targetName} APPEND PROPERTY COMPILE_DEFINITIONS
