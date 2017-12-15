@@ -292,33 +292,36 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   # Add a dependency on the integration header
   add_dependencies(${targetName} ${headerTargetName})
 
+  # This property can be set on a per-target basis to indicate that the
+  # integration header should appear after the main source listing
+  get_property(includeAfter TARGET ${targetName}
+      PROPERTY COMPUTECPP_INCLUDE_AFTER)
+
+  if(includeAfter)
+    # Change the source file to the integration header - e.g.
+    # g++ -c source_file_name.cpp.sycl
+    set_property(TARGET ${targetName} PROPERTY SOURCES ${outputSyclFile})
+    # CMake/gcc don't know what language a .sycl file is, so tell them
+    set_property(SOURCE ${outputSyclFile} PROPERTY LANGUAGE CXX)
+    set(includedFile ${sourceFile})
+  else()
+    set(includedFile ${outputSyclFile})
+  endif()
+
   # Force inclusion of the integration header for the host compiler
   if(MSVC)
     # NOTE: The Visual Studio generators parse compile flags differently,
     # hence the different argument syntax
     if(CMAKE_GENERATOR MATCHES "Visual Studio")
-      set(forceIncludeFlags "/FI\"${outputSyclFile}\"")
+      set(forceIncludeFlags "/FI\"${includedFile}\" /TP")
     else()
-      set(forceIncludeFlags /FI ${outputSyclFile})
+      set(forceIncludeFlags /FI ${includedFile} /TP)
     endif()
   else()
-    # This property can be set on a per-target basis to indicate that the
-    # integration header should appear after the main source listing
-    get_property(includeAfter TARGET ${targetName}
-        PROPERTY COMPUTECPP_INCLUDE_AFTER)
-    if(includeAfter)
-      # Change the source file to the integration header - i.e.
-      # g++ -c source_file_name.cpp.sycl
-      set_property(TARGET ${targetName} PROPERTY SOURCES ${outputSyclFile})
-      # CMake/gcc don't know what language a .sycl file is, so tell them
-      set_property(SOURCE ${outputSyclFile} PROPERTY LANGUAGE CXX)
-      set(forceIncludeFlags "-include ${sourceFile} -x c++")
-    else()
-      set(forceIncludeFlags "-include ${outputSyclFile}")
-    endif()
+      set(forceIncludeFlags "-include ${includedFile} -x c++")
   endif()
-  # Seems that target_compile_options remove duplicated flags, which
-  # does not work for -include which cannot be removed (CMake bug #15826)
+  # target_compile_options removes duplicated flags, which does not work
+  # for -include (it should appear once per included file - CMake bug #15826)
   #   target_compile_options(${targetName} BEFORE PUBLIC ${forceIncludeFlags})
   # To avoid the problem, we get the value of the property and manually append
   # it to the previous status.
