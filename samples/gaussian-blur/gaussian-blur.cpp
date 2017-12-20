@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
                                     itemID.get_global(1) + y);
             newPixel +=
                 inPtr.read(inputCoords, smpl) *
-                exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
+                std::exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
                 (2 * pi * stddev * stddev);
           }
         }
