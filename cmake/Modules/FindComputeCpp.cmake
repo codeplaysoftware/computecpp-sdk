@@ -75,13 +75,13 @@ find_package(OpenCL REQUIRED)
 # Find ComputeCpp package
 
 # Try to read the environment variable
-if(DEFINED ENV{COMPUTECPP_PACKAGE_ROOT_DIR})  
+if(DEFINED ENV{COMPUTECPP_PACKAGE_ROOT_DIR})
   if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
     set(COMPUTECPP_PACKAGE_ROOT_DIR $ENV{COMPUTECPP_PACKAGE_ROOT_DIR})
   endif()
 endif()
 
-if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)  
+if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
   message(FATAL_ERROR
     "ComputeCpp package - Not found! (please set COMPUTECPP_PACKAGE_ROOT_DIR)")
 else()
@@ -293,14 +293,14 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   # (user-defined name)_(source file)_(counter)_ih
   set(headerTargetName
     ${targetName}_${sourceFileName}_${fileCounter}_ih)
-  
+
   if(NOT MSVC)
     # Add a custom target for the generated integration header
     add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
 
     # Add a dependency on the integration header
     add_dependencies(${targetName} ${headerTargetName})
-  endif()  
+  endif()
 
   # This property can be set on a per-target basis to indicate that the
   # integration header should appear after the main source listing
@@ -322,11 +322,11 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   if(MSVC)
     # Group SYCL files inside Visual Studio
     source_group("SYCL" FILES ${outputSyclFile})
-    
+
     if(includeAfter)
       # Allow the source file to be edited using Visual Studio.
       # It will be added as a header file so it won't be compiled.
-      set_property(SOURCE ${sourceFile} PROPERTY HEADER_FILE_ONLY true)      
+      set_property(SOURCE ${sourceFile} PROPERTY HEADER_FILE_ONLY true)
     endif()
 
     # Add both source and the sycl files to the VS solution.
@@ -338,7 +338,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
       set(forceIncludeFlags "/FI\"${includedFile}\" /TP")
     else()
       set(forceIncludeFlags /FI ${includedFile} /TP)
-    endif()    
+    endif()
   else()
       set(forceIncludeFlags "-include ${includedFile} -x c++")
   endif()
@@ -351,7 +351,6 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   set_property(TARGET ${targetName} PROPERTY COMPILE_FLAGS
                   "${forceIncludeFlags} ${currentFlags}")
 
-  # Disable GCC dual ABI on GCC 5.1 and higher
   if(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
     set_property(TARGET ${targetName} APPEND PROPERTY COMPILE_DEFINITIONS
       "_GLIBCXX_USE_CXX11_ABI=0")
