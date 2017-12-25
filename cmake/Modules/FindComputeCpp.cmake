@@ -73,7 +73,15 @@ endif()
 find_package(OpenCL REQUIRED)
 
 # Find ComputeCpp package
-if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
+
+# Try to read the environment variable
+if(DEFINED ENV{COMPUTECPP_PACKAGE_ROOT_DIR})  
+  if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)
+    set(COMPUTECPP_PACKAGE_ROOT_DIR $ENV{COMPUTECPP_PACKAGE_ROOT_DIR})
+  endif()
+endif()
+
+if(NOT COMPUTECPP_PACKAGE_ROOT_DIR)  
   message(FATAL_ERROR
     "ComputeCpp package - Not found! (please set COMPUTECPP_PACKAGE_ROOT_DIR)")
 else()
@@ -286,11 +294,13 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
   set(headerTargetName
     ${targetName}_${sourceFileName}_${fileCounter}_ih)
   
-  # Add a custom target for the generated integration header
-  add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
+  if(NOT MSVC)
+    # Add a custom target for the generated integration header
+    add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
 
-  # Add a dependency on the integration header
-  add_dependencies(${targetName} ${headerTargetName})
+    # Add a dependency on the integration header
+    add_dependencies(${targetName} ${headerTargetName})
+  endif()  
 
   # This property can be set on a per-target basis to indicate that the
   # integration header should appear after the main source listing
@@ -310,13 +320,25 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
 
   # Force inclusion of the integration header for the host compiler
   if(MSVC)
+    # Group SYCL files inside Visual Studio
+    source_group("SYCL" FILES ${outputSyclFile})
+    
+    if(includeAfter)
+      # Allow the source file to be edited using Visual Studio.
+      # It will be added as a header file so it won't be compiled.
+      set_property(SOURCE ${sourceFile} PROPERTY HEADER_FILE_ONLY true)      
+    endif()
+
+    # Add both source and the sycl files to the VS solution.
+    target_sources(${targetName} PUBLIC ${sourceFile} ${outputSyclFile})
+
     # NOTE: The Visual Studio generators parse compile flags differently,
     # hence the different argument syntax
     if(CMAKE_GENERATOR MATCHES "Visual Studio")
       set(forceIncludeFlags "/FI\"${includedFile}\" /TP")
     else()
       set(forceIncludeFlags /FI ${includedFile} /TP)
-    endif()
+    endif()    
   else()
       set(forceIncludeFlags "-include ${includedFile} -x c++")
   endif()
