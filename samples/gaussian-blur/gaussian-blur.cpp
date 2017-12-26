@@ -82,9 +82,7 @@ int main(int argc, char* argv[]) {
    * data to be returned in that format, regardless of what the original image
    * looked like. The header has a mapping from int values to types - 4 means
    * RGBA. */
-  int inputWidth;
-  int inputHeight;
-  int inputChannels;
+  int inputWidth, inputHeight, inputChannels;
   /* The data is returned as an unsigned char *, but due to OpenCL
    * restrictions, we must use it as a void *. Data is deallocated on program
    * exit. */
@@ -113,8 +111,25 @@ int main(int argc, char* argv[]) {
   /* This range represents the full amount of work to be done across the
    * image. We dispatch one thread per pixel. */
   range<2> imgRange(inputWidth, inputHeight);
+  /* This is the range representing the size of the blur. */
+  range<2> gaussianRange(6 * stddev, 6 * stddev);
   queue myQueue;
+
   {
+    buffer<float, 2> gaussian(gaussianRange);
+    myQueue.submit([&](cl::sycl::handler& cgh) {
+      auto globalGaussian =
+          gaussian.get_access<access::mode::discard_write>(cgh);
+      cgh.parallel_for<class fillGaussian>(
+          gaussianRange, [=](cl::sycl::item<2> i) {
+            auto x = i[0] - 3 * stddev, y = i[1] - 3 * stddev;
+            auto elem =
+                cl::sycl::exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
+                (2 * pi * stddev * stddev);
+            globalGaussian[i] = elem;
+          });
+    });
+
     /* Images need a void * pointing to the data, and enums describing the
      * type of the image (since a void * carries no type information). It
      * also needs a range which describes the image's dimensions. */
@@ -134,21 +149,21 @@ int main(int argc, char* argv[]) {
           image_in, cgh);
       accessor<float4, 2, access::mode::write, access::target::image> outPtr(
           image_out, cgh);
+      auto globalGaussian = gaussian.get_access<access::mode::read>(cgh);
       /* The sampler is used to map user-provided co-ordinates to pixels in
        * the image. */
       sampler smpl(false, addressing_mode::clamp, filtering_mode::nearest);
 
       cgh.parallel_for<class GaussianKernel>(myRange, [=](nd_item<2> itemID) {
         float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
+        constexpr auto offset = 3 * stddev;
 
         for (int x = -3 * stddev; x < 3 * stddev; x++) {
           for (int y = -3 * stddev; y < 3 * stddev; y++) {
-            auto inputCoords = int2(itemID.get_global(0) + x,
-                                    itemID.get_global(1) + y);
-            newPixel +=
-                inPtr.read(inputCoords, smpl) *
-                cl::sycl::exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
-                (2 * pi * stddev * stddev);
+            auto inputCoords =
+                int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
+            newPixel += inPtr.read(inputCoords, smpl) *
+                        globalGaussian[x + offset][y + offset];
           }
         }
 
