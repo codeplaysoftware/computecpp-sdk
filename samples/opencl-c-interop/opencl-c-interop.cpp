@@ -82,6 +82,9 @@ int main() {
      * queue. */
     cl_device_id clDeviceId = gpu_queue.get_device().get();
 
+    /* Retrieve the underlying cl_command_queue of the queue. */
+    cl_command_queue clCommandQueue = gpu_queue.get();
+
     /* Create variable to store OpenCL errors. */
     ::cl_int err = 0;
 
@@ -131,7 +134,7 @@ int main() {
       std::cout << "Failed to create output cl_mem object." << std::endl;
     }
 
-    err = clEnqueueWriteBuffer(gpu_queue.get(), inputOpenCL, CL_TRUE, 0,
+    err = clEnqueueWriteBuffer(clCommandQueue, inputOpenCL, CL_TRUE, 0,
                                nElems * sizeof(float), input, 0, nullptr,
                                nullptr);
     if (err != CL_SUCCESS) {
@@ -150,7 +153,7 @@ int main() {
     });
     gpu_queue.wait_and_throw();
 
-    err = clEnqueueReadBuffer(gpu_queue.get(), outputOpenCL, CL_TRUE, 0,
+    err = clEnqueueReadBuffer(clCommandQueue, outputOpenCL, CL_TRUE, 0,
                               nElems * sizeof(float), err_host_device, 0,
                               nullptr, nullptr);
     if (err != CL_SUCCESS) {
@@ -166,10 +169,14 @@ int main() {
       auto out = call_pow_buffer.get_access<access::mode::write>(cgh);
 
       cgh.parallel_for<class pow_comp>(range<1>(nElems), [=](item<1> item) {
-        size_t idx = item.get(0);
+        size_t idx = item[0];
         out[idx] = cl::sycl::pow(in[idx], (in[idx] / (idx + 1)));
       });
     });
+
+    clReleaseDevice(clDeviceId);
+    clReleaseCommandQueue(clCommandQueue);
+    clReleaseContext(clContext);
   }
 
   /* Finally, this loop performs a host-side comparison. */
