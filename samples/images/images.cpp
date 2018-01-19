@@ -83,7 +83,7 @@ int main() {
 
         /* SYCL vectors are used to specify the location of the image to
          * access. */
-        auto coords = int2(item.get(0), item.get(1));
+        auto coords = int2(item[0], item[1]);
 
         /* In SYCL images are read using a subscript operator to provide the
          * coordinates, with an optional function call operator preceding it

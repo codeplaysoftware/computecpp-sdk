@@ -39,9 +39,11 @@ struct Bar : Foo {
 };
 
 using namespace cl::sycl;
+using acc_mode = cl::sycl::access::mode;
+using acc_target = cl::sycl::access::target;
 
-static_assert(is_valid_kernel_arg<accessor<int, 1, access::mode::read,
-                                 access::target::global_buffer>>::value, "");
+static_assert(is_valid_kernel_arg<
+    accessor<int, 1, acc_mode::read, acc_target::global_buffer>>::value, "");
 static_assert(is_valid_kernel_arg<double>::value, "");
 static_assert(is_valid_kernel_arg<Foo>::value, "");
 static_assert(!is_valid_kernel_arg<Bar>::value, "");

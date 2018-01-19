@@ -33,17 +33,17 @@ using namespace cl::sycl;
  * hierarchical parallel_for_work_item context */
 static inline cl::sycl::id<1> get_global_id(cl::sycl::group<1>& group,
                                             cl::sycl::item<1>& item) {
-  auto groupID = group.get();
+  auto groupID = group.get_id();
   auto localR = item.get_range();
   auto localID = item.get_id();
-  return cl::sycl::id<1>(groupID.get(0) * localR.get(0) + localID.get(0));
+  return cl::sycl::id<1>(groupID[0] * localR[0] + localID[0]);
 }
 
 /* This sample showcases the syntax of the private_memory interface. */
 int main() {
   int ret = 0;
-  const size_t nItems = 64;
-  const size_t nLocals = 16;
+  constexpr size_t nItems = 64;
+  constexpr size_t nLocals = 16;
   int data[nItems] = {0};
 
   /* Any data on the device will be copied back to the host
@@ -70,21 +70,20 @@ int main() {
        * workgroup size. */
       auto localRange = range<1>(nLocals);
 
-      /* Kernel functions executed by a hierarchical parallel_for receive
-       * a single parameter of group type to parallel_for_work_group
-       * and then a parameter of item type to parallel_for_work_item. */
+      /* parallel_for_work_group takes a cl::sycl::group as a parameter,
+       * which has parallel_for_work_item as a method. */
       auto hierarchicalKernel = [=](group<1> groupID) {
         /* Unlike variables of any other type allocated in a
          * parallel_for_work_group scope, privateObj is allocated
          * per work-item and lives in work-item-private memory. */
         private_memory<int> privateObj(groupID);
 
-        parallel_for_work_item(groupID, [&](item<1> itemID) {
+        groupID.parallel_for_work_item([&](item<1> itemID) {
           /* Assign the work-item global id into private memory. */
-          privateObj(itemID) = get_global_id(groupID, itemID).get(0);
+          privateObj(itemID) = get_global_id(groupID, itemID)[0];
         });
 
-        parallel_for_work_item(groupID, [&](item<1> itemID) {
+        groupID.parallel_for_work_item([&](item<1> itemID) {
           /* Retrieve the global id stored in the previous
            * parallel_for_work_item call and store it in global memory. */
           auto globalID = privateObj(itemID);
