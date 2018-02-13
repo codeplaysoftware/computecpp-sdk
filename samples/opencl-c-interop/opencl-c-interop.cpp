@@ -120,7 +120,7 @@ int main() {
       std::cout << "Failed to create the kernel." << std::endl;
     }
 
-    /* Create a SYCl kernel using the inter-op constructor. */
+    /* Create a SYCL kernel using the interop constructor. */
     kernel pow_kernel(clKernel, gpu_queue.get_context());
     auto inputOpenCL = clCreateBuffer(clContext, CL_MEM_READ_ONLY,
                                       nElems * sizeof(float), nullptr, &err);
