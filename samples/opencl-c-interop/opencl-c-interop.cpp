@@ -121,7 +121,7 @@ int main() {
     }
 
     /* Create a SYCL kernel using the interop constructor. */
-    kernel pow_kernel(clKernel, gpu_queue.get_context());
+    kernel pow_kernel(gpu_queue.get_context(), clKernel);
     auto inputOpenCL = clCreateBuffer(clContext, CL_MEM_READ_ONLY,
                                       nElems * sizeof(float), nullptr, &err);
     if (err != CL_SUCCESS) {
