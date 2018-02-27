@@ -45,7 +45,7 @@ TEST(accessor, basic_test) {
   PointerMapper pMap;
   {
     ASSERT_EQ(pMap.count(), 0u);
-    void *myPtr = SYCLmalloc(100 * sizeof(float), pMap);
+    void* myPtr = SYCLmalloc(100 * sizeof(float), pMap);
     ASSERT_NE(myPtr, nullptr);
 
     ASSERT_FALSE(PointerMapper::is_nullptr(myPtr));
@@ -55,7 +55,7 @@ TEST(accessor, basic_test) {
     ASSERT_EQ(pMap.count(), 1u);
 
     cl::sycl::queue q;
-    q.submit([&](cl::sycl::handler &h) {
+    q.submit([&](cl::sycl::handler& h) {
       auto accB = pMap.get_access<sycl_acc_rw>(myPtr, h);
       h.single_task<class foo1>([=]() { accB[0] = 1.0f; });
     });
@@ -74,12 +74,12 @@ TEST(accessor, two_buffers) {
   PointerMapper pMap;
   {
     ASSERT_EQ(pMap.count(), 0u);
-    void *ptrA = SYCLmalloc(100 * sizeof(int), pMap);
+    void* ptrA = SYCLmalloc(100 * sizeof(int), pMap);
     ASSERT_NE(ptrA, nullptr);
     ASSERT_FALSE(PointerMapper::is_nullptr(ptrA));
     ASSERT_EQ(pMap.count(), 1u);
 
-    void *ptrB = SYCLmalloc(10 * sizeof(int), pMap);
+    void* ptrB = SYCLmalloc(10 * sizeof(int), pMap);
 
     ASSERT_NE(ptrB, nullptr);
     ASSERT_FALSE(PointerMapper::is_nullptr(ptrA));
@@ -90,7 +90,7 @@ TEST(accessor, two_buffers) {
         std::cout << "Error " << std::endl;
       });
 
-      q.submit([&](cl::sycl::handler &h) {
+      q.submit([&](cl::sycl::handler& h) {
         auto accB1 = pMap.get_access<sycl_acc_rw>(ptrA, h);
         auto accB2 = pMap.get_access<sycl_acc_rw>(ptrB, h);
         h.single_task<class foo2>([=]() {
@@ -130,7 +130,7 @@ TEST(accessor, allocator) {
     ASSERT_EQ(pMap.count(), 0u);
 
     // add a pointer with the base allocator type
-    void *ptrA = SYCLmalloc(100 * sizeof(int), pMap);
+    void* ptrA = SYCLmalloc(100 * sizeof(int), pMap);
 
     // get the buffer with the base allocator type
     auto bufA = pMap.get_buffer(ptrA);
@@ -138,7 +138,7 @@ TEST(accessor, allocator) {
     ASSERT_EQ(pMap.count(), 1u);
 
     // add a pointer with the allocator type
-    void *ptrB = SYCLmalloc<alloc_t>(100 * sizeof(int), pMap);
+    void* ptrB = SYCLmalloc<alloc_t>(100 * sizeof(int), pMap);
 
     // get the buffer with the allocator type
     cl::sycl::buffer<uint8_t, 1, alloc_t> bufB = pMap.get_buffer<alloc_t>(ptrB);

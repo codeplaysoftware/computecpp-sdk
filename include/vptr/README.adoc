@@ -40,8 +40,7 @@ assert(pMap.get_offset(c) == 5 * sizeof(float))
 // float myVal = *c;
 // Valid access on host: Use host-accessor
 {
-  auto syclAcc = pMap.get_buffer(a).get_access<access::mode::read,
-                                              access::target::host_buffer>();
+  auto syclAcc = pMap.get_buffer(a).get_access<access::mode::read>();
   float myVal = syclAcc[0];
 }
 

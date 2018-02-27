@@ -152,7 +152,8 @@ int main(int argc, char* argv[]) {
       auto globalGaussian = gaussian.get_access<access::mode::read>(cgh);
       /* The sampler is used to map user-provided co-ordinates to pixels in
        * the image. */
-      sampler smpl(false, addressing_mode::clamp, filtering_mode::nearest);
+      sampler smpl(coordinate_normalization_mode::unnormalized,
+                   addressing_mode::clamp, filtering_mode::nearest);
 
       cgh.parallel_for<class GaussianKernel>(myRange, [=](nd_item<2> itemID) {
         float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
