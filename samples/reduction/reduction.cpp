@@ -133,9 +133,7 @@ T sycl_reduce(const std::vector<T>& v) {
       /* It is always sensible to wrap host accessors in their own scope as
        * kernels using the buffers they access are blocked for the length
        * of the accessor's lifetime. */
-      auto hI =
-          bufI.template get_access<cl::sycl::access::mode::read,
-                                   cl::sycl::access::target::host_buffer>();
+      auto hI = bufI.template get_access<cl::sycl::access::mode::read>();
       retVal = hI[0];
     }
   }

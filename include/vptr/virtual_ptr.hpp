@@ -78,7 +78,7 @@ class PointerMapper {
     /** Conversions from virtual_pointer_t to
      * void * should just reinterpret_cast the integer number
      */
-    operator void *() const { return reinterpret_cast<void *>(m_contents); }
+    operator void*() const { return reinterpret_cast<void*>(m_contents); }
 
     /**
      * Convert back to the integer number.
@@ -123,7 +123,7 @@ class PointerMapper {
      * already a virtual_pointer_t, but we have no way of
      * checking
      */
-    virtual_pointer_t(const void *ptr)
+    virtual_pointer_t(const void* ptr)
         : m_contents(reinterpret_cast<base_ptr_t>(ptr)){};
 
     /**
@@ -142,7 +142,7 @@ class PointerMapper {
    * A pointer is nullptr if the value is of null_virtual_ptr
    */
   static inline bool is_nullptr(virtual_pointer_t ptr) {
-    return (static_cast<void *>(ptr) == nullptr);
+    return (static_cast<void*>(ptr) == nullptr);
   }
 
   /* basic type for all buffers
@@ -164,7 +164,7 @@ class PointerMapper {
       m_buffer.set_final_data(nullptr);
     }
 
-    bool operator<=(const pMapNode_t &rhs) { return (m_size <= rhs.m_size); }
+    bool operator<=(const pMapNode_t& rhs) { return (m_size <= rhs.m_size); }
   };
 
   /** Storage of the pointer / buffer tree
@@ -239,7 +239,7 @@ class PointerMapper {
     // We can do this without the `buffer_mem` being a pointer, as we
     // only declare member variables in the base class (`buffer_mem`) and not in
     // the child class (`buffer<>).
-    return *(static_cast<buffer_t *>(&get_node(ptr)->second.m_buffer));
+    return *(static_cast<buffer_t*>(&get_node(ptr)->second.m_buffer));
   }
 
   /**
@@ -254,7 +254,7 @@ class PointerMapper {
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
   get_access(const virtual_pointer_t ptr) {
     auto buf = get_buffer<buffer_allocator_base_t, buffer_data_type>(ptr);
-    return buf.template get_access<access_mode, access_target>();
+    return buf.template get_access<access_mode>();
   }
 
   /**
@@ -269,7 +269,7 @@ class PointerMapper {
             sycl_acc_target access_target = default_acc_target,
             typename buffer_data_type = buffer_data_type_t>
   cl::sycl::accessor<buffer_data_type, 1, access_mode, access_target>
-  get_access(const virtual_pointer_t ptr, cl::sycl::handler &cgh) {
+  get_access(const virtual_pointer_t ptr, cl::sycl::handler& cgh) {
     auto buf = get_buffer<buffer_allocator_base_t, buffer_data_type>(ptr);
     return buf.template get_access<access_mode, access_target>(cgh);
   }
@@ -305,7 +305,7 @@ class PointerMapper {
   /**
    * PointerMapper cannot be copied or moved
    */
-  PointerMapper(const PointerMapper &) = delete;
+  PointerMapper(const PointerMapper&) = delete;
 
   /**
   * Empty the pointer list
@@ -318,14 +318,14 @@ class PointerMapper {
   /* add_pointer.
    * Adds an existing pointer to the map and returns the virtual pointer id.
    */
-  inline virtual_pointer_t add_pointer(const buffer_t &b) {
+  inline virtual_pointer_t add_pointer(const buffer_t& b) {
     return add_pointer_impl(b);
   }
 
   /* add_pointer.
    * Adds a pointer to the map and returns the virtual pointer id.
    */
-  inline virtual_pointer_t add_pointer(buffer_t &&b) {
+  inline virtual_pointer_t add_pointer(buffer_t&& b) {
     return add_pointer_impl(b);
   }
 
@@ -335,7 +335,7 @@ class PointerMapper {
    *
    * @param node A reference to the free node to be fused
    */
-  void fuse_forward(typename pointerMap_t::iterator &node) {
+  void fuse_forward(typename pointerMap_t::iterator& node) {
     while (node != std::prev(m_pointerMap.end())) {
       // if following node is free
       // remove it and extend the current node with its size
@@ -357,7 +357,7 @@ class PointerMapper {
    *
    * @param node A reference to the free node to be fused
    */
-  void fuse_backward(typename pointerMap_t::iterator &node) {
+  void fuse_backward(typename pointerMap_t::iterator& node) {
     while (node != m_pointerMap.begin()) {
       // if previous node is free, extend it
       // with the size of the current one
@@ -407,7 +407,6 @@ class PointerMapper {
   size_t count() const { return (m_pointerMap.size() - m_freeList.size()); }
 
  private:
-
   /* add_pointer_impl.
    * Adds a pointer to the map and returns the virtual pointer id.
    * BufferT is either a const buffer_t& or a buffer_t&&.
@@ -497,12 +496,12 @@ inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
  * \throw cl::sycl::exception if error while creating the buffer
  */
 template <typename buffer_allocator = buffer_allocator_default_t>
-inline void *SYCLmalloc(size_t size, PointerMapper &pMap) {
+inline void* SYCLmalloc(size_t size, PointerMapper& pMap) {
   // Create a generic buffer of the given size
   using buffer_t = cl::sycl::buffer<buffer_data_type_t, 1, buffer_allocator>;
   auto thePointer = pMap.add_pointer(buffer_t(cl::sycl::range<1>{size}));
   // Store the buffer on the global list
-  return static_cast<void *>(thePointer);
+  return static_cast<void*>(thePointer);
 }
 
 /**
@@ -513,7 +512,7 @@ inline void *SYCLmalloc(size_t size, PointerMapper &pMap) {
  * it should be false only for sub-buffers.
  */
 template <bool ReUse = true, typename PointerMapper>
-inline void SYCLfree(void *ptr, PointerMapper &pMap) {
+inline void SYCLfree(void* ptr, PointerMapper& pMap) {
   pMap.template remove_pointer<ReUse>(ptr);
 }
 
@@ -521,7 +520,7 @@ inline void SYCLfree(void *ptr, PointerMapper &pMap) {
  * Clear all the memory allocated by SYCL.
  */
 template <typename PointerMapper>
-inline void SYCLfreeAll(PointerMapper &pMap) {
+inline void SYCLfreeAll(PointerMapper& pMap) {
   pMap.clear();
 }
 

@@ -51,9 +51,9 @@ TEST(space, add_only) {
   // Expect: memory usage grows
   PointerMapper pMap;
   {
-    float *ptrs[n];
+    float* ptrs[n];
     for (int i = 0; i < n; i++) {
-      ptrs[i] = static_cast<float *>(SYCLmalloc(100 * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(100 * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), i + 1);
     }
   }
@@ -63,10 +63,10 @@ TEST(space, remove_in_order) {
   // Expect: memory usage grows, then stays the same
   PointerMapper pMap;
   {
-    float *ptrs[n];
+    float* ptrs[n];
 
     for (int i = 0; i < n; i++) {
-      ptrs[i] = static_cast<float *>(SYCLmalloc(100 * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(100 * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), i + 1);
     }
 
@@ -81,10 +81,10 @@ TEST(space, remove_reverse_order) {
   // Expect: memory usage grows, then goes down
   PointerMapper pMap;
   {
-    float *ptrs[n];
+    float* ptrs[n];
 
     for (int i = 0; i < n; i++) {
-      ptrs[i] = static_cast<float *>(SYCLmalloc(100 * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(100 * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), i + 1);
     }
 
@@ -101,16 +101,16 @@ TEST(space, add_remove_same_size) {
   // Expect: memory usage stays low
   PointerMapper pMap;
   {
-    float *ptrs[n];
+    float* ptrs[n];
 
     for (int i = 0; i < startCount; i++) {
-      ptrs[i] = static_cast<float *>(SYCLmalloc(n * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(n * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), i + 1);
     }
 
     for (int i = startCount; i < n; i++) {
       SYCLfree(ptrs[i - startCount], pMap);
-      ptrs[i] = static_cast<float *>(SYCLmalloc(n * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(n * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), startCount);
     }
   }
@@ -120,17 +120,17 @@ TEST(space, add_remove_decreasing_size) {
   // Expect: memory usage grows
   PointerMapper pMap;
   {
-    float *ptrs[n];
+    float* ptrs[n];
 
     for (int i = 0; i < startCount; i++) {
-      ptrs[i] = static_cast<float *>(SYCLmalloc(n * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(n * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), i + 1);
     }
 
     for (int i = startCount; i < n; i++) {
       SYCLfree(ptrs[i - startCount], pMap);
       ptrs[i] =
-          static_cast<float *>(SYCLmalloc(1 * (n - i) * sizeof(float), pMap));
+          static_cast<float*>(SYCLmalloc(1 * (n - i) * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), startCount);
     }
   }
@@ -140,16 +140,16 @@ TEST(space, add_remove_increasing_size) {
   // Expect: memory usage grows
   PointerMapper pMap;
   {
-    float *ptrs[n];
+    float* ptrs[n];
 
     for (int i = 0; i < startCount; i++) {
-      ptrs[i] = static_cast<float *>(SYCLmalloc(1 * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(1 * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), i + 1);
     }
 
     for (int i = startCount; i < n; i++) {
       SYCLfree(ptrs[i - startCount], pMap);
-      ptrs[i] = static_cast<float *>(SYCLmalloc(i * sizeof(float), pMap));
+      ptrs[i] = static_cast<float*>(SYCLmalloc(i * sizeof(float), pMap));
       ASSERT_EQ(pMap.count(), startCount);
     }
   }
@@ -163,10 +163,10 @@ TEST(space, fragmentation) {
     auto length3 = 50;
     auto length4 = 100;
 
-    auto ptr1 = static_cast<float *>(SYCLmalloc(length1 * sizeof(float), pMap));
-    auto ptr2 = static_cast<float *>(SYCLmalloc(length2 * sizeof(float), pMap));
-    auto ptr3 = static_cast<float *>(SYCLmalloc(length3 * sizeof(float), pMap));
-    auto ptr4 = static_cast<float *>(SYCLmalloc(length4 * sizeof(float), pMap));
+    auto ptr1 = static_cast<float*>(SYCLmalloc(length1 * sizeof(float), pMap));
+    auto ptr2 = static_cast<float*>(SYCLmalloc(length2 * sizeof(float), pMap));
+    auto ptr3 = static_cast<float*>(SYCLmalloc(length3 * sizeof(float), pMap));
+    auto ptr4 = static_cast<float*>(SYCLmalloc(length4 * sizeof(float), pMap));
 
     // Remove the second pointer
     SYCLfree(ptr2, pMap);
@@ -178,7 +178,7 @@ TEST(space, fragmentation) {
     // Add a new pointer, half the size of the removed pointer
     auto length5 = length2 / 2;
     auto size5 = length5 * sizeof(float);
-    auto ptr5 = static_cast<float *>(SYCLmalloc(size5, pMap));
+    auto ptr5 = static_cast<float*>(SYCLmalloc(size5, pMap));
     // New pointer reuses the space of the removed pointer
     ASSERT_EQ(ptr2, ptr5);
     // The remaining space is freed and of correct size

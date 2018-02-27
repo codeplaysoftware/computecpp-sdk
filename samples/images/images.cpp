@@ -77,7 +77,8 @@ int main() {
        * SYCL's images and samplers map very well to the underlying OpenCL
        * constructs. OpenCL documentation has a more full discussion of
        * how images and samplers work. */
-      sampler smpl(false, addressing_mode::clamp, filtering_mode::nearest);
+      sampler smpl(coordinate_normalization_mode::unnormalized,
+                   addressing_mode::clamp, filtering_mode::nearest);
 
       cgh.parallel_for<class mod_image>(range<2>(16, 16), [=](item<2> item) {
 

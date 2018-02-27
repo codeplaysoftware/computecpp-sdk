@@ -30,8 +30,8 @@
 #include <CL/sycl.hpp>
 #include <iostream>
 
-#include "vptr/virtual_ptr.hpp"
 #include "vptr/pointer_alias.hpp"
+#include "vptr/virtual_ptr.hpp"
 
 using sycl_acc_target = cl::sycl::access::target;
 const sycl_acc_target sycl_acc_host = sycl_acc_target::host_buffer;
@@ -51,7 +51,7 @@ TEST(runtime, basic_test) {
 
   ASSERT_EQ(pMap.count(), 0u);
 
-  void *myPtr = SYCLmalloc(100 * sizeof(float), pMap);
+  void* myPtr = SYCLmalloc(100 * sizeof(float), pMap);
   ASSERT_NE(myPtr, nullptr);
 
   ASSERT_FALSE(PointerMapper::is_nullptr(myPtr));

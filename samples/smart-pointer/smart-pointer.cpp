@@ -63,8 +63,7 @@ int main() {
         /* The runtime will make data available via hA. It might use mapped
          * memory, temporary objects or internal allocations. It is up to
          * the implementation. The original pointer is not updated. */
-        auto hA =
-            buf.get_access<access::mode::read, access::target::host_buffer>();
+        auto hA = buf.get_access<access::mode::read>();
 
         int sum = 0;
         for (unsigned int i = 0; i < nElems; i++) {
@@ -144,8 +143,7 @@ int main() {
       {
         /* Host accessors will actually block on creation, so in this case we
          * know kernel2 has finished by the time hA is available. */
-        auto hA =
-            buf.get_access<access::mode::read, access::target::host_buffer>();
+        auto hA = buf.get_access<access::mode::read>();
 
         int sum = 0;
         for (unsigned int i = 0; i < nElems; i++) {

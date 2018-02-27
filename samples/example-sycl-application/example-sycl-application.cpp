@@ -97,7 +97,7 @@ int main() {
      * were we to use buffer c on the device again, no copy would be issued
      * (and in fact, the operator[]() exposed here does not return an lvalue,
      * and cannot be assigned to).*/
-    auto C = c.get_access<access::mode::read, access::target::host_buffer>();
+    auto C = c.get_access<access::mode::read>();
     std::cout << "Result:" << std::endl;
     for (size_t i = 0; i < N; i++) {
       for (size_t j = 0; j < M; j++) {
