@@ -156,7 +156,7 @@ int main(int argc, char* argv[]) {
 
       cgh.parallel_for<class GaussianKernel>(myRange, [=](nd_item<2> itemID) {
         float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
-        constexpr auto offset = 3 * stddev;
+        static constexpr auto offset = 3 * stddev;
 
         for (int x = -3 * stddev; x < 3 * stddev; x++) {
           for (int y = -3 * stddev; y < 3 * stddev; y++) {
