@@ -251,6 +251,7 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
         ${device_compiler_includes})
     endforeach()
   endif()
+  list(REMOVE_DUPLICATES device_compiler_includes)
 
   # Obtain language standard of the file
   set(device_compiler_cxx_standard)
