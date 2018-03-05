@@ -106,7 +106,7 @@ int main(int argc, char* argv[]) {
   outputData = new char[inputWidth * inputHeight * numChannels];
 
   const float pi = std::atan(1) * 4;
-  constexpr auto stddev = 4;
+  static constexpr auto stddev = 4;
 
   /* This range represents the full amount of work to be done across the
    * image. We dispatch one thread per pixel. */
