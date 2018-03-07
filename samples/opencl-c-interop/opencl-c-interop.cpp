@@ -47,9 +47,8 @@ const char* kernel_src_pow_x = R"EOK(
 )EOK";
 
 int main() {
-  /* This is the maximum absolute precision error between host and device
-   * libraries. */
-  float maximum_precision_error = 0.0f;
+  /* This is the maximum absolute error between host and device libraries. */
+  float maximum_error = 0.0f;
 
   const int nElems = 64;
   float input[nElems], call_pow[nElems], std_math_pow[nElems],
@@ -182,12 +181,11 @@ int main() {
   /* Finally, this loop performs a host-side comparison. */
   for (int i = 0; i < nElems; i++) {
     std_math_pow[i] = std::pow(input[i], input[i] / (i + 1));
-    maximum_precision_error =
-        std::max(maximum_precision_error,
-                 std::max(std::fabs(err_host_device[i] - std_math_pow[i]),
-                          std::fabs(call_pow[i] - std_math_pow[i])));
+    maximum_error = std::max(
+        maximum_error, std::max(std::fabs(err_host_device[i] - std_math_pow[i]),
+                                std::fabs(call_pow[i] - std_math_pow[i])));
   }
-  std::cout << "Maximum Absolute Error " << std::fabs(maximum_precision_error)
+  std::cout << "Maximum Absolute Error " << std::fabs(maximum_error)
             << std::endl;
 
   return 0;
