@@ -40,15 +40,15 @@ namespace cl {
 namespace sycl {
 namespace codeplay {
 
-template<typename T, typename AccessorT>
+template <typename T, typename AccessorT>
 typename cl::sycl::global_ptr<T>::pointer_t get_device_ptr_as(AccessorT& acc) {
-     return reinterpret_cast<typename cl::sycl::global_ptr<T>::pointer_t>
-              (&(acc.get_pointer()[0]));
+  return reinterpret_cast<typename cl::sycl::global_ptr<T>::pointer_t>(
+      acc.get_pointer().get());
 }
 
-template<typename T, typename AccessorT>
-T * get_host_ptr_as(AccessorT& acc) {
-     return reinterpret_cast<T *>(&(acc.get_pointer()[0]));
+template <typename T, typename AccessorT>
+T* get_host_ptr_as(AccessorT& acc) {
+  return reinterpret_cast<T*>(acc.get_pointer());
 }
 
 }  // codeplay
@@ -56,4 +56,3 @@ T * get_host_ptr_as(AccessorT& acc) {
 }  // cl
 
 #endif  // CL_SYCL_POINTER_ALIAS
-
