@@ -157,10 +157,10 @@ int main(int argc, char* argv[]) {
 
       cgh.parallel_for<class GaussianKernel>(myRange, [=](nd_item<2> itemID) {
         float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
-        static constexpr auto offset = 3 * stddev;
+        constexpr auto offset = 3 * stddev;
 
-        for (int x = -3 * stddev; x < 3 * stddev; x++) {
-          for (int y = -3 * stddev; y < 3 * stddev; y++) {
+        for (int x = - offset; x < offset; x++) {
+          for (int y = - offset; y < offset; y++) {
             auto inputCoords =
                 int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
             newPixel += inPtr.read(inputCoords, smpl) *
