@@ -79,7 +79,7 @@ void vector_add(buffer<dataT, 1>* a, buffer<dataT, 1>* b, buffer<dataT, 1>* c,
 
   cgh.parallel_for(range<1>(count),
                    vector_add_kernel<dataT>(a_dev, b_dev, c_dev));
-};
+}
 
 /* Using the code above, two vector additions are performed: one on ints,
  * the other on floats. */

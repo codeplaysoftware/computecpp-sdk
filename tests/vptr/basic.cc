@@ -277,7 +277,7 @@ TEST(pointer_mapper, multiple_alloc_free) {
   {
     int* ptrToFree = nullptr;
 
-    for (auto i = 0; i < numAllocations / 2; i++) {
+    for (auto i = 0u; i < numAllocations / 2; i++) {
       int* current =
           static_cast<int*>(SYCLmalloc(uniform_dist(e1) * sizeof(int), pMap));
       // We choose a random pointer to free from the entire range
@@ -289,7 +289,7 @@ TEST(pointer_mapper, multiple_alloc_free) {
     SYCLfree(ptrToFree, pMap);
     ASSERT_EQ(pMap.count(), (numAllocations / 2) - 1);
     int* ptrInBetween = static_cast<int*>(SYCLmalloc(50 * sizeof(int), pMap));
-    for (auto i = 0; i < numAllocations / 2; i++) {
+    for (auto i = 0u; i < numAllocations / 2; i++) {
       int* current =
           static_cast<int*>(SYCLmalloc(uniform_dist(e1) * sizeof(int), pMap));
       // We choose a random pointer to free from the entire range

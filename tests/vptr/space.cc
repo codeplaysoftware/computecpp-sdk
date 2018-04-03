@@ -33,18 +33,11 @@
 #include "vptr/pointer_alias.hpp"
 #include "vptr/virtual_ptr.hpp"
 
-using sycl_acc_target = cl::sycl::access::target;
-const sycl_acc_target sycl_acc_host = sycl_acc_target::host_buffer;
-const sycl_acc_target sycl_acc_buffer = sycl_acc_target::global_buffer;
-
-using sycl_acc_mode = cl::sycl::access::mode;
-const sycl_acc_mode sycl_acc_rw = sycl_acc_mode::read_write;
-
 using namespace cl::sycl::codeplay;
 
 using buffer_t = PointerMapper::buffer_t;
 
-int n = 10000;
+constexpr int n = 10000;
 int startCount = 5;
 
 TEST(space, add_only) {

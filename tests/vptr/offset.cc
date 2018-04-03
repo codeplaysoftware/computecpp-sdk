@@ -34,7 +34,6 @@
 #include "vptr/virtual_ptr.hpp"
 
 using sycl_acc_target = cl::sycl::access::target;
-const sycl_acc_target sycl_acc_host = sycl_acc_target::host_buffer;
 const sycl_acc_target sycl_acc_buffer = sycl_acc_target::global_buffer;
 
 using sycl_acc_mode = cl::sycl::access::mode;

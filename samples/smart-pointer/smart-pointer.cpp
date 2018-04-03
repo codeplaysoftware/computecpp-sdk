@@ -156,8 +156,8 @@ int main() {
       }
     }
     /* Normally data is copied to the host when buffers are destroyed, which
-     * would happen here, but since a map_allocator and host_accessor were
-     * used in concert no data copy happens (i.e., it has already happened. */
+     * would happen here, but since `use_host_ptr` and a host accessor were
+     * used in concert no data copy happens (i.e., has *already* happened). */
   }
 
   return correct ? 0 : 1;
