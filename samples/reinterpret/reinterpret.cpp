@@ -46,8 +46,8 @@ int main() {
   auto buf_int = buf_float.reinterpret<uint32_t>(r);
   q.submit([&](cl::sycl::handler& cgh) {
     auto acc = buf_int.get_access<cl::sycl::access::mode::read_write>(cgh);
-    /* This kernel will double IEEE-754 32-bit floats by manipulating the
-     * exponent directly */
+    /* This kernel will multiply IEEE-754 32-bit floats by two, by manipulating
+     * the exponent directly */
     cgh.parallel_for<class mult>(r, [=](cl::sycl::item<2> i) {
       constexpr auto mask = 0x7F800000u;
       constexpr auto mantissa_shift = 23u;
