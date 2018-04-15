@@ -59,7 +59,8 @@ directory of the ComputeCpp install (i.e. the directory with the the folders
 bin, include, lib and so on). You can also specify COMPUTECPP_SDK_BUILD_TESTS
 to add the tests/ subdirectory to the build, which will causes Gtest-based
 programs testing the legacy pointer and virtual pointer classes to be
-emitted.
+emitted. Some samples have optional OpenMP support. You can enable it by
+setting COMPUTECPP_SDK_USE_OPENMP to ON in CMake.
 
 You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_PREFIX to
 choose a Debug or Release build and the location you'd like to be used when
