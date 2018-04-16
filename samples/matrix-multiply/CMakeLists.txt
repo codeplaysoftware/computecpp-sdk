@@ -8,6 +8,24 @@ if(NOT MSVC)
     ${SOURCE_NAME}
     PUBLIC -Wno-unknown-pragmas
   )
+
+  if(COMPUTECPP_SDK_USE_OPENMP)
+    find_package(OpenMP REQUIRED)
+    if(TARGET OpenMP::OpenMP_CXX)
+        target_link_libraries(${SOURCE_NAME} PRIVATE OpenMP::OpenMP_CXX)
+    else()
+        # Workaround for CMake <3.9 - FindOpenMP does not provide the
+        # linker flags and no imported target
+        target_compile_options(
+          ${SOURCE_NAME}
+          PRIVATE ${OpenMP_CXX_FLAGS}
+        )
+        target_link_libraries(
+          ${SOURCE_NAME}
+          PRIVATE ${OpenMP_CXX_FLAGS}
+        )
+    endif()
+  endif()
 endif()
 add_sycl_to_target(
   ${SOURCE_NAME}
