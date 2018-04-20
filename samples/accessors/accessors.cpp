@@ -71,18 +71,17 @@ int main() {
      * successfully or otherwise. */
     myQueue.wait();
 
-  } catch (exception e) {
-    std::cout << "SYCL exception caught: " << e.what();
+  } catch (exception const& e) {
+    std::cout << "SYCL exception caught: " << e.what() << '\n';
     return 2;
   }
 
   /* We check that the result is correct. */
   if (data == 25) {
-    std::cout << "Hurray! 5 * 5 is " << data << std::endl;
+    std::cout << "Hurray! 5 * 5 is " << data << '\n';
     return 0;
   } else {
-    std::cout << "Oops! Something went wrong... 5 * 5 is not " << data << "!"
-              << std::endl;
+    std::cout << "Oops! Something went wrong... 5 * 5 is not " << data << "!\n";
     return 1;
   }
 }
