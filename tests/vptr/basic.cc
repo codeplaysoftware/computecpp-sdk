@@ -332,3 +332,41 @@ TEST(pointer_mapper, default_access) {
     ASSERT_EQ(pMap.count(), 0u);
   }
 }
+
+TEST(pointer_mapper, alloc_zero) {
+  PointerMapper pMap;
+  {
+    ASSERT_EQ(pMap.count(), 0u);
+    void* myZeroPtr1 = SYCLmalloc(0, pMap);
+    ASSERT_EQ(myZeroPtr1, nullptr);
+    ASSERT_EQ(pMap.count(), 0u);
+
+    void* myPtr = SYCLmalloc(1 * sizeof(float), pMap);
+    ASSERT_NE(myPtr, nullptr);
+    ASSERT_EQ(pMap.count(), 1u);
+
+    void* myZeroPtr2 = SYCLmalloc(0, pMap);
+    ASSERT_EQ(myZeroPtr2, nullptr);
+    ASSERT_EQ(pMap.count(), 1u);
+
+    cl::sycl::queue q;
+    q.submit([&](cl::sycl::handler& h) {
+      ASSERT_THROW(pMap.get_access(myZeroPtr1, h), std::out_of_range);
+      ASSERT_THROW(pMap.get_access(myZeroPtr2, h), std::out_of_range);
+      auto accDev = pMap.get_access(myPtr, h);
+      h.single_task<class foo4>([=]() { accDev[0] = 1.0f; });
+    });
+
+    {
+      auto hostAcc = pMap.get_access<sycl_acc_rw, sycl_acc_host>(myPtr);
+      ASSERT_EQ(hostAcc[0], 1.0f);
+    }
+
+    SYCLfree(myZeroPtr1, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(myZeroPtr2, pMap);
+    ASSERT_EQ(pMap.count(), 1u);
+    SYCLfree(myPtr, pMap);
+    ASSERT_EQ(pMap.count(), 0u);
+  }
+}
