@@ -68,7 +68,8 @@ To retrieve the SYCL buffer from the virtual pointer, use the
 *codeplay::PointerMapper::get_buffer* function. The offset into the SYCL buffer
 on the device side can be retrieved using the
 *codeplay::PointerMapper::get_offset* function.
-A pointer of size zero can be malloc'ed and free'd but cannot be accessed.
+A pointer of size zero can be malloc'ed and free'd but will throw an exception
+if accessed.
 
 See the tests for basic usage examples.
 Note that the pointer cannot be dereferenced on the host, but host accessors
