@@ -64,7 +64,7 @@ mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 if(NOT MSVC)
   # The compiler driver is only available on Linux at the moment.
-  option(COMPUTECPP_USE_COMPILER_DRIVER "Use ComputeCpp compiler driver" ON)
+  option(COMPUTECPP_USE_COMPILER_DRIVER "Use ComputeCpp compiler driver" OFF)
   mark_as_advanced(COMPUTECPP_USE_COMPILER_DRIVER)
 endif()
 
