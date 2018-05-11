@@ -211,6 +211,9 @@ class PointerMapper {
     if (this->count() == 0) {
       throw std::out_of_range("There are no pointers allocated");
     }
+    if (is_nullptr(ptr)) {
+      throw std::out_of_range("Cannot access null pointer");
+    }
     // The previous element to the lower bound is the node that
     // holds this memory address
     auto node = m_pointerMap.lower_bound(ptr);
@@ -382,6 +385,9 @@ class PointerMapper {
    */
   template <bool ReUse = true>
   void remove_pointer(const virtual_pointer_t ptr) {
+    if (is_nullptr(ptr)) {
+      return;
+    }
     auto node = this->get_node(ptr);
 
     node->second.m_free = true;
@@ -485,6 +491,9 @@ class PointerMapper {
  */
 template <>
 inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
+  if (is_nullptr(ptr)) {
+    return;
+  }
   m_pointerMap.erase(this->get_node(ptr));
 }
 
@@ -497,6 +506,9 @@ inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
  */
 template <typename buffer_allocator = buffer_allocator_default_t>
 inline void* SYCLmalloc(size_t size, PointerMapper& pMap) {
+  if (size == 0) {
+    return nullptr;
+  }
   // Create a generic buffer of the given size
   using buffer_t = cl::sycl::buffer<buffer_data_type_t, 1, buffer_allocator>;
   auto thePointer = pMap.add_pointer(buffer_t(cl::sycl::range<1>{size}));
