@@ -240,7 +240,7 @@ if(COMPUTECPP_USE_COMPILER_DRIVER)
 endif()
 
 ####################
-#   __build_sycl
+#   __build_spir
 ####################
 #
 #  Adds a custom target for running compute++ and adding a dependency for the
