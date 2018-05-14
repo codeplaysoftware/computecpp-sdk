@@ -16,6 +16,10 @@ include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
 
 enable_testing()
 
+# This will enable ComputeCpp compiler driver if COMPUTECPP_USE_COMPILER_DRIVER
+# was specified and the driver is supported by the current system.
+enable_sycl_compiler_driver()
+
 add_subdirectory(samples)
 if(COMPUTECPP_SDK_BUILD_TESTS)
   add_subdirectory(tests)

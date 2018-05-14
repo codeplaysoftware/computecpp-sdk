@@ -10,9 +10,9 @@ if(NOT MSVC)
   )
 endif()
 add_sycl_to_target(
-  ${SOURCE_NAME}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
+  TARGET ${SOURCE_NAME}
+  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
+  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
 )
 # Copy the image Lenna.png into the binary directory. As there are no
 # configuration directories on multi configuration generators (i.e. MSVC) if you

@@ -62,6 +62,12 @@ mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
+if(NOT MSVC)
+  # The compiler driver is only available on Linux at the moment.
+  option(COMPUTECPP_USE_COMPILER_DRIVER "Use ComputeCpp compiler driver" ON)
+  mark_as_advanced(COMPUTECPP_USE_COMPILER_DRIVER)
+endif()
+
 # Platform-specific arguments
 if(MSVC)
   # Workaround to an unfixed Clang bug, rationale:
@@ -212,6 +218,27 @@ define_property(
   non-standards-conformant SYCL code to compile with ComputeCpp."
 )
 
+# Enable the usage of the ComputeCpp compiler driver. This removes the need
+# to explicitly generate the sycl integration header in a separate compiler pass.
+if(COMPUTECPP_USE_COMPILER_DRIVER)
+  # Check if the current system supports the compiler driver
+  set(isCompilerDriverSupported NO)
+
+  # For now, the compiler driver is only supported if the host compiler is either clang or gcc
+  if(CMAKE_COMPILER_IS_GNUCXX OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(isCompilerDriverSupported YES)
+  endif()
+
+  if(isCompilerDriverSupported)
+    # If the compiler driver is supported, change the CXX compiler to compute++ so the driver can work property.
+    # When building a non-sycl application, compute++ acts like the host compiler, so no problems are expected.
+    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-driver)
+  else()
+    message(WARNING "The compiler driver is not supported by this system.")
+    message(WARNING "COMPUTECPP_USE_COMPILER_DRIVER will be ignored.")
+  endif()
+endif()
+
 ####################
 #   __build_spir
 ####################
@@ -251,7 +278,6 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
         ${device_compiler_includes})
     endforeach()
   endif()
-  list(REMOVE_DUPLICATES device_compiler_includes)
 
   # Obtain language standard of the file
   set(device_compiler_cxx_standard)
@@ -359,6 +385,24 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
 
 endfunction()
 
+##############################
+#  enable_sycl_compiler_driver
+##############################
+#
+#  Helper macro that switches on the compiler driver to be used from this point onwards.
+#  Since this call will replace the current C++ compiler, this needs to be at
+#  the end of the CMake tree to avoid the cache being deleted and all flags lost.
+#
+#  Calling this macro should have no effect when compiling existing non-sycl code since
+#  the compiler driver will the same as the host compiler.
+#
+macro(enable_sycl_compiler_driver)
+  if(COMPUTECPP_USE_COMPILER_DRIVER AND isCompilerDriverSupported)
+    set(CMAKE_CXX_COMPILER ${COMPUTECPP_DEVICE_COMPILER})
+  endif()
+endmacro(enable_sycl_compiler_driver)
+
+
 #######################
 #  add_sycl_to_target
 #######################
@@ -370,23 +414,48 @@ endfunction()
 #  binaryDir : Intermediate directory to output the integration header.
 #  sourceFiles : Source files to be compiled for SYCL.
 #
-function(add_sycl_to_target targetName binaryDir sourceFiles)
+function(add_sycl_to_target)
+  set(options)
+  set(oneValueArgs TARGET BINARY_DIR)
+  set(multiValueArgs SOURCES)
+  cmake_parse_arguments(add_sycl_to_target "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  set(sourceFiles ${sourceFiles} ${ARGN})
+  set(targetName ${add_sycl_to_target_TARGET})
+  set(binaryDir ${add_sycl_to_target_BINARY_DIR})
+  set(sourceFiles ${add_sycl_to_target_SOURCES})
+
   set(fileCounter 0)
   target_include_directories(
     ${targetName} SYSTEM
     PRIVATE ${OpenCL_INCLUDE_DIR}
     PRIVATE ${COMPUTECPP_INCLUDE_DIRECTORY}
   )
-  # Add custom target to run compute++ and generate the integration header
-  foreach(sourceFile ${sourceFiles})
-    if(NOT IS_ABSOLUTE ${sourceFile})
-      set(sourceFile "${CMAKE_CURRENT_SOURCE_DIR}/${sourceFile}")
+
+  if(COMPUTECPP_USE_COMPILER_DRIVER AND isCompilerDriverSupported)
+    # Convert argument list format
+    separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+    # Set all flags required to compile the target when using the compiler driver
+    set(computeCppCompileOptions ${COMPUTECPP_DEVICE_COMPILER_FLAGS})
+    get_property(includeAfter TARGET ${targetName} PROPERTY COMPUTECPP_INCLUDE_AFTER)
+    if(includeAfter)
+      list(APPEND computeCppCompileOptions -fsycl-ih-last)
     endif()
-    __build_spir(${targetName} ${sourceFile} ${binaryDir} ${fileCounter})
-    MATH(EXPR fileCounter "${fileCounter} + 1")
-  endforeach()
+    target_compile_options(${targetName} PUBLIC ${computeCppCompileOptions})
+  else()
+    if(NOT binaryDir)
+      message(WARNING " ComputeCpp Warning: BINARY_DIR was not specified. Using CMAKE_CUURENT_BINARY_DIR which is \"${CMAKE_CUURENT_BINARY_DIR}\"")
+      set(binaryDir ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
+    if(NOT sourceFiles)
+      message(FALTAL_ERROR " ComputeCpp Error: SOURCES was not specified. At least one source file must be provided.")
+    endif()
+
+    # Add custom target to run compute++ and generate the integration header
+    foreach(sourceFile ${sourceFiles})
+      __build_spir(${targetName} ${sourceFiles} ${binaryDir} ${fileCounter})
+      MATH(EXPR fileCounter "${fileCounter} + 1")
+    endforeach()
+  endif()
 
   # Link with the ComputeCpp runtime library
   target_link_libraries(${targetName} PUBLIC $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}>
