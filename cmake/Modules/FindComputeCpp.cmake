@@ -64,7 +64,7 @@ mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 if(NOT MSVC)
   # The compiler driver is only available on Linux at the moment.
-  option(COMPUTECPP_USE_COMPILER_DRIVER "Use ComputeCpp compiler driver" OFF)
+  option(COMPUTECPP_USE_COMPILER_DRIVER "Use ComputeCpp compiler driver" ON)
   mark_as_advanced(COMPUTECPP_USE_COMPILER_DRIVER)
 endif()
 
@@ -229,10 +229,10 @@ if(COMPUTECPP_USE_COMPILER_DRIVER)
     set(isCompilerDriverSupported YES)
   endif()
 
-  if(${isCompilerDriverSupported})
+  if(isCompilerDriverSupported)
     # If the compiler driver is supported, change the CXX compiler to compute++ so the driver can work property.
     # When building a non-sycl application, compute++ acts like the host compiler, so no problems are expected.
-    list(APPEND COMPUTECPP_COMPILER_FLAGS -sycl-driver)
+    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-driver)
   else()
     message(WARNING "The compiler driver is not supported by this system.")
     message(WARNING "COMPUTECPP_USE_COMPILER_DRIVER will be ignored.")
@@ -432,8 +432,10 @@ function(add_sycl_to_target)
   )
 
   if(COMPUTECPP_USE_COMPILER_DRIVER AND isCompilerDriverSupported)
+    # Convert argument list format
+    separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
     # Set all flags required to compile the target when using the compiler driver
-    set(computeCppCompileOptions ${COMPUTECPP_COMPILER_FLAGS} -sycl-driver)
+    set(computeCppCompileOptions ${COMPUTECPP_DEVICE_COMPILER_FLAGS})
     get_property(includeAfter TARGET ${targetName} PROPERTY COMPUTECPP_INCLUDE_AFTER)
     if(includeAfter)
       list(APPEND computeCppCompileOptions -fsycl-ih-last)
