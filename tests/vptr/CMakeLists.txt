@@ -24,7 +24,6 @@ add_test(OffsetTests offset)
 if (COMPUTECPP_INTERFACE)
   add_definitions(-DCOMPUTECPP_INTERFACE=${COMPUTECPP_INTERFACE})
   add_executable(runtime runtime.cc)
-  set_property(TARGET runtime PROPERTY CXX_STANDARD 11)
   target_link_libraries(runtime PUBLIC gtest
                                 PUBLIC gtest_main
                                 PUBLIC ${CMAKE_THREAD_LIBS_INIT})
