@@ -78,12 +78,12 @@ int main() {
          * per work-item and lives in work-item-private memory. */
         private_memory<int> privateObj(groupID);
 
-        groupID.parallel_for_work_item([&](item<1> itemID) {
+        groupID.parallel_for_work_item([&](h_item<1> itemID) {
           /* Assign the work-item global id into private memory. */
-          privateObj(itemID) = get_global_id(groupID, itemID)[0];
+          privateObj(itemID) = itemID.get_global_id()[0];
         });
 
-        groupID.parallel_for_work_item([&](item<1> itemID) {
+        groupID.parallel_for_work_item([&](h_item<1> itemID) {
           /* Retrieve the global id stored in the previous
            * parallel_for_work_item call and store it in global memory. */
           auto globalID = privateObj(itemID);

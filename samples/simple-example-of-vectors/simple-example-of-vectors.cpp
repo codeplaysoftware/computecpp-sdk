@@ -88,7 +88,7 @@ int main() {
   }
 
   for (int i = 0; i < size; i++) {
-    if (dataB[i].y() != static_cast<float>(i)) {
+    if (static_cast<float>(dataB[i].y()) != i) {
       ret = -1;
     }
   }
