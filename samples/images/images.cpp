@@ -104,9 +104,8 @@ int main() {
     return 2;
   }
 
-  /* We check the result is correct. */
-  if (dest[0].x() == 10.0f && dest[0].y() == 20.0f && dest[0].z() == 30.0f &&
-      dest[0].w() == 40.0f) {
+  cl::sycl::float4 expected = {10.f, 20.f, 30.f, 40.f};
+  if (cl::sycl::all(cl::sycl::isequal(dest[0], expected))) {
     std::cout << "The output image is as expected." << std::endl;
     return 0;
   } else {
