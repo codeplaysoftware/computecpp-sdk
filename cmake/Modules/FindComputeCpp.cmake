@@ -64,9 +64,12 @@ mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 # Platform-specific arguments
 if(MSVC)
-  # Workaround to an unfixed Clang bug, rationale:
+  # If you encounter problems with types such as char16_t and char32_t not
+  # being defined, you can try to enable the flag below.
+  # See also:
   # https://github.com/codeplaysoftware/computecpp-sdk/pull/51#discussion_r139399093
-  set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
+  # https://github.com/codeplaysoftware/computecpp-sdk/issues/112
+  # set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
 endif()
 
 # Find OpenCL package
