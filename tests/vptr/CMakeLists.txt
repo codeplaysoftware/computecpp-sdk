@@ -2,9 +2,9 @@
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 add_executable(basic basic.cc)
-target_link_libraries(basic PUBLIC ${gtest_BINARY_DIR}/libgtest.a
-                            PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a
-                            PUBLIC pthread)
+target_link_libraries(basic PUBLIC gtest
+                            PUBLIC gtest_main
+                            PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(basic gtest_main)
 add_dependencies(basic gtest)
 add_sycl_to_target(basic  ${CMAKE_CURRENT_BINARY_DIR}
@@ -12,9 +12,9 @@ add_sycl_to_target(basic  ${CMAKE_CURRENT_BINARY_DIR}
 add_test(BasicTests basic)
 
 add_executable(offset offset.cc)
-target_link_libraries(offset PUBLIC ${gtest_BINARY_DIR}/libgtest.a
-                             PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a
-                             PUBLIC pthread)
+target_link_libraries(offset PUBLIC gtest
+                             PUBLIC gtest_main
+                             PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(offset gtest_main)
 add_dependencies(offset gtest)
 add_sycl_to_target(offset  ${CMAKE_CURRENT_BINARY_DIR}
@@ -25,9 +25,9 @@ if (COMPUTECPP_INTERFACE)
   add_definitions(-DCOMPUTECPP_INTERFACE=${COMPUTECPP_INTERFACE})
   add_executable(runtime runtime.cc)
   set_property(TARGET runtime PROPERTY CXX_STANDARD 11)
-  target_link_libraries(runtime PUBLIC ${gtest_BINARY_DIR}/libgtest.a
-                                PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a
-                                PUBLIC pthread)
+  target_link_libraries(runtime PUBLIC gtest
+                                PUBLIC gtest_main
+                                PUBLIC ${CMAKE_THREAD_LIBS_INIT})
   add_dependencies(runtime gtest_main)
   add_dependencies(runtime gtest)
   add_sycl_to_target(runtime  ${CMAKE_CURRENT_BINARY_DIR}
@@ -37,9 +37,9 @@ endif()
 
 
 add_executable(space space.cc)
-target_link_libraries(space PUBLIC ${gtest_BINARY_DIR}/libgtest.a
-                            PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a
-                            PUBLIC pthread)
+target_link_libraries(space PUBLIC gtest
+                            PUBLIC gtest_main
+                            PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(space gtest_main)
 add_dependencies(space gtest)
 add_sycl_to_target(space  ${CMAKE_CURRENT_BINARY_DIR}
@@ -47,9 +47,9 @@ add_sycl_to_target(space  ${CMAKE_CURRENT_BINARY_DIR}
 add_test(SpaceTests space)
 
 add_executable(accessor accessor.cc)
-target_link_libraries(accessor PUBLIC ${gtest_BINARY_DIR}/libgtest.a
-                               PUBLIC ${gtest_BINARY_DIR}/libgtest_main.a
-                               PUBLIC pthread)
+target_link_libraries(accessor PUBLIC gtest
+                               PUBLIC gtest_main
+                               PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(accessor gtest_main)
 add_dependencies(accessor gtest)
 add_sycl_to_target(accessor  ${CMAKE_CURRENT_BINARY_DIR}
