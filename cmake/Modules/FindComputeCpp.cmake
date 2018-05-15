@@ -62,13 +62,6 @@ mark_as_advanced(COMPUTECPP_DISABLE_GCC_DUAL_ABI)
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
-# Platform-specific arguments
-if(MSVC)
-  # Workaround to an unfixed Clang bug, rationale:
-  # https://github.com/codeplaysoftware/computecpp-sdk/pull/51#discussion_r139399093
-  set (COMPUTECPP_PLATFORM_SPECIFIC_ARGS "-fno-ms-compatibility")
-endif()
-
 # Find OpenCL package
 find_package(OpenCL REQUIRED)
 
@@ -281,7 +274,6 @@ function(__build_spir targetName sourceFile binaryDir fileCounter)
     COMMAND ${COMPUTECPP_DEVICE_COMPILER}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
             -isystem ${COMPUTECPP_INCLUDE_DIRECTORY}
-            ${COMPUTECPP_PLATFORM_SPECIFIC_ARGS}
             ${device_compiler_includes}
             -o ${outputSyclFile}
             -c ${sourceFile}
