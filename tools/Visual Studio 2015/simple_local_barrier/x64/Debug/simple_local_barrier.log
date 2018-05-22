@@ -1,0 +1,4 @@
+﻿  simple_local_barrier.cpp
+c:\users\graham\documents\work\computecpp-sdk(wininstall)\samples\simple_local_barrier\simple_local_barrier.cpp(55): error C2872: 'cl_int': ambiguous symbol
+  c:\intel\opencl\sdk\include\cl\cl_platform.h(182): note: could be 'int cl_int'
+  c:\program files\codeplay\computecpp\include\sycl\cl_types.h(37): note: or       'cl::sycl::cl_int'

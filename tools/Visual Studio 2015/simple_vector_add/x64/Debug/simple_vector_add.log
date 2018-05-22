@@ -1,0 +1,16 @@
+﻿  simple_vector_add.cpp
+C:\Program Files\Codeplay\ComputeCpp\include\SYCL/accessor.h(363): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
+  ..\..\..\samples\simple_vector_add\simple_vector_add.cpp(59): note: see reference to function template instantiation 'int &cl::sycl::detail::accessor_common<elemT,1,cl::sycl::access::mode::write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<1>) const' being compiled
+          with
+          [
+              elemT=cl::sycl::cl_int
+          ]
+  ..\..\..\samples\simple_vector_add\simple_vector_add.cpp(59): note: see reference to function template instantiation 'int &cl::sycl::detail::accessor_common<elemT,1,cl::sycl::access::mode::write,cl::sycl::access::target::global_buffer,cl::sycl::codeplay::access::placeholder::false_t>::operator []<elemT,void>(cl::sycl::id<1>) const' being compiled
+          with
+          [
+              elemT=cl::sycl::cl_int
+          ]
+  ..\..\..\samples\simple_vector_add\simple_vector_add.cpp(70): note: see reference to function template instantiation 'void simple_vadd<cl::sycl::cl_int,4>(const std::array<cl::sycl::cl_int,4> &,const std::array<cl::sycl::cl_int,4> &,std::array<cl::sycl::cl_int,4> &)' being compiled
+  ==================================
+  simple_vector_add.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\simple_vector_add.exe
+  simple_vector_add.vcxproj -> C:\Users\Graham\Documents\Work\computecpp-sdk(WinInstall)\tools\Visual Studio 2015\x64\Debug\simple_vector_add.pdb (Full PDB)

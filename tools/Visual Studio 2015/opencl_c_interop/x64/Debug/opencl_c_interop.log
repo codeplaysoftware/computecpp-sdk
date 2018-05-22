@@ -1,0 +1,3 @@
+﻿  opencl_c_interop.cpp
+  ==================================
+LINK : fatal error LNK1104: cannot open file 'opencl.libkernel32.lib'

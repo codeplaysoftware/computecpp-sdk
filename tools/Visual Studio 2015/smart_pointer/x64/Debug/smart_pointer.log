@@ -1,0 +1,4 @@
+﻿  smart_pointer.cpp
+..\..\..\samples\smart_pointer\smart_pointer.cpp(97): error C2398: Element '1': conversion from 'const int' to 'std::size_t' requires a narrowing conversion
+..\..\..\samples\smart_pointer\smart_pointer.cpp(107): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+LINK : fatal error LNK1104: cannot open file 'x64\Debug\smart_pointer.obj'
