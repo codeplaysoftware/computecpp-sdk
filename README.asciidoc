@@ -67,6 +67,11 @@ choose a Debug or Release build and the location you'd like to be used when
 the "install" target is built. The install target currently will copy all
 the sample binaries to the directory of your choosing.
 
+Lastly, the SDK will build targeting spir64 IR by default. This will work
+on most devices, but wouldn't work on NVIDIA (for example). To that end,
+you can specify -DCOMPUTECPP_BITCODE=target, which can be any of `spir[64],
+spirv[64] or ptx64`.
+
 On the Codeplay website there is a
 link:https://developer.codeplay.com/computecppce/latest/getting-started-guide[
 getting started guide] that serves as an introduction to SYCL and ComputeCpp.
