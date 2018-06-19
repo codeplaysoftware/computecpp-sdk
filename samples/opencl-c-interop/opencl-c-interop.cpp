@@ -61,9 +61,14 @@ int main() {
   }
 
   {
-    gpu_selector gpuselector;
+    default_selector selector;
+    device d(selector);
+    if(d.is_host()) {
+      // This platform can't pass this test, it has no OpenCL devices
+      return 0;
+    }
 
-    queue gpu_queue(gpuselector, [](cl::sycl::exception_list l) {
+    queue queue(selector, [](cl::sycl::exception_list l) {
       for (auto ep : l) {
         try {
           std::rethrow_exception(ep);
@@ -75,14 +80,14 @@ int main() {
 
     /* Retrieve the underlying cl_context of the context associated with the
      * queue. */
-    cl_context clContext = gpu_queue.get_context().get();
+    cl_context clContext = queue.get_context().get();
 
     /* Retrieve the underlying cl_device_id of the device asscociated with the
      * queue. */
-    cl_device_id clDeviceId = gpu_queue.get_device().get();
+    cl_device_id clDeviceId = queue.get_device().get();
 
     /* Retrieve the underlying cl_command_queue of the queue. */
-    cl_command_queue clCommandQueue = gpu_queue.get();
+    cl_command_queue clCommandQueue = queue.get();
 
     /* Create variable to store OpenCL errors. */
     ::cl_int err = 0;
@@ -120,7 +125,7 @@ int main() {
     }
 
     /* Create a SYCL kernel using the interop constructor. */
-    kernel pow_kernel(clKernel, gpu_queue.get_context());
+    kernel pow_kernel(clKernel, queue.get_context());
     auto inputOpenCL = clCreateBuffer(clContext, CL_MEM_READ_ONLY,
                                       nElems * sizeof(float), nullptr, &err);
     if (err != CL_SUCCESS) {
@@ -140,7 +145,7 @@ int main() {
       std::cout << "Failed to transfer data to device";
     }
 
-    gpu_queue.submit([&](handler& cgh) {
+    queue.submit([&](handler& cgh) {
       /* Normally, SYCL sets kernel arguments for the user. However, when
        * using the interoperability features, it is unable to do this and
        * the user must set the arguments manually. */
@@ -150,7 +155,7 @@ int main() {
 
       cgh.parallel_for(range<1>(nElems), pow_kernel);
     });
-    gpu_queue.wait_and_throw();
+    queue.wait_and_throw();
 
     err = clEnqueueReadBuffer(clCommandQueue, outputOpenCL, CL_TRUE, 0,
                               nElems * sizeof(float), err_host_device, 0,
@@ -163,7 +168,7 @@ int main() {
     buffer<float, 1> call_pow_buffer(call_pow, range<1>(nElems));
 
     /* This submission performs the same calculation but in SYCL code. */
-    gpu_queue.submit([&](handler& cgh) {
+    queue.submit([&](handler& cgh) {
       auto in = input_buffer.get_access<access::mode::read>(cgh);
       auto out = call_pow_buffer.get_access<access::mode::write>(cgh);
 
