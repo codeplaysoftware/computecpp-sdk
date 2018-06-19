@@ -299,7 +299,8 @@ int main() {
   auto out_data = out_buff.get_access<read_t>();
   for (index_t m = 0; m < total_buffer.m; m++)
     for (index_t n = 0; n < total_buffer.m; n++)
-      if (!(std::abs(out_data[m][n] - (input_data * filter_data)) < 1e-4))
+      if (!(std::abs(index_t(out_data[m][n] - (input_data * filter_data))) <
+            1e-4))
         std::cout << " The result is wrong " << std::endl;
   std::cout << " The result is correct " << std::endl;
   return 0;
