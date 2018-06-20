@@ -5,7 +5,6 @@ add_executable(
 )
 add_sycl_to_target(
   TARGET ${SOURCE_NAME}
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
 )
 add_test(

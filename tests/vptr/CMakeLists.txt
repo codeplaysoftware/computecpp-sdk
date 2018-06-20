@@ -9,7 +9,6 @@ add_dependencies(basic gtest_main)
 add_dependencies(basic gtest)
 add_sycl_to_target(
   TARGET basic
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/basic.cc
 )
 add_test(BasicTests basic)
@@ -22,7 +21,6 @@ add_dependencies(offset gtest_main)
 add_dependencies(offset gtest)
 add_sycl_to_target(
   TARGET offset
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/offset.cc
 )
 add_test(OffsetTests offset)
@@ -37,7 +35,6 @@ if (COMPUTECPP_INTERFACE)
   add_dependencies(runtime gtest)
   add_sycl_to_target(
     TARGET runtime
-    BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
     SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/runtime.cc
   )
   add_test(RuntimeTests runtime)
@@ -52,7 +49,6 @@ add_dependencies(space gtest_main)
 add_dependencies(space gtest)
 add_sycl_to_target(
   TARGET space
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/space.cc
 )
 add_test(SpaceTests space)
@@ -65,7 +61,6 @@ add_dependencies(accessor gtest_main)
 add_dependencies(accessor gtest)
 add_sycl_to_target(
   TARGET accessor
-  BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/accessor.cc
 )
 add_test(AccessorTests accessor)
