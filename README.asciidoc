@@ -53,14 +53,14 @@ CMake files are provided as a build system for this software. CMake version
 3.2.2 is required at minimum, though later versions of CMake should continue
 to be compatible.
 
-At minimum, one CMake variable is required to get the sample code
-building - COMPUTECPP_PACKAGE_ROOT_DIR. This variable should be the root
-directory of the ComputeCpp install (i.e. the directory with the the folders
-bin, include, lib and so on). You can also specify COMPUTECPP_SDK_BUILD_TESTS
-to add the tests/ subdirectory to the build, which will causes Gtest-based
-programs testing the legacy pointer and virtual pointer classes to be
-emitted. Some samples have optional OpenMP support. You can enable it by
-setting COMPUTECPP_SDK_USE_OPENMP to ON in CMake.
+At minimum, one CMake variable is required to get the sample code building
+- ComputeCpp_DIR. This variable should be the root directory of the
+ComputeCpp install (i.e. the directory with the the folders bin, include,
+lib and so on). You can also specify COMPUTECPP_SDK_BUILD_TESTS to add the
+tests/ subdirectory to the build, which will causes Gtest-based programs
+testing the legacy pointer and virtual pointer classes to be built. Some
+samples have optional OpenMP support. You can enable it by setting
+COMPUTECPP_SDK_USE_OPENMP to ON in CMake.
 
 You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_PREFIX to
 choose a Debug or Release build and the location you'd like to be used when
@@ -68,7 +68,7 @@ the "install" target is built. The install target currently will copy all
 the sample binaries to the directory of your choosing.
 
 Lastly, the SDK will build targeting `spir64` IR by default. This will work
-on most devices, but wouldn't work on NVIDIA (for example). To that end,
+on most devices, but won't work on NVIDIA (for example). To that end,
 you can specify `-DCOMPUTECPP_BITCODE=target`, which can be any of `spir[64]`,
 `spirv[64]` or `ptx64`.
 
