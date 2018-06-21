@@ -54,12 +54,12 @@ CMake files are provided as a build system for this software. CMake version
 to be compatible.
 
 At minimum, one CMake variable is required to get the sample code building
-- ComputeCpp_DIR. This variable should be the root directory of the
+- ComputeCpp_DIR. This variable should point to the root directory of the
 ComputeCpp install (i.e. the directory with the the folders bin, include,
 lib and so on). You can also specify COMPUTECPP_SDK_BUILD_TESTS to add the
-tests/ subdirectory to the build, which will causes Gtest-based programs
-testing the legacy pointer and virtual pointer classes to be built. Some
-samples have optional OpenMP support. You can enable it by setting
+tests/ subdirectory to the build, which will build Gtest-based programs
+testing the legacy pointer and virtual pointer classes. Some samples have
+optional OpenMP support. You can enable it by setting
 COMPUTECPP_SDK_USE_OPENMP to ON in CMake.
 
 You can additionally specify CMAKE_BUILD_TYPE and CMAKE_INSTALL_PREFIX to
@@ -82,7 +82,7 @@ Integration guide] should you wish to add ComputeCpp to existing projects.
 Requirements
 ------------
 
-* The samples should work with any SYCL 1.2 implementation, though have
+* The samples should work with any SYCL 1.2.1 implementation, though have
   only been tested with the ComputeCpp CE Public Beta
 
 * OpenCL 1.2-capable hardware and drivers with SPIR 1.2/SPIR-V support
