@@ -23,7 +23,7 @@
  *  Description:
  *    Sample code that illustrates how to divide data into tiles and lauch
  *    separate kerenl per tile by using range accessors and parallel for with
- *    offset in SYCL.
+ *    offset in SYCL. See the readme for further information
  *
  **************************************************************************/
 #include <SYCL/sycl.hpp>
@@ -34,8 +34,8 @@
 // configuring the openCL local size
 template <typename index_t>
 struct opencl_configuration_t {
-  static constexpr index_t local_size_m = 1;
-  static constexpr index_t local_size_n = 32;
+  static constexpr index_t local_size_m = 16;
+  static constexpr index_t local_size_n = 16;
 };
 
 // define the 2-d matrix size
@@ -53,11 +53,11 @@ template <typename read_accessor_t, typename write_accessor_t, typename index_t,
           typename mat_size_t>
 class conv {
  private:
-  read_accessor_t fil_acc;
-  read_accessor_t in_acc;
-  write_accessor_t out_acc;
-  const mat_size_t total_size;
-  const mat_size_t fil_size;
+  read_accessor_t fil_acc;      // filter accessor
+  read_accessor_t in_acc;       // input accessor
+  write_accessor_t out_acc;     // output accessor
+  const mat_size_t total_size;  // total input size
+  const mat_size_t fil_size;    // filter size
 
  public:
   // constructing the functor
@@ -70,24 +70,22 @@ class conv {
         total_size(total_size_),
         fil_size(fil_size_) {}
   void inline operator()(cl::sycl::nd_item<2> item_id) {
-    index_t id_m = item_id.get_global(0);
-    index_t id_n = item_id.get_global(1);
-    index_t m, f_m;
-    index_t n, f_n;
+    index_t id_m = item_id.get_global(0);  // global id with offset m
+    index_t id_n = item_id.get_global(1);  // global id with offser n
+    index_t m;                             // input index m
+    index_t fil_m;                         // filter index m
+    index_t n;                             // input index n
+    index_t fil_n;                         // filter index n
     typename write_accessor_t::value_type val = 0.0;
-#ifdef __SYCL_DEVICE_ONLY__
-#pragma umroll
-#endif
-    for (f_m = 0, m = -1; f_m < 3; f_m++, m++) {
+    // loop over filter size m and add halo to input m
+    for (fil_m = 0, m = -1; fil_m < fil_size.m; fil_m++, m++) {
       index_t in_id_m = (id_m + m >= 0) ? id_m + m : 0;
       in_id_m = (in_id_m < total_size.m) ? in_id_m : total_size.m - 1;
-#ifdef __SYCL_DEVICE_ONLY__
-#pragma umroll
-#endif
-      for (f_n = 0, n = -1; f_n < 3; f_n++, n++) {
+      // loop over filter size n and add halo to input n
+      for (fil_n = 0, n = -1; fil_n < 3; fil_n++, n++) {
         index_t in_id_n = (id_n + n >= 0) ? id_n + n : 0;
         in_id_n = (in_id_n < total_size.n) ? in_id_n : total_size.n - 1;
-        val += (in_acc[in_id_m][in_id_n] * fil_acc[f_m][f_n]);
+        val += (in_acc[in_id_m][in_id_n] * fil_acc[fil_m][fil_n]);
       }
     }
     out_acc[id_m][id_n] = val / fil_size.size();
@@ -97,7 +95,7 @@ class conv {
 // round up function to construct the global and local size
 template <typename index_t>
 inline index_t round_up(const index_t x, const index_t y) {
-  return ((((x) + (y) -1) / (y)) * (y));
+  return ((x + y - 1) / y) * y;
 }
 
 // calculating halo around each tile
@@ -105,8 +103,8 @@ template <typename index_t>
 void inline compute_index(const index_t total_size_dim,
                           const index_t mat_size_dim,
                           const index_t fil_size_dim,
-                          const index_t tile_offset_dim, index_t& range_src_dim,
-                          index_t& offset_src_dim) {
+                          const index_t tile_offset_dim, index_t &range_src_dim,
+                          index_t &offset_src_dim) {
   if (tile_offset_dim == 0 && mat_size_dim < total_size_dim) {
     offset_src_dim = tile_offset_dim;
     range_src_dim = mat_size_dim + (fil_size_dim / 2);
@@ -114,6 +112,7 @@ void inline compute_index(const index_t total_size_dim,
              (tile_offset_dim + mat_size_dim) < total_size_dim) {
     offset_src_dim = tile_offset_dim - (fil_size_dim / 2);
     range_src_dim = mat_size_dim + fil_size_dim - 1;
+
   } else if (tile_offset_dim != 0 &&
              (tile_offset_dim + mat_size_dim) >= total_size_dim) {
     offset_src_dim = tile_offset_dim - (fil_size_dim / 2);
@@ -163,7 +162,7 @@ int main() {
 
   auto property_list =
       cl::sycl::property_list{cl::sycl::property::queue::enable_profiling()};
-  // constructing a SYCL queue for CVengine OpenCL device where
+  // constructing a SYCL queue for OpenCL device where
   // automatically build the underlying context and command_queue for the
   // chosen device.
   auto sycl_queue = cl::sycl::queue(
@@ -173,7 +172,7 @@ int main() {
         for (auto e : l) {
           try {
             std::rethrow_exception(e);
-          } catch (const cl::sycl::exception& e) {
+          } catch (const cl::sycl::exception &e) {
             auto clError = e.get_cl_code();
             std::cout << e.what() << "CL ERROR CODE : " << clError << std::endl;
             error = true;
@@ -218,7 +217,7 @@ int main() {
                     range_src_n, offset_src_n);
       auto start = std::chrono::system_clock::now();
       // events[n + m * num_host_tile_n] =
-      auto event = sycl_queue.submit([&](cl::sycl::handler& cgh) {
+      auto event = sycl_queue.submit([&](cl::sycl::handler &cgh) {
         // filter
         auto fil_acc = fil_buff.get_access<read_t, global_buffer_t>(cgh);
         // input
@@ -243,7 +242,7 @@ int main() {
                               matrix_size_t<index_t>>(fil_acc, in_acc, out_acc,
                                                       total_buffer, fil_size));
       });
-      // this part is used to profile each tiled kernel
+// this part is used to profile each tiled kernel
 #ifdef PROFILE_SYCL
       auto i = n + m * num_host_tile_n;
       event.wait();
@@ -276,7 +275,7 @@ int main() {
     }
     host_offset_m += mat_size.m;
   }
-  // this part is used to profile the total execution time
+// this part is used to profile the total execution time
 #ifdef PROFILE_SYCL
   avarage_submission_time =
       total_submission_time / float(num_host_tile_n * num_host_tile_m);
@@ -297,11 +296,15 @@ int main() {
 #endif
   // check the correctness of the result
   auto out_data = out_buff.get_access<read_t>();
-  for (index_t m = 0; m < total_buffer.m; m++)
-    for (index_t n = 0; n < total_buffer.m; n++)
+  for (index_t m = 0; m < total_buffer.m; m++) {
+    for (index_t n = 0; n < total_buffer.m; n++) {
       if (!(std::abs(index_t(out_data[m][n] - (input_data * filter_data))) <
-            1e-4))
+            1e-4)) {
         std::cout << " The result is wrong " << std::endl;
+        return -1;
+      }
+    }
+  }
   std::cout << " The result is correct " << std::endl;
   return 0;
 }
