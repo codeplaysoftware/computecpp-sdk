@@ -246,7 +246,6 @@ function(__build_ir)
     $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">)
   set(generated_compile_definitions
     $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},\t-D>>)
-  target_include_directories(${SDK_BUILD_IR_TARGET} PRIVATE ${OpenCL_INCLUDE_DIRS})
 
   # Obtain language standard of the file
   set(device_compiler_cxx_standard)
@@ -280,6 +279,7 @@ function(__build_ir)
   separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
+  get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
   if(target_libraries)
     foreach(library ${target_libraries})
       list(APPEND ir_dependencies ${library})
