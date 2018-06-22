@@ -21,9 +21,9 @@
  *  tiled-convolution.cpp
  *
  *  Description:
- *    Sample code that illustrates how to divide data into tiles and lauch
- *    separate kerenl per tile by using range accessors and parallel for with
- *    offset in SYCL. See the readme for further information
+ *    Sample code that illustrates how to divide data into tiles and launch
+ *    separate kernels per tile by using ranged accessors and parallel for with
+ *    offsets in SYCL. See the readme for further information
  *
  **************************************************************************/
 #include <SYCL/sycl.hpp>
@@ -60,7 +60,6 @@ class conv {
   const mat_size_t fil_size;    // filter size
 
  public:
-  // constructing the functor
   conv(read_accessor_t fil_acc_, read_accessor_t in_acc_,
        write_accessor_t out_acc_, const mat_size_t total_size_,
        const mat_size_t fil_size_)
@@ -82,7 +81,7 @@ class conv {
       index_t in_id_m = (id_m + m >= 0) ? id_m + m : 0;
       in_id_m = (in_id_m < total_size.m) ? in_id_m : total_size.m - 1;
       // loop over filter size n and add halo to input n
-      for (fil_n = 0, n = -1; fil_n < 3; fil_n++, n++) {
+      for (fil_n = 0, n = -1; fil_n < fil_size.n; fil_n++, n++) {
         index_t in_id_n = (id_n + n >= 0) ? id_n + n : 0;
         in_id_n = (in_id_n < total_size.n) ? in_id_n : total_size.n - 1;
         val += (in_acc[in_id_m][in_id_n] * fil_acc[fil_m][fil_n]);
@@ -103,8 +102,8 @@ template <typename index_t>
 void inline compute_index(const index_t total_size_dim,
                           const index_t mat_size_dim,
                           const index_t fil_size_dim,
-                          const index_t tile_offset_dim, index_t &range_src_dim,
-                          index_t &offset_src_dim) {
+                          const index_t tile_offset_dim, index_t& range_src_dim,
+                          index_t& offset_src_dim) {
   if (tile_offset_dim == 0 && mat_size_dim < total_size_dim) {
     offset_src_dim = tile_offset_dim;
     range_src_dim = mat_size_dim + (fil_size_dim / 2);
@@ -123,23 +122,72 @@ void inline compute_index(const index_t total_size_dim,
   }
 }
 
+template <typename event_t, typename start_t>
+void inline profiler(event_t& events, const start_t& starts) {
+  double total_submission_time = 0;
+  double total_execution_time = 0;
+  double per_tile_submission_time = 0;
+  double per_tile_execution_time = 0;
+  double per_tile_application_execution_time = 0;
+  double total_application_execution_time = 0;
+  int size = events.size();
+  for (int i = 0; i < size; i++) {
+    events[i].wait();
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double, std::milli>
+        current_application_execution_time = end - starts[i];
+    total_application_execution_time +=
+        current_application_execution_time.count();
+    auto submit_time =
+        events[i]
+            .template get_profiling_info<
+                cl::sycl::info::event_profiling::command_submit>();
+    auto start_time = events[i]
+                          .template get_profiling_info<
+                              cl::sycl::info::event_profiling::command_start>();
+    auto end_time = events[i]
+                        .template get_profiling_info<
+                            cl::sycl::info::event_profiling::command_end>();
+    auto current_submission_time = (start_time - submit_time) / 1000000.0f;
+    auto current_execution_time = (end_time - start_time) / 1000000.0f;
+
+    total_execution_time += current_execution_time;
+    total_submission_time += current_submission_time;
+#ifdef PER_EVENT_PROFILING
+    // this part is used to profile each tiled kernel
+    std::cout << "Tile, " << i << " , kernel_submission_time, "
+              << current_submission_time << " , kernel_execution_time, "
+              << current_execution_time << ", application_execution_time, "
+              << current_application_execution_time.count() << "\n";
+#endif
+  }
+  // this part is used to profile the total execution time
+  per_tile_submission_time = total_submission_time / double(size);
+  per_tile_execution_time = total_execution_time / double(size);
+  per_tile_application_execution_time =
+      total_application_execution_time / double(size);
+  std::cout << "  total_kernel_submission_time, " << total_submission_time
+            << " , total_kernel_execution_time, " << total_execution_time
+            << " , total_application_execution_time, "
+            << total_application_execution_time
+            << " , per_tile_kernel_submission_time, "
+            << per_tile_submission_time << " , per_tile_kernel_execution_time, "
+            << per_tile_execution_time
+            << " , per_tile_application_execution_time, "
+            << per_tile_application_execution_time << "\n";
+}
+
 int main() {
   using data_t = float;
   using index_t = int;
-  // sycl read type
   static constexpr auto read_t = cl::sycl::access::mode::read;
-  // sycl write type
   static constexpr auto write_t = cl::sycl::access::mode::write;
-  // sycl global buffer type
   static constexpr auto global_buffer_t =
       cl::sycl::access::target::global_buffer;
-  // read_accessor type
   using read_accessor_t =
       cl::sycl::accessor<data_t, 2, read_t, global_buffer_t>;
-  // write accessor type
   using write_accessor_t =
       cl::sycl::accessor<data_t, 2, write_t, global_buffer_t>;
-  // opencl configuration type
   using ocl_config_t = opencl_configuration_t<index_t>;
 
   // total input data size
@@ -160,25 +208,22 @@ int main() {
   // mask array
   std::vector<data_t> filter(fil_size.size(), filter_data);
 
+  // enabling SYCL queue profiling
   auto property_list =
       cl::sycl::property_list{cl::sycl::property::queue::enable_profiling()};
-  // constructing a SYCL queue for OpenCL device where
-  // automatically build the underlying context and command_queue for the
-  // chosen device.
+
+  auto selector = cl::sycl::default_selector();
   auto sycl_queue = cl::sycl::queue(
-      (cl::sycl::default_selector()),
+      selector,
       [&](cl::sycl::exception_list l) {
         bool error = false;
         for (auto e : l) {
           try {
             std::rethrow_exception(e);
-          } catch (const cl::sycl::exception &e) {
+          } catch (const cl::sycl::exception& e) {
             auto clError = e.get_cl_code();
             std::cout << e.what() << "CL ERROR CODE : " << clError << std::endl;
             error = true;
-          } catch (...) {
-            std::cerr << " error  \n";
-            std::abort();
           }
         }
         if (error) {
@@ -196,13 +241,11 @@ int main() {
   // output SYCL buffer
   auto out_buff = cl::sycl::buffer<data_t, 2>(
       cl::sycl::range<2>(total_buffer.m, total_buffer.n));
-  double total_submission_time = 0;
-  double total_execution_time = 0;
-  double avarage_submission_time = 0;
-  double avarage_execution_time = 0;
-  double avarage_application_execution_time = 0;
-  double total_application_execution_time = 0;
+
   index_t host_offset_m = 0;
+  std::vector<cl::sycl::event> events(num_host_tile_m * num_host_tile_n);
+  std::vector<std::chrono::time_point<std::chrono::system_clock>> starts(
+      num_host_tile_m * num_host_tile_n);
   // launching tiled-based kernel via two nested for-loop
   for (index_t m = 0; m < num_host_tile_m; m++) {
     index_t host_offset_n = 0;
@@ -215,24 +258,18 @@ int main() {
       // calculating the halo for the second dimension of the tile
       compute_index(total_buffer.n, mat_size.n, fil_size.n, host_offset_n,
                     range_src_n, offset_src_n);
-      auto start = std::chrono::system_clock::now();
-      // events[n + m * num_host_tile_n] =
-      auto event = sycl_queue.submit([&](cl::sycl::handler &cgh) {
-        // filter
+      index_t i = n + m * num_host_tile_n;
+      starts[i] = std::chrono::system_clock::now();
+      events[i] = sycl_queue.submit([&](cl::sycl::handler& cgh) {
         auto fil_acc = fil_buff.get_access<read_t, global_buffer_t>(cgh);
-        // input
         auto in_acc = in_buff.get_access<read_t, global_buffer_t>(
             cgh, cl::sycl::range<2>(range_src_m, range_src_n),
             cl::sycl::id<2>(offset_src_m, offset_src_n));
-        // output
         auto out_acc = out_buff.get_access<write_t, global_buffer_t>(
             cgh, cl::sycl::range<2>(mat_size.m, mat_size.n),
             cl::sycl::id<2>(host_offset_m, host_offset_n));
-        // global size m
         auto global_size_m = round_up(mat_size.m, ocl_config_t::local_size_m);
-        // global size n
         auto global_size_n = round_up(mat_size.n, ocl_config_t::local_size_n);
-        // constructing the kernel
         cgh.parallel_for(cl::sycl::nd_range<2>(
                              cl::sycl::range<2>(global_size_m, global_size_n),
                              cl::sycl::range<2>(ocl_config_t::local_size_m,
@@ -242,63 +279,18 @@ int main() {
                               matrix_size_t<index_t>>(fil_acc, in_acc, out_acc,
                                                       total_buffer, fil_size));
       });
-// this part is used to profile each tiled kernel
-#ifdef PROFILE_SYCL
-      auto i = n + m * num_host_tile_n;
-      event.wait();
-      auto end = std::chrono::system_clock::now();
-      std::chrono::duration<double, std::milli>
-          current_application_execution_time = end - start;
-      total_application_execution_time +=
-          current_application_execution_time.count();
-      auto submit_time = event.get_profiling_info<
-          cl::sycl::info::event_profiling::command_submit>();
-      auto start_time = event.get_profiling_info<
-          cl::sycl::info::event_profiling::command_start>();
-      auto end_time = event.get_profiling_info<
-          cl::sycl::info::event_profiling::command_end>();
-      auto current_submission_time = (start_time - submit_time) / 1000000.0f;
-      auto current_execution_time = (end_time - start_time) / 1000000.0f;
-
-      total_execution_time += current_execution_time;
-      total_submission_time += current_submission_time;
-#ifdef PER_EVENT_PROFILING
-      std::cout << "event, " << i << " , current_kernel_submission_time, "
-                << current_submission_time
-                << " , current_kernel_execution_time, "
-                << current_execution_time
-                << ", current_application_execution_time, "
-                << current_application_execution_time.count() << "\n";
-#endif
-#endif
       host_offset_n += mat_size.n;
     }
     host_offset_m += mat_size.m;
   }
-// this part is used to profile the total execution time
 #ifdef PROFILE_SYCL
-  avarage_submission_time =
-      total_submission_time / float(num_host_tile_n * num_host_tile_m);
-  avarage_execution_time =
-      total_execution_time / float(num_host_tile_n * num_host_tile_m);
-  avarage_application_execution_time = total_application_execution_time /
-                                       float(num_host_tile_n * num_host_tile_m);
-  std::cout << " local_size_0, " << ocl_config_t::local_size_m
-            << " , local_size_1, " << ocl_config_t::local_size_n
-            << " , total_kernel_submission_time, " << total_submission_time
-            << " , total_kernel_execution_time, " << total_execution_time
-            << " , avarage_kernel_submission_time, " << avarage_submission_time
-            << " , avarage_kernel_execution_time, " << avarage_execution_time
-            << " , total_application_execution_time, "
-            << total_application_execution_time
-            << " , avarage_application_execution_time, "
-            << avarage_application_execution_time << "\n";
+  profiler(events, starts);
 #endif
   // check the correctness of the result
   auto out_data = out_buff.get_access<read_t>();
   for (index_t m = 0; m < total_buffer.m; m++) {
-    for (index_t n = 0; n < total_buffer.m; n++) {
-      if (!(std::abs(index_t(out_data[m][n] - (input_data * filter_data))) <
+    for (index_t n = 0; n < total_buffer.n; n++) {
+      if (!(std::fabs(index_t(out_data[m][n] - (input_data * filter_data))) <
             1e-4)) {
         std::cout << " The result is wrong " << std::endl;
         return -1;
