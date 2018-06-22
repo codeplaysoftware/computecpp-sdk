@@ -37,17 +37,13 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     # Require at least gcc 4.8
     if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
       message(FATAL_ERROR
-        "host compiler - Not found! (gcc version must be at least 4.8)")
-    else()
-      message(STATUS "host compiler - gcc ${CMAKE_CXX_COMPILER_VERSION}")
+        "host compiler - gcc version must be at least 4.8")
     endif()
 elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     # Require at least clang 3.6
     if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 3.6)
       message(FATAL_ERROR
-        "host compiler - Not found! (clang version must be at least 3.6)")
-    else()
-      message(STATUS "host compiler - clang ${CMAKE_CXX_COMPILER_VERSION}")
+        "host compiler - clang version must be at least 3.6")
     endif()
 endif()
 
@@ -84,20 +80,18 @@ find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
 find_library(COMPUTECPP_RUNTIME_LIBRARY
   NAMES ComputeCpp ComputeCpp_vs2015
   PATHS ${ComputeCpp_ROOT_DIR}
-  HINTS ${ComputeCpp_ROOT_DIR}/lib
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
   NAMES ComputeCpp ComputeCpp_vs2015_d
   PATHS ${ComputeCpp_ROOT_DIR}
-  HINTS ${ComputeCpp_ROOT_DIR}/lib
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
 
 find_path(ComputeCpp_INCLUDE_DIRS
   NAMES "CL/sycl.hpp"
-  HINTS ${ComputeCpp_ROOT_DIR}/include
+  PATHS ${ComputeCpp_ROOT_DIR}/include
   DOC "The ComputeCpp include directory")
 get_filename_component(ComputeCpp_INCLUDE_DIRS ${ComputeCpp_INCLUDE_DIRS} ABSOLUTE)
 
