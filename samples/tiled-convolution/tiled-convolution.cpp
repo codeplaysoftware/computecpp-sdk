@@ -122,8 +122,10 @@ void inline compute_index(const index_t total_size_dim,
   }
 }
 
-template <typename event_t, typename start_t>
-void inline profiler(event_t& events, const start_t& starts) {
+void inline profiler(
+    std::vector<cl::sycl::event>& events,
+    const std::vector<std::chrono::time_point<std::chrono::system_clock>>&
+        starts) {
   double total_submission_time = 0;
   double total_execution_time = 0;
   double per_tile_submission_time = 0;
@@ -212,9 +214,7 @@ int main() {
   auto property_list =
       cl::sycl::property_list{cl::sycl::property::queue::enable_profiling()};
 
-  auto selector = cl::sycl::default_selector();
   auto sycl_queue = cl::sycl::queue(
-      selector,
       [&](cl::sycl::exception_list l) {
         bool error = false;
         for (auto e : l) {
@@ -290,7 +290,7 @@ int main() {
   auto out_data = out_buff.get_access<read_t>();
   for (index_t m = 0; m < total_buffer.m; m++) {
     for (index_t n = 0; n < total_buffer.n; n++) {
-      if (!(std::fabs(index_t(out_data[m][n] - (input_data * filter_data))) <
+      if (!(std::fabs(data_t(out_data[m][n] - (input_data * filter_data))) <
             1e-4)) {
         std::cout << " The result is wrong " << std::endl;
         return -1;
