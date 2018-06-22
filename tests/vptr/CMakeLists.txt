@@ -7,8 +7,10 @@ target_link_libraries(basic PUBLIC gtest
                             PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(basic gtest_main)
 add_dependencies(basic gtest)
-add_sycl_to_target(basic  ${CMAKE_CURRENT_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/basic.cc)
+add_sycl_to_target(
+  TARGET basic
+  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/basic.cc
+)
 add_test(BasicTests basic)
 
 add_executable(offset offset.cc)
@@ -17,8 +19,10 @@ target_link_libraries(offset PUBLIC gtest
                              PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(offset gtest_main)
 add_dependencies(offset gtest)
-add_sycl_to_target(offset  ${CMAKE_CURRENT_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/offset.cc)
+add_sycl_to_target(
+  TARGET offset
+  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/offset.cc
+)
 add_test(OffsetTests offset)
 
 if (COMPUTECPP_INTERFACE)
@@ -29,8 +33,10 @@ if (COMPUTECPP_INTERFACE)
                                 PUBLIC ${CMAKE_THREAD_LIBS_INIT})
   add_dependencies(runtime gtest_main)
   add_dependencies(runtime gtest)
-  add_sycl_to_target(runtime  ${CMAKE_CURRENT_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/runtime.cc)
+  add_sycl_to_target(
+    TARGET runtime
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/runtime.cc
+  )
   add_test(RuntimeTests runtime)
 endif()
 
@@ -41,8 +47,10 @@ target_link_libraries(space PUBLIC gtest
                             PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(space gtest_main)
 add_dependencies(space gtest)
-add_sycl_to_target(space  ${CMAKE_CURRENT_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/space.cc)
+add_sycl_to_target(
+  TARGET space
+  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/space.cc
+)
 add_test(SpaceTests space)
 
 add_executable(accessor accessor.cc)
@@ -51,8 +59,10 @@ target_link_libraries(accessor PUBLIC gtest
                                PUBLIC ${CMAKE_THREAD_LIBS_INIT})
 add_dependencies(accessor gtest_main)
 add_dependencies(accessor gtest)
-add_sycl_to_target(accessor  ${CMAKE_CURRENT_BINARY_DIR}
-                    ${CMAKE_CURRENT_SOURCE_DIR}/accessor.cc)
+add_sycl_to_target(
+  TARGET accessor
+  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/accessor.cc
+)
 add_test(AccessorTests accessor)
 
 set_target_properties(basic offset space accessor PROPERTIES CXX_STANDARD 11)

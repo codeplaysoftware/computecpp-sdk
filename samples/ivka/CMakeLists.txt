@@ -7,9 +7,8 @@ include_directories(
   ${CMAKE_SOURCE_DIR}/include
 )
 add_sycl_to_target(
-  ${SOURCE_NAME}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
+  TARGET ${SOURCE_NAME}
+  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
 )
 add_test(
   NAME ${SOURCE_NAME}

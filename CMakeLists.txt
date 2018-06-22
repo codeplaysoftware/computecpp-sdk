@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.2.2)
 project(ComputeCpp-SDK)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
-include(FindComputeCpp)
+find_package(ComputeCpp REQUIRED)
 
 option(COMPUTECPP_SDK_USE_OPENMP "Enable OpenMP support in samples" OFF)
 
