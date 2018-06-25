@@ -28,6 +28,7 @@
  **************************************************************************/
 #include <SYCL/sycl.hpp>
 #include <chrono>
+#include <cmath>
 #include <ctime>
 #include <iostream>
 
