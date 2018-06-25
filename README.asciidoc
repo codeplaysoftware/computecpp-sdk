@@ -50,7 +50,7 @@ Setup
 -----
 
 CMake files are provided as a build system for this software. CMake version
-3.2.2 is required at minimum, though later versions of CMake should continue
+3.4.3 is required at minimum, though later versions of CMake should continue
 to be compatible.
 
 At minimum, one CMake variable is required to get the sample code building
@@ -92,7 +92,7 @@ Requirements
 
 * Microsoft Visual pass:[C++] 2015 on Windows
 
-* CMake 3.2.2 and newer
+* CMake 3.4.3 and newer
 
 Troubleshooting
 ---------------

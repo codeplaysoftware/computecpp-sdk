@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.2.2)
+cmake_minimum_required(VERSION 3.4.3)
 
 project(ComputeCpp-SDK)
 
@@ -7,9 +7,7 @@ find_package(ComputeCpp REQUIRED)
 
 option(COMPUTECPP_SDK_USE_OPENMP "Enable OpenMP support in samples" OFF)
 
-# Set the host compiler C++ standard to C++ 14
-# This should be set as a global property when we update the CMake version
-set(CMAKE_CXX_STANDARD 14)
+set(GLOBAL PROPERTY CMAKE_CXX_STANDARD 14)
 
 # Set include ComputeCpp directories
 include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
