@@ -45,6 +45,6 @@ script:
     ###########################
     - mkdir build
     - cd build
-    - cmake ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1 -DCOMPUTECPP_DISABLE_GCC_DUAL_ABI=1
+    - cmake ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1 -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"
     - make -j2
-    - COMPUTECPP_TARGET="host" ctest -V -E opencl
+    - COMPUTECPP_TARGET="host" ctest -V

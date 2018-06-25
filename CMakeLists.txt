@@ -7,7 +7,7 @@ find_package(ComputeCpp REQUIRED)
 
 option(COMPUTECPP_SDK_USE_OPENMP "Enable OpenMP support in samples" OFF)
 
-set(GLOBAL PROPERTY CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 14)
 
 # Set include ComputeCpp directories
 include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
