@@ -72,10 +72,8 @@ class conv {
   void inline operator()(cl::sycl::nd_item<2> item_id) {
     index_t id_m = item_id.get_global(0);  // global id with offset m
     index_t id_n = item_id.get_global(1);  // global id with offser n
-    index_t m;                             // input index m
-    index_t fil_m;                         // filter index m
-    index_t n;                             // input index n
-    index_t fil_n;                         // filter index n
+    // input index m , filter index fil_m , input index n, filter index fil_n
+    index_t m, fil_m, n, fil_n;
     typename write_accessor_t::value_type val = 0.0;
     // loop over filter size m and add halo to input m
     for (fil_m = 0, m = -1; fil_m < fil_size.m; fil_m++, m++) {
@@ -156,13 +154,6 @@ void inline profiler(
 
     total_execution_time += current_execution_time;
     total_submission_time += current_submission_time;
-#ifdef PER_EVENT_PROFILING
-    // this part is used to profile each tiled kernel
-    std::cout << "Tile, " << i << " , kernel_submission_time, "
-              << current_submission_time << " , kernel_execution_time, "
-              << current_execution_time << ", application_execution_time, "
-              << current_application_execution_time.count() << "\n";
-#endif
   }
   // this part is used to profile the total execution time
   per_tile_submission_time = total_submission_time / double(size);
@@ -173,10 +164,11 @@ void inline profiler(
             << " , total_kernel_execution_time, " << total_execution_time
             << " , total_application_execution_time, "
             << total_application_execution_time
-            << " , per_tile_kernel_submission_time, "
-            << per_tile_submission_time << " , per_tile_kernel_execution_time, "
+            << " , average_per_tile_kernel_submission_time, "
+            << per_tile_submission_time
+            << " , average_per_tile_kernel_execution_time, "
             << per_tile_execution_time
-            << " , per_tile_application_execution_time, "
+            << " , average_per_tile_application_execution_time, "
             << per_tile_application_execution_time << "\n";
 }
 
@@ -233,6 +225,12 @@ int main() {
       },
       property_list);
 
+  using kernel_type =
+      conv<read_accessor_t, write_accessor_t, index_t, matrix_size_t<index_t>>;
+  // building kernel before the execution by using program class
+  // This will reduce the program overhead
+  auto sycl_program = cl::sycl::program(sycl_queue.get_context());
+  sycl_program.build_with_kernel_type<kernel_type>();
   // input SYCL buffer
   auto in_buff = cl::sycl::buffer<data_t, 2>(
       input.data(), cl::sycl::range<2>(total_buffer.m, total_buffer.n));
@@ -271,22 +269,20 @@ int main() {
             cl::sycl::id<2>(host_offset_m, host_offset_n));
         auto global_size_m = round_up(mat_size.m, ocl_config_t::local_size_m);
         auto global_size_n = round_up(mat_size.n, ocl_config_t::local_size_n);
-        cgh.parallel_for(cl::sycl::nd_range<2>(
-                             cl::sycl::range<2>(global_size_m, global_size_n),
-                             cl::sycl::range<2>(ocl_config_t::local_size_m,
-                                                ocl_config_t::local_size_n),
-                             cl::sycl::id<2>(host_offset_m, host_offset_n)),
-                         conv<read_accessor_t, write_accessor_t, index_t,
-                              matrix_size_t<index_t>>(fil_acc, in_acc, out_acc,
-                                                      total_buffer, fil_size));
+        cgh.parallel_for(
+            sycl_program.template get_kernel<kernel_type>(),
+            cl::sycl::nd_range<2>(
+                cl::sycl::range<2>(global_size_m, global_size_n),
+                cl::sycl::range<2>(ocl_config_t::local_size_m,
+                                   ocl_config_t::local_size_n),
+                cl::sycl::id<2>(host_offset_m, host_offset_n)),
+            kernel_type(fil_acc, in_acc, out_acc, total_buffer, fil_size));
       });
       host_offset_n += mat_size.n;
     }
     host_offset_m += mat_size.m;
   }
-#ifdef PROFILE_SYCL
   profiler(events, starts);
-#endif
   // check the correctness of the result
   auto out_data = out_buff.get_access<read_t>();
   for (index_t m = 0; m < total_buffer.m; m++) {
