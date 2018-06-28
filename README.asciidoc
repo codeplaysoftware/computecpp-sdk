@@ -28,7 +28,8 @@ Contents
 * cmake/
     - Contains a Cmake module for integrating ComputeCpp with existing
       projects. See later in this document for a description of the CMake
-      module provided.
+      module provided. There are also toolchains for generic GCC-like
+      setups as well as the poky toolchain.
 * include/
     - add this directory to your include search path to be able to use SDK
       code in your own projects (for example, the virtual pointer utility).
@@ -71,6 +72,12 @@ Lastly, the SDK will build targeting `spir64` IR by default. This will work
 on most devices, but won't work on NVIDIA (for example). To that end,
 you can specify `-DCOMPUTECPP_BITCODE=target`, which can be any of `spir[64]`,
 `spirv[64]` or `ptx64`.
+
+If you would like to crosscompile the SDK targeting some other platform, there
+are toolchain files available in the cmake/toolchains directory. They require
+certain variables pointing to the root of the toolchain you are using to be
+set in the environment. They cannot be specificed in the CMake cache.
+The toolchains will identify which variables have not been set when used.
 
 On the Codeplay website there is a
 link:https://developer.codeplay.com/computecppce/latest/getting-started-guide[

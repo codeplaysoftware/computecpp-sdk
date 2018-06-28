@@ -126,7 +126,6 @@ if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
   message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
 else()
   mark_as_advanced(COMPUTECPP_COMPILER_FLAGS)
-  message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 endif()
 
 find_package_handle_standard_args(ComputeCpp
@@ -158,6 +157,7 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 if(NOT TARGET OpenCL::OpenCL)
   add_library(OpenCL::OpenCL UNKNOWN IMPORTED)
