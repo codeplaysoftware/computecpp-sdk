@@ -32,11 +32,17 @@
 #include <ctime>
 #include <iostream>
 
+#ifndef LOCAL_SIZE_M
+#define LOCAL_SIZE_M 16
+#endif
+#ifndef LOCAL_SIZE_N
+#define LOCAL_SIZE_N 16
+#endif
 // configuring the openCL local size
 template <typename index_t>
 struct opencl_configuration_t {
-  static constexpr index_t local_size_m = 16;
-  static constexpr index_t local_size_n = 16;
+  static constexpr index_t local_size_m = LOCAL_SIZE_M;
+  static constexpr index_t local_size_n = LOCAL_SIZE_N;
 };
 
 // define the 2-d matrix size
