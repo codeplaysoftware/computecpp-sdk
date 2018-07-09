@@ -8,8 +8,8 @@ ci_make_app(
   APP_NAME "GameOfLife"
   SOURCES "${SOURCES}"
   LIBRARIES "${OpenCL_LIBRARIES}"
-  LIBRARIES "${COMPUTECPP_RUNTIME_LIBRARY}"
   CINDER_PATH "${CINDER_PATH}")
 
-__build_spir("GameOfLife" "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp" "${CMAKE_CURRENT_BINARY_DIR}" 1)
-
+add_sycl_to_target(
+    TARGET "GameOfLife"
+    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp")

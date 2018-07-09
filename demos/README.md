@@ -39,10 +39,11 @@ After building Cinder, you can build the demos by running these commands in the
 ```shell
 mkdir build
 cd build
-cmake -DCOMPUTECPP_PACKAGE_ROOT_DIR=/path/to/ccp/package/ \
+cmake -DComputeCpp_DIR=/path/to/ccp/package/ \
       -DCINDER_PATH=/path/to/cinder/repo/ \
       -DCIGUI_PATH=/path/to/cinder-imgui/repo/ \
       -DCOMPUTECPP_USER_FLAGS="-Xclang -cl-denorms-are-zero" \
+      -DCMAKE_BUILD_TYPE=Release \
       ..
 make
 ```

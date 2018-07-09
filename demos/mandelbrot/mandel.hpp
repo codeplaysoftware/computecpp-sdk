@@ -83,8 +83,7 @@ class MandelbrotCalculator {
   // Calls the function with the underlying image memory.
   template <typename Func>
   void with_data(Func&& func) {
-    auto acc = m_img.get_access<sycl::access::mode::read,
-                                sycl::access::target::host_buffer>();
+    auto acc = m_img.get_access<sycl::access::mode::read>();
 
     func(acc.get_pointer());
   }
@@ -137,8 +136,8 @@ class MandelbrotCalculator {
       cgh.parallel_for<decltype(this)>(
           sycl::range<2>(m_height, m_width), [=](sycl::item<2> item) {
             // Obtain normalized coords [0, 1]
-            num_t x = num_t(item.get(1)) / num_t(width);
-            num_t y = num_t(item.get(0)) / num_t(height);
+            num_t x = num_t(item.get_id(1)) / num_t(width);
+            num_t y = num_t(item.get_id(0)) / num_t(height);
 
             // Put them within desired bounds
             x *= (maxx - minx);
@@ -151,7 +150,7 @@ class MandelbrotCalculator {
             num_t mandelness = how_mandel(x, y);
 
             // Map to two colors in the palette
-            const std::array<sycl::cl_uchar4, 16> COLORS = {{
+            const std::array<sycl::vec<num_t, 4>, 16> COLORS = {{
                 {66, 30, 15, 255},
                 {25, 7, 26, 255},
                 {9, 1, 47, 255},
@@ -178,12 +177,12 @@ class MandelbrotCalculator {
 
             // Linearly interpolate between the colors using the fractional part
             // of 'mandelness' to get smooth transitions
-            sycl::cl_uchar4 col =
-                sycl::vec<num_t, 4>(col_a) * (num_t(1) - fract) +
-                sycl::vec<num_t, 4>(col_b) * fract;
+            auto col =
+                col_a * (num_t(1) - fract) +
+                col_b * fract;
 
             // Store color in image
-            img_acc[item] = col;
+            img_acc[item] = { col.x(), col.y(), col.z(), col.w() };
           });
     });
   }

@@ -86,11 +86,9 @@ class GameOfLifeSim {
         }) {
     // Initialize game grid to empty
     auto acells = m_game.read()
-                      .cells.get_access<sycl::access::mode::discard_write,
-                                        sycl::access::target::host_buffer>();
+                      .cells.get_access<sycl::access::mode::discard_write>();
     auto aimg = m_game.read()
-                    .img.get_access<sycl::access::mode::discard_write,
-                                    sycl::access::target::host_buffer>();
+                    .img.get_access<sycl::access::mode::discard_write>();
     for (size_t y = 0; y < m_height; y++) {
       for (size_t x = 0; x < m_width; x++) {
         acells[sycl::id<2>(x, y)] = CellState::DEAD;
@@ -111,8 +109,7 @@ class GameOfLifeSim {
   template <typename Func>
   void with_img(Func&& func) {
     auto acc = m_game.read()
-                   .img.get_access<sycl::access::mode::read,
-                                   sycl::access::target::host_buffer>();
+                   .img.get_access<sycl::access::mode::read>();
     func(acc.get_pointer());
   }
 
@@ -128,7 +125,7 @@ class GameOfLifeSim {
       // the read-buffer
       // that will be read by the kernel.
       auto acc = this->m_game.read()
-                     .cells.get_access<mode::write, target::host_buffer>();
+                     .cells.get_access<mode::write>();
 
       while (!m_clicks.empty()) {
         auto press = m_clicks.back();
@@ -153,8 +150,8 @@ class GameOfLifeSim {
       cgh.parallel_for<class gameoflifesimkernel>(
           // Work on each cell in parallel
           cl::sycl::range<2>(width, height), [=](cl::sycl::item<2> item) {
-            size_t x = item.get(0);
-            size_t y = item.get(1);
+            size_t x = item.get_id(0);
+            size_t y = item.get_id(1);
 
             // Unrolled loop for accessing the 3x3 stencil
             bool live_a = r[sycl::id<2>((x - 1) % width, (y + 1) % height)] ==
