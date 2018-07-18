@@ -76,7 +76,7 @@ int main() {
          * item::get_global() to retrieve the global id as an id<1>.
          * This particular kernel will set the ith element to the value
          * of i. */
-        ptr[item.get_global()] = item.get_global()[0];
+        ptr[item.get_global_id()] = item.get_global_id()[0];
       });
 
       /* We call the parallel_for() API with two parameters; the nd_range
