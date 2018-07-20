@@ -84,7 +84,7 @@ find_library(COMPUTECPP_RUNTIME_LIBRARY
   DOC "ComputeCpp Runtime Library")
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
-  NAMES ComputeCpp ComputeCpp_vs2015
+  NAMES ComputeCpp ComputeCpp_vs2015_d
   PATHS ${ComputeCpp_ROOT_DIR}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
@@ -146,13 +146,6 @@ mark_as_advanced(ComputeCpp_ROOT_DIR
 
 if(NOT ComputeCpp_FOUND)
   return()
-endif()
-
-if(MSVC)
-  message(WARNING "    The Debug ComputeCpp library is missing! You might
-    experience linker errors or crashes when building a Debug
-    configuration. Please file an issue on Github if you do.
-    This will be fixed in a subsequent release.")
 endif()
 
 if(CMAKE_CROSSCOMPILING)

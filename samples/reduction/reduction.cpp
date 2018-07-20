@@ -91,8 +91,8 @@ T sycl_reduce(const std::vector<T>& v) {
            * parameter, since the code requires barriers for correctness. */
           h.parallel_for<class sycl_reduction>(
               r, [aI, scratch, local, length](cl::sycl::nd_item<1> id) {
-                size_t globalid = id.get_global(0);
-                size_t localid = id.get_local(0);
+                size_t globalid = id.get_global_id(0);
+                size_t localid = id.get_local_id(0);
 
                 /* All threads collectively read from global memory into local.
                  * The barrier ensures all threads' IO is resolved before

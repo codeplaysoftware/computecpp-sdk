@@ -162,13 +162,13 @@ int main(int argc, char* argv[]) {
         for (int x = - offset; x < offset; x++) {
           for (int y = - offset; y < offset; y++) {
             auto inputCoords =
-                int2(itemID.get_global(0) + x, itemID.get_global(1) + y);
+                int2(itemID.get_global_id(0) + x, itemID.get_global_id(1) + y);
             newPixel += inPtr.read(inputCoords, smpl) *
                         globalGaussian[x + offset][y + offset];
           }
         }
 
-        auto outputCoords = int2(itemID.get_global(0), itemID.get_global(1));
+        auto outputCoords = int2(itemID.get_global_id(0), itemID.get_global_id(1));
         newPixel.w() = 1.f;
         outPtr.write(outputCoords, newPixel);
       });
