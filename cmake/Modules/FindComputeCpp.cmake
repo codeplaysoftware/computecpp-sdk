@@ -174,7 +174,7 @@ set_target_properties(ComputeCpp::ComputeCpp PROPERTIES
   IMPORTED_LOCATION_RELWITHDEBINFO "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
   IMPORTED_LOCATION                "${COMPUTECPP_RUNTIME_LIBRARY}"
   INTERFACE_INCLUDE_DIRECTORIES    "${ComputeCpp_INCLUDE_DIRS}"
-  INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL" 
+  INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL"
 )
 
 # This property allows targets to specify that their sources should be
@@ -234,6 +234,7 @@ function(__build_ir)
 
   # Set the path to the integration header.
   set(outputSyclFile ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl)
+  set(depFileName ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
   set(compile_definitions "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},COMPILE_DEFINITIONS>")
@@ -292,8 +293,10 @@ function(__build_ir)
             ${generated_compile_definitions}
             -o ${outputSyclFile}
             -c ${SDK_BUILD_IR_SOURCE}
+            -MMD -MF ${depFileName}
     DEPENDS ${ir_dependencies}
     IMPLICIT_DEPENDS CXX ${SDK_BUILD_IR_SOURCE}
+    DEPFILE ${depFileName}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
