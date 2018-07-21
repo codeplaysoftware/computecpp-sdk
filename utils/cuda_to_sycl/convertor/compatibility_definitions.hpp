@@ -151,6 +151,44 @@ struct convertor<T*> {
   }
 };
 
+template <typename functor_t>
+struct kernel_dispatcher;
+template <typename blockIdx_t, typename threadIdx_t, typename blockDim_t,
+          typename gridDim_t, typename nd_item_t, typename... Param_t,
+          template <class...> class user_kernel_t>
+struct kernel_dispatcher<user_kernel_t<blockIdx_t, threadIdx_t, blockDim_t,
+                                       gridDim_t, nd_item_t, Param_t...>> {
+  using type = user_kernel_t<blockIdx_t, threadIdx_t, blockDim_t, gridDim_t,
+                             nd_item_t, Param_t...>;
+  utility::tuple::Tuple<Param_t...> t;
+  blockIdx_t blockIdx;
+  threadIdx_t threadIdx;
+  blockDim_t blockDim;
+  gridDim_t gridDim;
+
+  kernel_dispatcher(Param_t... param)
+      : t(utility::tuple::make_tuple(param...)){};
+  void operator()(nd_item_t it_) {
+    blockIdx = blockIdx_t(it_.get_group(0), it_.get_group(1), it_.get_group(2));
+    threadIdx = threadIdx_t(it_.get_local_id(0), it_.get_local_id(1),
+                            it_.get_local_id(2));
+    blockDim = blockDim_t(it_.get_local_range(0), it_.get_local_range(1),
+                          it_.get_local_range(2));
+    gridDim = gridDim_t(it_.get_group_range(0), it_.get_group_range(1),
+                        it_.get_group_range(2));
+
+    caller(it_, utility::tuple::IndexRange<0, sizeof...(Param_t)>());
+  }
+
+  template <size_t... Is>
+  void caller(cl::sycl::nd_item<3> it, utility::tuple::IndexList<Is...>) {
+    auto kernel_functor = type(blockIdx, threadIdx, blockDim, gridDim, it,
+                               utility::tuple::get<Is>(t)...);
+    kernel_functor.wrapper(
+        utility::tuple::IndexRange<0, sizeof...(Param_t) - 1>());
+  }
+};
+
 template <typename kernel>
 struct CudaCommandGroup;
 template <typename... Param_t, template <class...> class KernelT>
@@ -170,13 +208,13 @@ class CudaCommandGroup<KernelT<Param_t...>> {
         local_mem_size_{local_mem_size},
         t{utility::tuple::make_tuple(param...)} {}
   CudaCommandGroup(dim3 gridSize, dim3 blockSize, Param_t... param)
-      : CudaCommandGroup(gridSize, blockSize, 1, param...) {}
+      : CudaCommandGroup(gridSize, blockSize, sizeof(void*), param...) {}
   CudaCommandGroup(int gridSize, int blockSize, int local_mem_size,
                    Param_t... param)
       : CudaCommandGroup(dim3(gridSize, 1, 1), dim3(blockSize, 1, 1),
                          local_mem_size, param...) {}
   CudaCommandGroup(int gridSize, int blockSize, Param_t... param)
-      : CudaCommandGroup(gridSize, blockSize, 1, param...) {}
+      : CudaCommandGroup(gridSize, blockSize, sizeof(void*), param...) {}
   void operator()(cl::sycl::handler& h) {
     auto t2 = utility::tuple::append(
         t, utility::tuple::make_tuple(local_acc_t(local_mem_size_, h)));
@@ -186,7 +224,9 @@ class CudaCommandGroup<KernelT<Param_t...>> {
   void caller(handler_t& h, utility::tuple::Tuple<append_param_t...> t2,
               utility::tuple::IndexList<Is...>) {
     auto globalrange = (gridSize_ * blockSize_);
-    using kernel_t = KernelT<typename convertor<append_param_t>::type...>;
+    using u_ker_t = KernelT<dim3, dim3, dim3, dim3, cl::sycl::nd_item<3>,
+                            typename convertor<append_param_t>::type...>;
+    using kernel_t = kernel_dispatcher<u_ker_t>;
     auto func = kernel_t((
         convertor<append_param_t>::convert(utility::tuple::get<Is>(t2), h))...);
     h.parallel_for(
@@ -228,32 +268,37 @@ template <typename F, typename... Args>
 void call_func(F& func, Args... args) {
   func.__execute__(args...);
 }
+
 // Generic kernel functor to construct and execute the kernel
-template <typename child_t>
+template <typename u_k_t>
 class Generic_Kernel_Functor;
 
-template <typename... Param_t, template <class...> class child_t>
-class Generic_Kernel_Functor<child_t<Param_t...>> {
+template <typename blockIdx_t, typename threadIdx_t, typename blockDim_t,
+          typename gridDim_t, typename nd_item_t, typename... Param_t,
+          template <class...> class u_k_t>
+class Generic_Kernel_Functor<u_k_t<blockIdx_t, threadIdx_t, blockDim_t,
+                                   gridDim_t, nd_item_t, Param_t...>> {
  public:
-  nd_item<3> it_;
-  dim3 blockIdx, threadIdx, blockDim, gridDim;
+  using user_kernel_type = u_k_t<blockIdx_t, threadIdx_t, blockDim_t, gridDim_t,
+                                 nd_item_t, Param_t...>;
+  blockIdx_t blockIdx;
+  threadIdx_t threadIdx;
+  blockDim_t blockDim;
+  gridDim_t gridDim;
+  nd_item_t it_;
   // N+1 elements. The first N elements is the parameters of the cuda kernel
   // the last element is the local memory
   utility::tuple::Tuple<Param_t...> t;
+  Generic_Kernel_Functor(blockIdx_t blockIdx_, threadIdx_t threadIdx_,
+                         blockDim_t blockDim_, gridDim_t gridDim_, nd_item_t it,
+                         Param_t... param)
+      : blockIdx(blockIdx_),
+        threadIdx(threadIdx_),
+        blockDim(blockDim_),
+        gridDim(gridDim_),
+        it_(it),
+        t(utility::tuple::make_tuple(param...)) {}
 
-  Generic_Kernel_Functor(Param_t... param)
-      : t(utility::tuple::make_tuple(param...)){};
-
-  void set_ids(cl::sycl::nd_item<3> it) {
-    it_ = it,
-    blockIdx = dim3(it_.get_group(0), it_.get_group(1), it_.get_group(2));
-    threadIdx =
-        dim3(it_.get_local_id(0), it_.get_local_id(1), it_.get_local_id(2));
-    blockDim = dim3(it_.get_local_range(0), it_.get_local_range(1),
-                    it_.get_local_range(2));
-    gridDim = dim3(it_.get_global_range(0), it_.get_global_range(1),
-                   it_.get_global_range(2));
-  }
   void __syncthreads() {
     it_.barrier(cl::sycl::access::fence_space::global_and_local);
   }
@@ -268,7 +313,7 @@ class Generic_Kernel_Functor<child_t<Param_t...>> {
   template <typename... removed_local_param_t, size_t... Is>
   inline void unpack(utility::tuple::Tuple<removed_local_param_t...> t_removed,
                      utility::tuple::IndexList<Is...>) {
-    call_func(*(reinterpret_cast<child_t<Param_t...>*>(this)),
+    call_func(*(reinterpret_cast<user_kernel_type*>(this)),
               (raw_pointer<removed_local_param_t>::get_pointer(
                   utility::tuple::get<Is>(t_removed)))...);
   }
@@ -276,10 +321,6 @@ class Generic_Kernel_Functor<child_t<Param_t...>> {
   inline void wrapper(utility::tuple::IndexList<Is...> indices) {
     unpack(utility::tuple::make_tuple((utility::tuple::get<Is>(t))...),
            indices);
-  }
-  void operator()(cl::sycl::nd_item<3> it) {
-    set_ids(it);
-    wrapper(utility::tuple::IndexRange<0, sizeof...(Param_t) - 1>());
   }
 };
 
