@@ -129,8 +129,7 @@ else()
 endif()
 
 find_package_handle_standard_args(ComputeCpp
-  REQUIRED_VARS ComputeCpp_ROOT_DIR
-                ComputeCpp_DEVICE_COMPILER_EXECUTABLE
+  REQUIRED_VARS ComputeCpp_DEVICE_COMPILER_EXECUTABLE
                 ComputeCpp_INFO_EXECUTABLE
                 COMPUTECPP_RUNTIME_LIBRARY
                 COMPUTECPP_RUNTIME_LIBRARY_DEBUG
