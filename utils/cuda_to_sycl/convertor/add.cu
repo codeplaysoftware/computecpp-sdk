@@ -3,7 +3,7 @@
 #include <math.h>
 // Utility class used to avoid linker errors with extern
 // unsized shared memory arrays with templated type
-// specialize it based on type (specially double) to avoid unaligned memory
+// specialize it based on type (specifically double) to avoid unaligned memory
 // access compile errors
 template<class T>
 struct SharedMemory

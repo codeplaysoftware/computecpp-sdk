@@ -29,8 +29,8 @@
  *    Ruyman Reyes   Codeplay Software Ltd.
  *
  **************************************************************************/
-#include <math.h>
 #include <iostream>
+#include <math.h>
 
 // Header added by the source to source tool
 #include "compatibility_definitions.hpp"
@@ -52,7 +52,7 @@ struct ___CudaConverterFunctor___add
   ___CudaConverterFunctor___add(Args... args) : parent(args...) {}
   // if shared memory is used this code will be added
   template <typename T>
-  T *SharedMemory() {
+  T* SharedMemory() {
     return parent::template get_local_mem<T>();
   }
   // kernel executor
@@ -60,40 +60,41 @@ struct ___CudaConverterFunctor___add
   void __execute__(params_t... params) {
     add(params...);
   }
-  __global__ void add(int n, float *x, float *y) {
+  __global__ void add(int n, float* x, float* y) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = (blockDim.x * gridDim.x);
-    for (int i = index; i < n; i += stride) y[i] = x[i] + y[i];
+    for (int i = index; i < n; i += stride)
+      y[i] = x[i] + y[i];
   }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   // Size of vectors
   int n = 1 << 20;
   // Host input vectors
-  float *h_a;
-  float *h_b;
+  float* h_a;
+  float* h_b;
 
   // Device input vectors
-  float *d_a;
-  float *d_b;
+  float* d_a;
+  float* d_b;
 
   // Size, in bytes, of each vector
   size_t bytes = n * sizeof(float);
 
   // Allocate memory for each vector on host
-  h_a = (float *)malloc(bytes);
-  h_b = (float *)malloc(bytes);
+  h_a = (float*) malloc(bytes);
+  h_b = (float*) malloc(bytes);
 
   // Added by the conversion tool
   cl::sycl::queue deviceQueue((cl::sycl::gpu_selector()));
 
   // Allocate memory for each vector on GPU
   // Original: cudaMalloc(&d_a, bytes);
-  d_a = static_cast<float *>(cl::sycl::codeplay::SYCLmalloc(
+  d_a = static_cast<float*>(cl::sycl::codeplay::SYCLmalloc(
       bytes, cl::sycl::codeplay::get_global_pointer_mapper()));
   // Original: cudaMalloc(&d_b, bytes);
-  d_b = static_cast<float *>(cl::sycl::codeplay::SYCLmalloc(
+  d_b = static_cast<float*>(cl::sycl::codeplay::SYCLmalloc(
       bytes, cl::sycl::codeplay::get_global_pointer_mapper()));
 
   int i;
@@ -119,10 +120,9 @@ int main(int argc, char *argv[]) {
   int numBlocks = (n + blockSize - 1) / blockSize;
 
   // Execute the kernel
-  // Original: vecAdd<<<numBlocks, blockSize>>>(n, d_a,
-  // d_b); TO have
+  // Original: vecAdd<<<numBlocks, blockSize>>>(n, d_a, d_b);
   deviceQueue.submit(cl::sycl::codeplay::CudaCommandGroup<
-                     ___CudaConverterFunctor___add<int, float *, float *>>(
+                     ___CudaConverterFunctor___add<int, float*, float*>>(
       numBlocks, blockSize, n, d_a, d_b));
 
   // Copy array back to host
@@ -134,7 +134,8 @@ int main(int argc, char *argv[]) {
   // Sum up vector c and print result divided by n, this should equal 1 within
   // error
   float maxError = 0.0f;
-  for (int i = 0; i < n; i++) maxError = fmax(maxError, fabs(h_b[i] - 3.0f));
+  for (int i = 0; i < n; i++)
+    maxError = fmax(maxError, fabs(h_b[i] - 3.0f));
   std::cout << "Max error: " << maxError << std::endl;
 
   // Release device memory

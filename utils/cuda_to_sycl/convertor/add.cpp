@@ -51,7 +51,7 @@ struct ___CudaConverterFunctor___vecAdd
   ___CudaConverterFunctor___vecAdd(Args... args) : parent(args...) {}
   // if shared memory is used this code will be added
   template <typename T>
-  T *SharedMemory() {
+  T* SharedMemory() {
     return parent::template get_local_mem<T>();
   }
   // kernel executor
@@ -60,12 +60,12 @@ struct ___CudaConverterFunctor___vecAdd
     vecAdd(params...);
   }
   // The original cuda kernel
-  __global__ void vecAdd(double *a, double *b, double *c, int n) {
+  __global__ void vecAdd(double* a, double* b, double* c, int n) {
     // Get our global thread ID
     int id = blockIdx.x * blockDim.x + threadIdx.x;
 
     // Make sure we do not go out of bounds
-    double *smem = SharedMemory<double>();
+    double* smem = SharedMemory<double>();
     if (id < n) {
       smem[threadIdx.x] = a[id] + b[id];
       c[id] = smem[threadIdx.x];
@@ -73,42 +73,42 @@ struct ___CudaConverterFunctor___vecAdd
   }
 };
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   // Size of vectors
   int n = 1024;
 
   // Host input vectors
-  double *h_a;
-  double *h_b;
+  double* h_a;
+  double* h_b;
   // Host output vector
-  double *h_c;
+  double* h_c;
 
   // Device input vectors
-  double *d_a;
-  double *d_b;
+  double* d_a;
+  double* d_b;
   // Device output vector
-  double *d_c;
+  double* d_c;
 
   // Size, in bytes, of each vector
   size_t bytes = n * sizeof(double);
 
   // Allocate memory for each vector on host
-  h_a = (double *)malloc(bytes);
-  h_b = (double *)malloc(bytes);
-  h_c = (double *)malloc(bytes);
+  h_a = (double*) malloc(bytes);
+  h_b = (double*) malloc(bytes);
+  h_c = (double*) malloc(bytes);
 
   // Added by the conversion tool
   cl::sycl::queue deviceQueue((cl::sycl::gpu_selector()));
 
   // Allocate memory for each vector on GPU
   // Original: cudaMalloc(&d_a, bytes);
-  d_a = static_cast<double *>(cl::sycl::codeplay::SYCLmalloc(
+  d_a = static_cast<double*>(cl::sycl::codeplay::SYCLmalloc(
       bytes, cl::sycl::codeplay::get_global_pointer_mapper()));
   // Original: cudaMalloc(&d_b, bytes);
-  d_b = static_cast<double *>(cl::sycl::codeplay::SYCLmalloc(
+  d_b = static_cast<double*>(cl::sycl::codeplay::SYCLmalloc(
       bytes, cl::sycl::codeplay::get_global_pointer_mapper()));
   // Original: cudaMalloc(&d_c, bytes);
-  d_c = static_cast<double *>(cl::sycl::codeplay::SYCLmalloc(
+  d_c = static_cast<double*>(cl::sycl::codeplay::SYCLmalloc(
       bytes, cl::sycl::codeplay::get_global_pointer_mapper()));
 
   int i;
@@ -135,17 +135,16 @@ int main(int argc, char *argv[]) {
   blockSize = dim3(256, 1, 1);
 
   // Number of thread blocks in grid
-  gridSize = dim3((int)ceil((float)n / blockSize.x), 1, 1);
+  gridSize = dim3((int) ceil((float) n / blockSize.x), 1, 1);
   // Shared memory size in byte for SYCL
   // Original :  shared memory size in byte
   int sharedmem = blockSize.x * sizeof(int);
   using data_type = cl::sycl::codeplay::acc_t<uint8_t>;
   // Execute the kernel
-  // Original: vecAdd<<<gridSize, blockSize, sharedmem>>>(d_a,
-  // d_b, d_c, n); TO have
+  // Original: vecAdd<<<gridSize, blockSize, sharedmem>>>(d_a, d_b, d_c, n);
   deviceQueue.submit(
       cl::sycl::codeplay::CudaCommandGroup<
-          ___CudaConverterFunctor___vecAdd<double *, double *, double *, int>>(
+          ___CudaConverterFunctor___vecAdd<double*, double*, double*, int>>(
           gridSize, blockSize, sharedmem, d_a, d_b, d_c, n));
 
   // Copy array back to host
@@ -157,7 +156,8 @@ int main(int argc, char *argv[]) {
   // Sum up vector c and print result divided by n, this should equal 1 within
   // error
   double sum = 0;
-  for (i = 0; i < n; i++) sum += h_c[i];
+  for (i = 0; i < n; i++)
+    sum += h_c[i];
   printf("final result: %f\n", sum / n);
 
   // Release device memory

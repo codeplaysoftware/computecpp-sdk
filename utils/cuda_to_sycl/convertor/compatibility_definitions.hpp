@@ -286,7 +286,7 @@ class Generic_Kernel_Functor<u_k_t<blockIdx_t, threadIdx_t, blockDim_t,
   blockDim_t blockDim;
   gridDim_t gridDim;
   nd_item_t it_;
-  // N+1 elements. The first N elements is the parameters of the cuda kernel
+  // N+1 elements. The first N elements are the parameters of the cuda kernel
   // the last element is the local memory
   utility::tuple::Tuple<Param_t...> t;
   Generic_Kernel_Functor(blockIdx_t blockIdx_, threadIdx_t threadIdx_,
