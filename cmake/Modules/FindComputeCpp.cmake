@@ -59,41 +59,41 @@ find_package(OpenCL REQUIRED)
 # Find ComputeCpp package
 
 # Try to read the environment variable
-if(DEFINED ENV{COMPUTECPP_DIR})
-  if(NOT ComputeCpp_DIR)
-    set(ComputeCpp_ROOT_DIR $ENV{COMPUTECPP_DIR} CACHE PATH
-      "The root of the ComputeCpp install")
-  endif()
-else()
-  set(ComputeCpp_ROOT_DIR ${ComputeCpp_DIR} CACHE PATH
-    "The root of the ComputeCpp install")
+if(DEFINED ComputeCpp_DIR)
+  set(computecpp_find_hint ${ComputeCpp_DIR})
+elseif(DEFINED ENV{COMPUTECPP_DIR})
+  set(computecpp_find_hint $ENV{COMPUTECPP_DIR})
 endif()
 
 find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
-  PATHS ${ComputeCpp_ROOT_DIR}
+  PATHS ${computecpp_find_hint}
   PATH_SUFFIXES bin)
 
 find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
-  PATHS ${ComputeCpp_ROOT_DIR}
+  PATHS ${computecpp_find_hint}
   PATH_SUFFIXES bin)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY
   NAMES ComputeCpp ComputeCpp_vs2015
-  PATHS ${ComputeCpp_ROOT_DIR}
+  PATHS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
   NAMES ComputeCpp ComputeCpp_vs2015_d
-  PATHS ${ComputeCpp_ROOT_DIR}
+  PATHS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
 
 find_path(ComputeCpp_INCLUDE_DIRS
   NAMES "CL/sycl.hpp"
-  PATHS ${ComputeCpp_ROOT_DIR}/include
+  PATHS ${computecpp_find_hint}/include
   DOC "The ComputeCpp include directory")
 get_filename_component(ComputeCpp_INCLUDE_DIRS ${ComputeCpp_INCLUDE_DIRS} ABSOLUTE)
+
+get_filename_component(computecpp_canonical_root_dir "${ComputeCpp_INCLUDE_DIRS}/.." ABSOLUTE)
+set(ComputeCpp_ROOT_DIR "${computecpp_canonical_root_dir}" CACHE PATH
+    "The root of the ComputeCpp install")
 
 execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
   OUTPUT_VARIABLE ComputeCpp_VERSION
@@ -174,7 +174,7 @@ set_target_properties(ComputeCpp::ComputeCpp PROPERTIES
   IMPORTED_LOCATION_RELWITHDEBINFO "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
   IMPORTED_LOCATION                "${COMPUTECPP_RUNTIME_LIBRARY}"
   INTERFACE_INCLUDE_DIRECTORIES    "${ComputeCpp_INCLUDE_DIRS}"
-  INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL" 
+  INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL"
 )
 
 # This property allows targets to specify that their sources should be
@@ -234,6 +234,7 @@ function(__build_ir)
 
   # Set the path to the integration header.
   set(outputSyclFile ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl)
+  set(depFileName ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
   set(compile_definitions "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},COMPILE_DEFINITIONS>")
@@ -281,6 +282,14 @@ function(__build_ir)
     endforeach()
   endif()
 
+  # Depfile support was only added in CMake 3.7
+  # CMake throws an error if it is unsupported by the generator (i. e. not ninja)
+  if((NOT CMAKE_VERSION VERSION_LESS 3.7.0) AND
+          CMAKE_GENERATOR MATCHES "Ninja")
+      set(generate_depfile -MMD -MF ${depFileName})
+      set(enable_depfile "DEPFILE ${depFileName}")
+  endif()
+
   # Add custom command for running compute++
   add_custom_command(
     OUTPUT ${outputSyclFile}
@@ -292,8 +301,10 @@ function(__build_ir)
             ${generated_compile_definitions}
             -o ${outputSyclFile}
             -c ${SDK_BUILD_IR_SOURCE}
+            ${generate_depfile}
     DEPENDS ${ir_dependencies}
     IMPLICIT_DEPENDS CXX ${SDK_BUILD_IR_SOURCE}
+    ${enable_depfile}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
