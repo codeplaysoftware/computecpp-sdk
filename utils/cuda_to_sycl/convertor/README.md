@@ -178,3 +178,16 @@ struct SharedMemory<double>
 };
 ```
 
+
+# Building and executing the examples:
+
+* build:
+
+ COMPUTECPP_DIR=/path/to/computecpp/ make
+
+ * execute
+  
+  ./add
+
+  ./add_stride
+
