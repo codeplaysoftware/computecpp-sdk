@@ -1,15 +1,14 @@
 # The SYCL Convertor
 
-An `*.cu` file is a combination of Host CUDA API and device CUDA kernel.
+A `*.cu` file is a combination of Host CUDA API and device CUDA kernel.
 
-The SYCL convertor executes a SYCL `*.cpp` file which is converted from 
-a CUDA `*.cu` file, by using the followign rules.
+This SYCL patterhn is able to re-use an existing CUDA kernel from a `*.cu` file into a C++ kernel, following these steps:
 
 1. For the device kernel, we will introduce a SYCL functor that will encapsulate 
 all the CUDA code, enabling direct re-use of CUDA kernels without major 
 modifications whenever using simple kernel cases.
 
-1. For the host code, the CUDA API is replaced with equivalent SYCL/C++ code. 
+1. For the host code, the CUDA API is manually replaced with equivalent SYCL/C++ code. 
 
 ## CUDA device kernel
 
@@ -28,7 +27,7 @@ __global__ void vecAdd(double *a, double *b, double *c, int n) {
   }
 }
 ```
-should be refactored as: 
+should be rewritten as: 
 
 ```cpp
 // Generated class:: Kernel dispatch.
@@ -85,7 +84,7 @@ should be refactored as:
     d_a = static_cast<double*> (cl::sycl::codeplay::SYCLmalloc(sizeof(bytes), 
                                     cl::sycl::codeplay::get_global_pointer_mapper()));
 ```
-* Explicit memory operation: 
+* Explicit memory operations: 
 
 `cudaMemcpy( d_a, h_a, bytes, cudaMemcpyHostToDevice);`
 
@@ -104,7 +103,7 @@ should be refactored as
       cl::sycl::codeplay::Kind::DeviceToHost>(deviceQueue, d_c, h_c, bytes,
                                               true);`
 
-* CUDA chevron 
+* CUDA chevron kernel dispatch 
 
 For example: 
 
@@ -118,24 +117,20 @@ should be refactored as:
           gridSize, blockSize, sharedmem, d_a, d_b, d_c, n));`
 
 
-# Convertor backend:
+# Convertor kernel functor:
 
-The SYCL kernel functor is inherited the SYCL generic functor.
+The SYCL kernel functor is inherited from the SYCL generic functor.
 The command group captures the SYCL functor kernel as a variadic nested template type, with the types requited for cuda device kernel.
 It reconstructs the SYCL kernel functor type with the extra types required to execute the converted SYCL kernel functor and instantiate it
 the SYCL dispatcher by passing the new type constructed for SYCL kernel functor.
 The kernel dispatcher then instantiates the new constructed SYCL kernel functor inside the functor operator when the device kernel is called. 
-At this time the nd_item is provided and each thead can construct their threadIdx, blockIdx. Also they can call the __synch_threds() to access the barrier and executes any cuda kernels embeded in the SYCL kernel functor.
+At this time the nd_item is provided and each thead can construct their threadIdx, blockIdx. Also each thread can call the ```__synch_threads()``` to access the barrier and executes any cuda kernels embeded in the SYCL kernel functor.
 
 # Limitations
 
 * Not all input CUDA code can be automatically converted into SYCL code, since there is not always a one-to-one mapping between the two, or the mapping is not obvious. In particular, CUDA kernels heavily optimized for a specific CUDA architecture would need to be re-written manually to achieve comparable performance on the target architecture, even if they can be converted directly.
 
-* This document also focuses on use cases where only one CUDA stream is present (the default stream). Multiple stream code is simpler to translate, since the SYCL queue can be mapped directly to a CUDA stream. However this code is difficult to read, so has been left out of the code examples and descriptions.
-
-* Vendor or device specific extensions on the destination SYCL platform are not covered by this document. Any CUDA capability that cannot be translated into standard SYCL code is not supported.
-
-* Local memory access in CUDA must be through using a utility class.
+* Local memory access in CUDA must be used through using a utility class.
 for example: 
 
 ```cpp
@@ -183,11 +178,17 @@ struct SharedMemory<double>
 
 * build:
 
+```
  COMPUTECPP_DIR=/path/to/computecpp/ make
+ ```
 
  * execute
   
+  ```
   ./add
+```
 
+```
   ./add_stride
+  ```
 
