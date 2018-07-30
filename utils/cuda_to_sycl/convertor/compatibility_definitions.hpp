@@ -78,29 +78,31 @@ struct copy_t;
 
 template <typename T1, typename T2>
 struct copy_t<T1, T2, cl::sycl::codeplay::Kind::HostToDevice> {
-  static void sycl_copy_conversion(cl::sycl::queue dQ, T1* src, T2* dst,
-                                   bool async) {
-    dQ.submit([&](cl::sycl::handler& h) {
+  static cl::sycl::event sycl_copy_conversion(cl::sycl::queue dQ, T1* src,
+                                              T2* dst, bool async) {
+    auto event = dQ.submit([&](cl::sycl::handler& h) {
       auto acc_ = get_global_pointer_mapper().get_access(dst, h);
       h.copy((uint8_t*) src, acc_);
     });
     if (!async) {
-      dQ.wait();
+      event.wait();
     }
+    return event;
   }
 };
 
 template <typename T1, typename T2>
 struct copy_t<T1, T2, cl::sycl::codeplay::Kind::DeviceToHost> {
-  static void sycl_copy_conversion(cl::sycl::queue dQ, T1* src, T2* dst,
-                                   bool async) {
-    dQ.submit([&](cl::sycl::handler& h) {
+  static cl::sycl::event sycl_copy_conversion(cl::sycl::queue dQ, T1* src,
+                                              T2* dst, bool async) {
+    auto event = dQ.submit([&](cl::sycl::handler& h) {
       auto acc_ = get_global_pointer_mapper().get_access(src, h);
       h.copy(acc_, (uint8_t*) dst);
     });
     if (!async) {
-      dQ.wait();
+      event.wait();
     }
+    return event;
   }
 };
 
@@ -116,9 +118,24 @@ struct copy_t<T1, T2, cl::sycl::codeplay::Kind::DeviceToHost> {
  * @param output Pointer to the destination
  */
 template <Kind kind_t, typename T1, typename T2>
-void cuda_copy_conversion(cl::sycl::queue dQ, T1* src, T2* dst, size_t,
-                          bool async) {
-  copy_t<T1, T2, kind_t>::sycl_copy_conversion(dQ, src, dst, async);
+cl::sycl::event cuda_copy_conversion(cl::sycl::queue dQ, T1* src, T2* dst,
+                                     size_t, bool async = false) {
+  return copy_t<T1, T2, kind_t>::sycl_copy_conversion(dQ, src, dst, async);
+}
+
+template <typename T>
+static cl::sycl::event sycl_memset(cl::sycl::queue dQ, T* dst, int value,
+                                   size_t, bool async = false) {
+  auto event = dQ.submit([&](cl::sycl::handler& h) {
+    auto acc = get_global_pointer_mapper().get_access(dst, h);
+    // The cast to uint8_t is here to match the behaviour of the standard
+    // memset.
+    h.fill(acc, (static_cast<uint8_t>(value)));
+  });
+  if (!async) {
+    event.wait();
+  }
+  return event;
 }
 
 template <typename T>
