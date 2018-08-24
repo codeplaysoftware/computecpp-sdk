@@ -1,34 +1,28 @@
-# Example Makefile to build a SYCL application using ComputeCpp.
+CXXFLAGS += -std=c++11 `pkg-config --cflags computecpp`
+LDFLAGS += `pkg-config --libs computecpp`
+SYCLFLAGS += `pkg-config computecpp --variable device_cflags`
+SYCLCXX ?= `pkg-config computecpp --variable device_compiler`
 
-# Your ComputeCpp installation root.
-COMPUTECPP_PREFIX ?= /usr/local
+EXECUTABLE = app
 
-COMPUTECPP ?= $(COMPUTECPP_PREFIX)/bin/compute++
-COMPUTECPP_INFO ?= $(COMPUTECPP_PREFIX)/bin/computecpp_info
-COMPUTECPP_INCLUDES ?= $(COMPUTECPP_PREFIX)/include
-COMPUTECPP_LIBS ?= $(COMPUTECPP_PREFIX)/lib
+all : $(EXECUTABLE)
 
-# In addition your normal flags, compilation requires C++11 standard,
-# the SYCL headers, and the ComputeCpp library.
-CXXFLAGS += --std=c++11 -I$(COMPUTECPP_INCLUDES)
-LDFLAGS += -L$(COMPUTECPP_LIBS) -lComputeCpp
-COMPUTECPP_FLAGS += \
-	$(CXXFLAGS) $(shell $(COMPUTECPP_INFO) --dump-device-compiler-flags)
-
-# The example application to build.
-target := app
-all: $(target)
-
-# Single source multiple pass compilation.
 %: %.cpp
-	$(COMPUTECPP) $(COMPUTECPP_FLAGS) -c $< -o $@.sycl
-	$(CXX) $(CXXFLAGS) -include $@.sycl $< -o $@ $(LDFLAGS)
 
+%.o : %.cpp
+	$(SYCLCXX) $(SYCLFLAGS) $< -o $@.sycl
+	$(CXX) -c $(CXXFLAGS) -include $@.sycl $< -o $@
+
+% : %.o
+	$(CXX) $< $(LDFLAGS) -o $@
 
 .PHONY: clean help
+
 clean:
-	rm -fv $(target) $(target).sycl $(target).o
+	rm -f *.o
+	rm -f $(EXECUTABLE)
 
 help:
 	@echo "Builds an example SYCL application."
-	@echo "Usage:  make COMPUTECPP_PREFIX=[path-to-computecpp] {all,clean,help}"
+	@echo "Either copy computecpp.pc to /usr/lib/pkgconfig or append <computecpp_dir>/lib/pkgconfig to PKG_CONFIG_PATH."
+	@echo "Usage:  make {all,clean,help}"
