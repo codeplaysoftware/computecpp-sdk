@@ -19,8 +19,7 @@ all : $(EXECUTABLE)
 .PHONY: clean help
 
 clean:
-	rm -f *.o
-	rm -f $(EXECUTABLE)
+	rm -f *.o *.sycl $(EXECUTABLE)
 
 help:
 	@echo "Builds an example SYCL application."
