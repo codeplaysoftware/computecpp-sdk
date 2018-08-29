@@ -155,13 +155,13 @@ struct real_accessor_t<T1, acc_t<T2>> {
 };
 
 template <typename conv_t>
-struct convertor {
+struct converter {
   using type = conv_t;
   static conv_t inline convert(conv_t c, cl::sycl::handler&) { return c; }
 };
 
 template <typename T>
-struct convertor<T*> {
+struct converter<T*> {
   using type = real_accessor_t<T, acc_t<uint8_t>>;
   static type inline convert(T* vir_ptr, cl::sycl::handler& h) {
     return type(get_global_pointer_mapper().get_access(vir_ptr, h));
@@ -242,10 +242,10 @@ class CudaCommandGroup<KernelT<Param_t...>> {
               utility::tuple::IndexList<Is...>) {
     auto globalrange = (gridSize_ * blockSize_);
     using u_ker_t = KernelT<dim3, dim3, dim3, dim3, cl::sycl::nd_item<3>,
-                            typename convertor<append_param_t>::type...>;
+                            typename converter<append_param_t>::type...>;
     using kernel_t = kernel_dispatcher<u_ker_t>;
     auto func = kernel_t((
-        convertor<append_param_t>::convert(utility::tuple::get<Is>(t2), h))...);
+        converter<append_param_t>::convert(utility::tuple::get<Is>(t2), h))...);
     h.parallel_for(
         nd_range<3>{
             cl::sycl::range<3>(globalrange.x, globalrange.y, globalrange.z),
