@@ -417,7 +417,7 @@ function(add_sycl_to_target)
     )
     MATH(EXPR fileCounter "${fileCounter} + 1")
   endforeach()
-  target_link_libraries(${SDK_ADD_SYCL_TARGET}
-    PUBLIC ComputeCpp::ComputeCpp
-  )
+  set_target_properties(${SDK_ADD_SYCL_TARGET} PROPERTIES
+    INTERFACE_LINK_LIBRARIES ComputeCpp::ComputeCpp
+    LINK_LIBRARIES ComputeCpp::ComputeCpp)
 endfunction(add_sycl_to_target)
