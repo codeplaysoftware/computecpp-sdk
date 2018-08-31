@@ -1,6 +1,0 @@
-CUDA to SYCL example
-====================
-
-This util demonstrates the differences and similarities between CUDA and
-SYCL through a simple addition example. The makefile provided should
-build both successfully by default.
