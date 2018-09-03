@@ -295,7 +295,6 @@ function(__build_ir)
     OUTPUT ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-            -isystem ${ComputeCpp_INCLUDE_DIRS}
             ${device_compiler_includes}
             ${generated_include_directories}
             ${generated_compile_definitions}
