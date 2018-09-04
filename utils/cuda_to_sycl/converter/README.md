@@ -1,14 +1,17 @@
-# The SYCL Convertor
+# The SYCL Converter
 
-A `*.cu` file is a combination of Host CUDA API and device CUDA kernel.
+This utility enables developers with existing CUDA kernel code to convert this to SYCL kernel code.
 
-This SYCL patterhn is able to re-use an existing CUDA kernel from a `*.cu` file into a C++ kernel, following these steps:
+A `*.cu` file is a combination of the Host CUDA API and device CUDA kernel code.
 
-1. For the device kernel, we will introduce a SYCL functor that will encapsulate 
+Existing CUDA kernel code can be transformed into SYCL code using the pattern described in this 
+document.
+
+1. For the device kernel code, we will introduce a SYCL functor that will encapsulate 
 all the CUDA code, enabling direct re-use of CUDA kernels without major 
-modifications whenever using simple kernel cases.
+modifications for simple kernel use cases.
 
-1. For the host code, the CUDA API is manually replaced with equivalent SYCL/C++ code. 
+1. For the host code, the CUDA API is manually replaced with the equivalent SYCL C++ code. 
 
 ## CUDA device kernel
 
