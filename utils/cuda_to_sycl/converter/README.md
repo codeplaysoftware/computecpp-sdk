@@ -4,7 +4,8 @@ This utility enables developers with existing CUDA kernel code to convert this t
 
 A `*.cu` file is a combination of the Host CUDA API and device CUDA kernel code.
 
-The SYCL pattern described in this document is able to accommodate existing CUDA kernel code from a `*.cu` file using the following steps:
+Existing CUDA kernel code can be transformed into SYCL code using the pattern described in this 
+document.
 
 1. For the device kernel code, we will introduce a SYCL functor that will encapsulate 
 all the CUDA code, enabling direct re-use of CUDA kernels without major 
