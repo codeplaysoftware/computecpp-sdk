@@ -44,8 +44,8 @@ int main() {
       for (auto ep : l) {
         try {
           std::rethrow_exception(ep);
-        } catch (std::exception& e) {
-          std::cout << e.what();
+        } catch (const exception& e) {
+          std::cout << "Asynchronous exception caught:\n" << e.what();
         }
       }
     });
@@ -86,8 +86,8 @@ int main() {
       cgh.parallel_for<class assign_elements>(myRange, myKernel);
     });
 
-  } catch (exception e) {
-    std::cout << "SYCL exception caught: " << e.what();
+  } catch (const exception& e) {
+    std::cout << "Synchronous exception caught:\n" << e.what();
     return 2;
   }
 
