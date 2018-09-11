@@ -286,8 +286,9 @@ function(__build_ir)
   # CMake throws an error if it is unsupported by the generator (i. e. not ninja)
   if((NOT CMAKE_VERSION VERSION_LESS 3.7.0) AND
           CMAKE_GENERATOR MATCHES "Ninja")
-      set(generate_depfile -MMD -MF ${depFileName})
-      set(enable_depfile "DEPFILE ${depFileName}")
+    file(RELATIVE_PATH relOutputFile ${CMAKE_BINARY_DIR} ${outputSyclFile})
+    set(generate_depfile -MMD -MF ${depFileName} -MT ${relOutputFile})
+    set(enable_depfile DEPFILE ${depFileName})
   endif()
 
   # Add custom command for running compute++
