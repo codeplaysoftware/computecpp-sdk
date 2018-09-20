@@ -64,14 +64,15 @@ elseif(DEFINED ENV{COMPUTECPP_DIR})
   set(computecpp_find_hint $ENV{COMPUTECPP_DIR})
 endif()
 
+# Used for running executables locally
+set(computecpp_native_find_hint ${computecpp_find_hint})
+
 if(CMAKE_CROSSCOMPILING)
   # ComputeCpp_NATIVE_DIR is used to find executables that are run locally
   if(DEFINED ComputeCpp_NATIVE_DIR)
     set(computecpp_native_find_hint ${ComputeCpp_NATIVE_DIR})
   elseif(DEFINED ENV{COMPUTECPP_NATIVE_DIR})
     set(computecpp_native_find_hint $ENV{COMPUTECPP_NATIVE_DIR})
-  else()
-    set(computecpp_native_find_hint ${computecpp_find_hint})
   endif()
 endif()
 
