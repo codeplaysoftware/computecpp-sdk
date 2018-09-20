@@ -58,7 +58,6 @@ find_package(OpenCL REQUIRED)
 
 # Find ComputeCpp package
 
-# Try to read the environment variable
 if(DEFINED ComputeCpp_DIR)
   set(computecpp_find_hint ${ComputeCpp_DIR})
 elseif(DEFINED ENV{COMPUTECPP_DIR})
