@@ -64,24 +64,24 @@ elseif(DEFINED ENV{COMPUTECPP_DIR})
   set(computecpp_find_hint $ENV{COMPUTECPP_DIR})
 endif()
 
-# Used for running executables locally
-set(computecpp_native_find_hint ${computecpp_find_hint})
+# Used for running executables on the host
+set(computecpp_host_find_hint ${computecpp_find_hint})
 
 if(CMAKE_CROSSCOMPILING)
-  # ComputeCpp_NATIVE_DIR is used to find executables that are run locally
-  if(DEFINED ComputeCpp_NATIVE_DIR)
-    set(computecpp_native_find_hint ${ComputeCpp_NATIVE_DIR})
-  elseif(DEFINED ENV{COMPUTECPP_NATIVE_DIR})
-    set(computecpp_native_find_hint $ENV{COMPUTECPP_NATIVE_DIR})
+  # ComputeCpp_HOST_DIR is used to find executables that are run on the host
+  if(DEFINED ComputeCpp_HOST_DIR)
+    set(computecpp_host_find_hint ${ComputeCpp_HOST_DIR})
+  elseif(DEFINED ENV{COMPUTECPP_HOST_DIR})
+    set(computecpp_host_find_hint $ENV{COMPUTECPP_HOST_DIR})
   endif()
 endif()
 
 find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
-  PATHS ${computecpp_native_find_hint}
+  PATHS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin)
 
 find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
-  PATHS ${computecpp_native_find_hint}
+  PATHS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY
