@@ -62,11 +62,6 @@ int main() {
     });
   });
 
-  /* Workaround for known limitation in ComputeCpp, see blog post for
-   * details: https://www.codeplay.com/portal/
-   * 03-09-18-buffer-reinterpret-viewing-data-from-a-different-perspective */
-  { auto acc = buf_int.get_access<cl::sycl::access::mode::read>(); }
-
   auto ret = 0;
   {
     auto acc = buf_float.get_access<cl::sycl::access::mode::read>();
