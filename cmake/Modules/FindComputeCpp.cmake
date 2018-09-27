@@ -77,28 +77,28 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
-  PATHS ${computecpp_host_find_hint}
+  HINTS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin)
 
 find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
-  PATHS ${computecpp_host_find_hint}
+  HINTS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY
   NAMES ComputeCpp ComputeCpp_vs2015
-  PATHS ${computecpp_find_hint}
+  HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
   NAMES ComputeCpp ComputeCpp_vs2015_d
-  PATHS ${computecpp_find_hint}
+  HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
 
 find_path(ComputeCpp_INCLUDE_DIRS
   NAMES "CL/sycl.hpp"
-  PATHS ${computecpp_find_hint}/include
+  HINTS ${computecpp_find_hint}/include
   DOC "The ComputeCpp include directory")
 get_filename_component(ComputeCpp_INCLUDE_DIRS ${ComputeCpp_INCLUDE_DIRS} ABSOLUTE)
 
