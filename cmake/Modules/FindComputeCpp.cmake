@@ -179,14 +179,16 @@ if(NOT TARGET OpenCL::OpenCL)
   )
 endif()
 
-add_library(ComputeCpp::ComputeCpp UNKNOWN IMPORTED)
-set_target_properties(ComputeCpp::ComputeCpp PROPERTIES
-  IMPORTED_LOCATION_DEBUG          "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
-  IMPORTED_LOCATION_RELWITHDEBINFO "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
-  IMPORTED_LOCATION                "${COMPUTECPP_RUNTIME_LIBRARY}"
-  INTERFACE_INCLUDE_DIRECTORIES    "${ComputeCpp_INCLUDE_DIRS}"
-  INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL"
-)
+if(NOT TARGET ComputeCpp::ComputeCpp)
+  add_library(ComputeCpp::ComputeCpp UNKNOWN IMPORTED)
+  set_target_properties(ComputeCpp::ComputeCpp PROPERTIES
+    IMPORTED_LOCATION_DEBUG          "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
+    IMPORTED_LOCATION_RELWITHDEBINFO "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
+    IMPORTED_LOCATION                "${COMPUTECPP_RUNTIME_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES    "${ComputeCpp_INCLUDE_DIRS}"
+    INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL"
+  )
+endif()
 
 # This property allows targets to specify that their sources should be
 # compiled with the integration header included after the user's
