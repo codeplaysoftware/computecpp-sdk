@@ -44,8 +44,8 @@ int main() {
       for (auto ep : l) {
         try {
           std::rethrow_exception(ep);
-        } catch (std::exception& e) {
-          std::cout << e.what();
+        } catch (const exception& e) {
+          std::cout << "Asynchronous exception caught:\n" << e.what();
         }
       }
     });
@@ -76,7 +76,7 @@ int main() {
          * item::get_global() to retrieve the global id as an id<1>.
          * This particular kernel will set the ith element to the value
          * of i. */
-        ptr[item.get_global()] = item.get_global()[0];
+        ptr[item.get_global_id()] = item.get_global_id()[0];
       });
 
       /* We call the parallel_for() API with two parameters; the nd_range
@@ -86,8 +86,8 @@ int main() {
       cgh.parallel_for<class assign_elements>(myRange, myKernel);
     });
 
-  } catch (exception e) {
-    std::cout << "SYCL exception caught: " << e.what();
+  } catch (const exception& e) {
+    std::cout << "Synchronous exception caught:\n" << e.what();
     return 2;
   }
 
