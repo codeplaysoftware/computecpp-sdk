@@ -161,8 +161,6 @@ void inline profiler(
   per_tile_execution_time = total_execution_time / double(size);
   per_tile_application_execution_time =
       total_application_execution_time / double(size);
-  std::cout << "LOCAL_SIZE_M : " << LOCAL_SIZE_M
-            << "LOCAL_SIZE_N : " << LOCAL_SIZE_N << std::endl;
   std::cout << "  total_kernel_submission_time, " << total_submission_time
             << " , total_kernel_execution_time, " << total_execution_time
             << " , total_application_execution_time, "
