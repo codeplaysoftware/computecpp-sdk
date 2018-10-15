@@ -32,12 +32,7 @@
 #include <ctime>
 #include <iostream>
 
-#ifndef LOCAL_SIZE_M
-#define LOCAL_SIZE_M 16
-#endif
-#ifndef LOCAL_SIZE_N
-#define LOCAL_SIZE_N 16
-#endif
+// The LOCAL_SIZE_N and LOCAL_SIZE_M is set at compile time
 // configuring the openCL local size
 template <typename index_t>
 struct opencl_configuration_t {
@@ -166,6 +161,8 @@ void inline profiler(
   per_tile_execution_time = total_execution_time / double(size);
   per_tile_application_execution_time =
       total_application_execution_time / double(size);
+  std::cout << "LOCAL_SIZE_M : " << LOCAL_SIZE_M
+            << "LOCAL_SIZE_N : " << LOCAL_SIZE_N << std::endl;
   std::cout << "  total_kernel_submission_time, " << total_submission_time
             << " , total_kernel_execution_time, " << total_execution_time
             << " , total_application_execution_time, "
@@ -239,13 +236,16 @@ int main() {
   sycl_program.build_with_kernel_type<kernel_type>();
   // input SYCL buffer
   auto in_buff = cl::sycl::buffer<data_t, 2>(
-      input.data(), cl::sycl::range<2>(total_buffer.m, total_buffer.n));
+      input.data(), cl::sycl::range<2>(total_buffer.m, total_buffer.n),
+      {cl::sycl::property::buffer::context_bound(sycl_queue.get_context())});
   // mask(filter) SYCL buffer
   auto fil_buff = cl::sycl::buffer<data_t, 2>(
-      filter.data(), cl::sycl::range<2>(fil_size.m, fil_size.n));
+      filter.data(), cl::sycl::range<2>(fil_size.m, fil_size.n),
+      {cl::sycl::property::buffer::context_bound(sycl_queue.get_context())});
   // output SYCL buffer
   auto out_buff = cl::sycl::buffer<data_t, 2>(
-      cl::sycl::range<2>(total_buffer.m, total_buffer.n));
+      cl::sycl::range<2>(total_buffer.m, total_buffer.n),
+      {cl::sycl::property::buffer::context_bound(sycl_queue.get_context())});
 
   index_t host_offset_m = 0;
   std::vector<cl::sycl::event> events(num_host_tile_m * num_host_tile_n);
