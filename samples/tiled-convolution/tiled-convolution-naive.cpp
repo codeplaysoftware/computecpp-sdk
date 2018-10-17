@@ -28,36 +28,138 @@
  **************************************************************************/
 #include "common.hpp"
 #include "copy.hpp"
-#include "tiled-conv.hpp"
 
 // calculating halo around each tile
 void inline compute_index(const int total_size_dim, const int mat_size_dim,
                           const int fil_size_dim, const int tile_offset_dim,
                           int& range_src_dim, int& offset_src_dim,
-                          bool& clamp_edge_dim) {
+                          std::array<bool, 2>& clamp_edge_dim) {
   if (tile_offset_dim == 0 && mat_size_dim < total_size_dim) {
     offset_src_dim = tile_offset_dim;
     range_src_dim = mat_size_dim + (fil_size_dim / 2);
     // clamp to left/top
-    clamp_edge_dim = true;
+    clamp_edge_dim[0] = true;
+    // dont clamp to right/left
+    clamp_edge_dim[1] = false;
   } else if (tile_offset_dim != 0 &&
              (tile_offset_dim + mat_size_dim) < total_size_dim) {
     offset_src_dim = tile_offset_dim - (fil_size_dim / 2);
     range_src_dim = mat_size_dim + fil_size_dim - 1;
     // dont clamp to left/top
-    clamp_edge_dim = false;
+    clamp_edge_dim[0] = false;
+    // dont clamp to right/left
+    clamp_edge_dim[1] = false;
   } else if (tile_offset_dim != 0 &&
              (tile_offset_dim + mat_size_dim) >= total_size_dim) {
     offset_src_dim = tile_offset_dim - (fil_size_dim / 2);
     range_src_dim = mat_size_dim + (fil_size_dim / 2);
     // dont clamp to left/top
-    clamp_edge_dim = false;
+    clamp_edge_dim[0] = false;
+    // clamp to right/left
+    clamp_edge_dim[1] = true;
   } else if (tile_offset_dim == 0 && mat_size_dim >= total_size_dim) {
     offset_src_dim = tile_offset_dim;
     range_src_dim = mat_size_dim;
     // clamp to left/top
-    clamp_edge_dim = true;
+    clamp_edge_dim[0] = true;
+    // clamp to right/left
+    clamp_edge_dim[1] = true;
   }
+}
+
+// the tiled based convolution functor
+template <typename read_accessor_t, typename write_accessor_t,
+          typename mat_size_t>
+class conv {
+ private:
+  read_accessor_t fil_acc;      // filter accessor
+  read_accessor_t in_acc;       // input accessor
+  write_accessor_t out_acc;     // output accessor
+  const mat_size_t total_size;  // total input size
+  const mat_size_t fil_size;    // filter size
+  const std::array<bool, 2> clamp_edge_m;
+  const std::array<bool, 2> clamp_edge_n;
+
+ public:
+  conv(read_accessor_t fil_acc_, read_accessor_t in_acc_,
+       write_accessor_t out_acc_, const mat_size_t total_size_,
+       const mat_size_t fil_size_, const std::array<bool, 2> clamp_edge_m_,
+       const std::array<bool, 2> clamp_edge_n_)
+      : fil_acc(fil_acc_),
+        in_acc(in_acc_),
+        out_acc(out_acc_),
+        total_size(total_size_),
+        fil_size(fil_size_),
+        clamp_edge_m(clamp_edge_m_),
+        clamp_edge_n(clamp_edge_n_) {}
+  void inline operator()(cl::sycl::nd_item<2> item_id) {
+    int id_m = item_id.get_global_id(0);
+    int id_n = item_id.get_global_id(1);
+    int m, fil_m, n, fil_n;
+    typename write_accessor_t::value_type val = 0.0;
+    const int m_start_offset = clamp_edge_m[0] ? 0 : fil_size.m / 2;
+    const int m_end_offset = clamp_edge_m[1] ? 0 : fil_size.m / 2;
+    const int n_start_offset = clamp_edge_n[0] ? 0 : fil_size.n / 2;
+    const int n_end_offset = clamp_edge_n[1] ? 0 : fil_size.n / 2;
+    int m_out = total_size.m - m_start_offset - m_end_offset;
+    int n_out = total_size.n - n_start_offset - n_end_offset;
+    // disabling all out of bound threads
+    if ((id_m >= m_out) || (id_n >= n_out))
+      return;
+
+    id_m += m_start_offset;
+    id_n += n_start_offset;
+
+    // loop over filter size m and add halo to input m
+    for (fil_m = 0, m = -1; fil_m < fil_size.m; fil_m++, m++) {
+      int in_id_m = (id_m + m >= 0) ? id_m + m : 0;
+      in_id_m = (in_id_m < total_size.m) ? in_id_m : total_size.m - 1;
+      // loop over filter size n and add halo to input n
+      for (fil_n = 0, n = -1; fil_n < fil_size.n; fil_n++, n++) {
+        int in_id_n = (id_n + n >= 0) ? id_n + n : 0;
+        in_id_n = (in_id_n < total_size.n) ? in_id_n : total_size.n - 1;
+        val += (in_acc[in_id_m][in_id_n] * fil_acc[fil_m][fil_n]);
+      }
+    }
+    out_acc[item_id.get_global_id(0)][item_id.get_global_id(1)] =
+        val / fil_size.size();
+  }
+};
+
+template <typename kernel_t, typename read_buff_t, typename write_buff_t,
+          typename mat_size_t>
+void inline tiled_cov(
+    cl::sycl::queue& sycl_queue, cl::sycl::program& sycl_program,
+    read_buff_t in_buff, read_buff_t fill_buff, write_buff_t out_buff,
+    mat_size_t out_range_size, mat_size_t in_range_size,
+    mat_size_t fil_range_size, int i, std::vector<cl::sycl::event>& events,
+    std::vector<std::chrono::time_point<std::chrono::system_clock>>& starts,
+    std::array<bool, 2>& clamped_edge_m, std::array<bool, 2>& clamped_edge_n) {
+  // execute the tile
+  starts[i] = std::chrono::system_clock::now();
+  events[i] = sycl_queue.submit([&](cl::sycl::handler& cgh) {
+    // this must be constant buffer
+    auto in_acc =
+        in_buff.template get_access<cl::sycl::access::mode::read,
+                                    cl::sycl::access::target::global_buffer>(
+            cgh);
+    auto fil_acc =
+        fill_buff.template get_access<cl::sycl::access::mode::read,
+                                      cl::sycl::access::target::global_buffer>(
+            cgh);
+    auto out_acc =
+        out_buff.template get_access<cl::sycl::access::mode::write,
+                                     cl::sycl::access::target::global_buffer>(
+            cgh);
+    auto global_size_m = round_up(out_range_size.m, 1);
+    auto global_size_n = round_up(out_range_size.n, 32);
+    cgh.parallel_for(
+        sycl_program.template get_kernel<kernel_t>(),
+        cl::sycl::nd_range<2>(cl::sycl::range<2>(global_size_m, global_size_n),
+                              cl::sycl::range<2>(1, 32)),
+        kernel_t(fil_acc, in_acc, out_acc, in_range_size, fil_range_size,
+                 clamped_edge_m, clamped_edge_n));
+  });
 }
 
 int main() {
@@ -65,7 +167,7 @@ int main() {
   // total input data size
   auto total_buffer = matrix_size_t{1024, 1024};
   // tile size per iteration
-  auto mat_size = matrix_size_t{512, 512};
+  auto mat_size = matrix_size_t{1024, 1024};
   auto fil_size = matrix_size_t{3, 3};
 
   // constructing the tile size
@@ -149,8 +251,8 @@ int main() {
       int i = n + m * num_host_tile_n;
       int range_src_m, offset_src_m;
       int range_src_n, offset_src_n;
-      bool clamped_edge_m;
-      bool clamped_edge_n;
+      std::array<bool, 2> clamped_edge_m = {};
+      std::array<bool, 2> clamped_edge_n = {};
 
       // calculating the halo for first dimension of the tile
       compute_index(total_buffer.m, mat_size.m, fil_size.m, host_offset_m,
@@ -168,8 +270,8 @@ int main() {
           {cl::sycl::property::buffer::context_bound(
               sycl_queue.get_context())});
 
-      // copying an specific region form in_buffer to the
-      // temporary input buffer
+      // copying an specific
+      // region form in_buffer to the temporary input buffer
       /* sycl_queue.submit([&](cl::sycl::handler& cgh) {
          auto temp_in_acc =
              temp_in_buff.template get_access<write_t, global_buffer_t>(cgh);

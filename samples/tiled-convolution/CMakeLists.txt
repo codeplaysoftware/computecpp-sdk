@@ -1,41 +1,27 @@
-set(SOURCE_NAME "tiled-convolution")
+file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
+message( STATUS "THIS IS ${CMAKE_CURRENT_SOURCE_DIR}")
+foreach(SOURCE_NAME ${files})
+message( STATUS "THIS IS ${SOURCE_NAME}")
 
-if(DEFINED TARGET)
-message(STATUS "TARGET is defined")
-  # If the user has specified  RCAR as a target backend
-  #the local size will be set to 1 and 32
-  if(${TARGET} STREQUAL "RCAR")
-    message(STATUS "${TARGET} device is chosen")
-    set(LOCAL_SIZE_M 1)
-    set(LOCAL_SIZE_N 32)
-  endif()
-else()
-  if (NOT DEFINED LOCAL_SIZE_M)
-    set(LOCAL_SIZE_M 16)
-  endif()
+  get_filename_component(EXEC_NAME ${SOURCE_NAME} NAME_WE)
 
-  if (NOT DEFINED LOCAL_SIZE_N)
-    set(LOCAL_SIZE_N 16)
-  endif()
+  add_executable(
+    ${EXEC_NAME}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}
+  )
 
-endif()
+  add_sycl_to_target(
+    TARGET ${EXEC_NAME}
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}
+  )
 
-add_definitions(-DLOCAL_SIZE_M=${LOCAL_SIZE_M})
-add_definitions(-DLOCAL_SIZE_N=${LOCAL_SIZE_N})
+  add_test(
+    NAME ${EXEC_NAME}
+    COMMAND ${EXEC_NAME}
+  )
 
-add_executable(
-  ${SOURCE_NAME}
-  ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
-)
-add_sycl_to_target(
-  TARGET ${SOURCE_NAME}
-  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
-)
-add_test(
-  NAME ${SOURCE_NAME}
-  COMMAND ${SOURCE_NAME}
-)
-install(
-  TARGETS ${SOURCE_NAME}
-  RUNTIME DESTINATION bin
-)
+  install(
+    TARGETS ${EXEC_NAME}
+    RUNTIME DESTINATION bin
+  )
+endforeach()
