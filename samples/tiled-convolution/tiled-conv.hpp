@@ -40,18 +40,17 @@ class conv {
     const int total_threads_m = (item_id.get_local_range()[0]) * num_group.m;
     const int group_m = item_id.get_group(0) / num_group.n;
     const int group_n = item_id.get_group(0) - group_m * num_group.n;
-    // item_id.get_group(0) % num_group.n;
-    const int work_item = (group_m * (item_id.get_local_range()[0])) +
-                          item_id.get_local_id(0);  // item_id.get_global(0);
-    // the LWM tile of 2 * 6 for output that reads 2*8 inout
+    const int work_item =
+        (group_m * (item_id.get_local_range()[0])) + item_id.get_local_id(0);
+    // the private memory tile of 2 * 6 for output that reads 2*8 inout
     data_t private_result[row_per_work_item][col_per_work_item] = {};
     data_t private_in[row_per_work_item + fil_size_m - 1]
                      [opencl_configuration_t::cache_line];
-    // this is used to keep the filter in LWM to prevent the input zero level
-    // cache to be flushed befor being used by all threads
+    // this is used to keep the filter in private memory to prevent the input
+    // zero level cache to be flushed befor being used by all threads
     data_t filter[fil_size_m][fil_size_n];
 
-// set filter to LWM to prevent the level zero cache to be modified
+// set filter to private memory to prevent the level zero cache to be modified
 #pragma nounroll
     for (int p_m = 0; p_m < fil_size_m; p_m++) {
 #pragma nounroll
@@ -135,7 +134,7 @@ class conv {
             }
           }
         }
-        // flush the partial tile of LWM to the global output memory
+        // flush the partial tile of privatememory to the global output memory
         // check to see if it is internal block or external block
         if (is_external_block_m == true && is_external_block_n == true) {
           write_back<true, true>(private_result, out_acc, row, base_col);
@@ -152,7 +151,7 @@ class conv {
       }
     }
   }
-  // flush the partial tile of LWM to the global output memory
+  // flush the partial tile of privatememory to the global output memory
   template <bool is_external_block_m, bool is_external_block_n, typename data_t,
             typename acc>
   void write_back(
@@ -215,12 +214,7 @@ void inline tiled_cov(
           (local_thread * opencl_configuration_t::row_per_tread) - 1) /
          (local_thread * opencl_configuration_t::row_per_tread));
     auto num_group = matrix_size_t(num_group_m, num_group_n);
-    printf(
-        "work_group_size %d, local_thread %d, num_group_n %d num_group_m %d "
-        "global_size %d , out_range_size_m %d, out_range_size_n %d\n",
-        work_group_size, local_thread, num_group_n, num_group_m,
-        num_group_n * num_group_m * local_thread, out_range_size.m,
-        out_range_size.n);
+
     const int m_start_offset = clamped_edge_m ? 0 : fil_range_size.m / 2;
     const int n_start_offset = clamped_edge_n ? 0 : fil_range_size.n / 2;
     cgh.parallel_for(
