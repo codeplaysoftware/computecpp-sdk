@@ -162,10 +162,9 @@ class conv {
 #pragma unroll 6
       for (int p_n = 0; p_n < col_per_work_item; p_n++) {
         if (do_check<is_external_block_m>((row + p_m < mat_size.m)) &&
-            do_check<is_external_block_n>((col + p_n < mat_size.n)))
-          if ((row + p_m < mat_size.m) && (col + p_n < mat_size.n)) {
-            out_acc[row + p_m][col + p_n] = private_result[p_m][p_n];
-          }
+            do_check<is_external_block_n>((col + p_n < mat_size.n))) {
+          out_acc[row + p_m][col + p_n] = private_result[p_m][p_n];
+        }
         private_result[p_m][p_n] = data_t(0);
       }
     }
