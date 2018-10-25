@@ -131,7 +131,10 @@ execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
   "--dump-device-compiler-flags"
   OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
   RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS "-sycl-target ${COMPUTECPP_BITCODE}")
+# convert to list before appending
+# (VERBATIM arg passing to execute_process will go crazy over mixed string-list syntax)
+string(REPLACE " " ";" COMPUTECPP_DEVICE_COMPILER_FLAGS ${COMPUTECPP_DEVICE_COMPILER_FLAGS})
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS} -sycl-target ${COMPUTECPP_BITCODE})
 
 if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
   message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
@@ -142,38 +145,41 @@ endif()
 # Check if the hosted STL of MSVC is compatible with ComputeCpp
 if(MSVC)
   set(ComputeCpp_STL_CHECK_SRC __STL_check)
-  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}
-    "#include<ios>"
-	"int main() { return 0; }")
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
+    "#include <ios>\n"
+	"int main() { return 0; }\n")
   execute_process(
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
             -isystem ${ComputeCpp_INCLUDE_DIRS}
-            ${ComputeCpp_STL_CHECK_SRC}.cpp
+            -o ${ComputeCpp_STL_CHECK_SRC}.sycl
+            -c ${ComputeCpp_STL_CHECK_SRC}.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-	OUTPUT_QUIET
-	ERROR_QUIET)
-  if(NOT ComputeCpp_STL_CHECK_RESULT EQUAL 0)
+	ERROR_QUIET
+	OUTPUT_QUIET)
+  if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
     # Try disabling compiler version checks
     execute_process(
       COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
               ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
               -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
               -isystem ${ComputeCpp_INCLUDE_DIRS}
-              ${ComputeCpp_STL_CHECK_SRC}.cpp
+              -o ${ComputeCpp_STL_CHECK_SRC}.cpp.sycl
+			  -c ${ComputeCpp_STL_CHECK_SRC}.cpp
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
 	  RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-	  OUTPUT_QUIET
-	  ERROR_QUIET)
-    if(NOT ComputeCpp_STL_CHECK_RESULT EQUAL 0)
-      message(STATUS "Device compiler does not meet certain STL version requirements. Disabling version checks and hoping for the best.")
-      set(COMPUTECPP_DEVICE_COMPILER_FLAGS
-	    "${COMPUTECPP_DEVICE_COMPILER_FLAGS} -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH")
+	  ERROR_QUIET
+	  OUTPUT_QUIET)
+    if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
+      message(STATUS "Device compiler cannot consume hosted STL headers. Using any parts of the STL will likely result in device compiler errors.")
 	else()
-	  message(STATUS "Device compiler cannot consume hosted STL headers. Using any parts of the STL will likely result in device compiler errors.")
+	  message(STATUS "Device compiler does not meet certain STL version requirements. Disabling version checks and hoping for the best.")
+      list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
     endif()
   endif()
+  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp.sycl)
 endif(MSVC)
 
 find_package_handle_standard_args(ComputeCpp
