@@ -155,9 +155,9 @@ if(MSVC)
             -o ${ComputeCpp_STL_CHECK_SRC}.sycl
             -c ${ComputeCpp_STL_CHECK_SRC}.cpp
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-	ERROR_QUIET
-	OUTPUT_QUIET)
+	  RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
+	  ERROR_QUIET
+	  OUTPUT_QUIET)
   if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
     # Try disabling compiler version checks
     execute_process(
@@ -166,11 +166,11 @@ if(MSVC)
               -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
               -isystem ${ComputeCpp_INCLUDE_DIRS}
               -o ${ComputeCpp_STL_CHECK_SRC}.cpp.sycl
-			  -c ${ComputeCpp_STL_CHECK_SRC}.cpp
+              -c ${ComputeCpp_STL_CHECK_SRC}.cpp
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-	  RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-	  ERROR_QUIET
-	  OUTPUT_QUIET)
+	    RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
+	    ERROR_QUIET
+	    OUTPUT_QUIET)
     if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
       message(STATUS "Device compiler cannot consume hosted STL headers. Using any parts of the STL will likely result in device compiler errors.")
 	else()
