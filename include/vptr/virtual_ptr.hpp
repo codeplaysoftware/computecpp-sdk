@@ -219,7 +219,7 @@ class PointerMapper {
     auto node = m_pointerMap.lower_bound(ptr);
     // If the value of the pointer is not the one of the node
     // then we return the previous one
-    if (node->first != ptr) {
+    if (node == m_pointerMap.end() || node->first != ptr) {
       if (node == std::begin(m_pointerMap)) {
         throw std::out_of_range("The pointer is not registered in the map");
       }
