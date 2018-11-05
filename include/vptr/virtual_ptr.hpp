@@ -232,13 +232,13 @@ class PointerMapper {
   template <typename buffer_data_type = buffer_data_type_t>
   cl::sycl::buffer<buffer_data_type, 1> get_buffer(
       const virtual_pointer_t ptr) {
-    using buffer_t = cl::sycl::buffer<buffer_data_type, 1>;
+    using sycl_buffer_t = cl::sycl::buffer<buffer_data_type, 1>;
 
     // get_node() returns a `buffer_mem`, so we need to cast it to a `buffer<>`.
     // We can do this without the `buffer_mem` being a pointer, as we
     // only declare member variables in the base class (`buffer_mem`) and not in
     // the child class (`buffer<>).
-    return *(static_cast<buffer_t*>(&get_node(ptr)->second.m_buffer));
+    return *(static_cast<sycl_buffer_t*>(&get_node(ptr)->second.m_buffer));
   }
 
   /**
@@ -505,8 +505,8 @@ inline void* SYCLmalloc(size_t size, PointerMapper& pMap) {
     return nullptr;
   }
   // Create a generic buffer of the given size
-  using buffer_t = cl::sycl::buffer<buffer_data_type_t, 1>;
-  auto thePointer = pMap.add_pointer(buffer_t(cl::sycl::range<1>{size}));
+  using sycl_buffer_t = cl::sycl::buffer<buffer_data_type_t, 1>;
+  auto thePointer = pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}));
   // Store the buffer on the global list
   return static_cast<void*>(thePointer);
 }
