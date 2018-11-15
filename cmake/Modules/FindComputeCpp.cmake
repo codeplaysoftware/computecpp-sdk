@@ -131,16 +131,12 @@ execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
   "--dump-device-compiler-flags"
   OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
   RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-# convert to list before appending
-# (VERBATIM arg passing to execute_process will go crazy over mixed string-list syntax)
-string(REPLACE " " ";" COMPUTECPP_DEVICE_COMPILER_FLAGS ${COMPUTECPP_DEVICE_COMPILER_FLAGS})
-list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS} -sycl-target ${COMPUTECPP_BITCODE})
 
 if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
   message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
-else()
-  mark_as_advanced(COMPUTECPP_COMPILER_FLAGS)
 endif()
+mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
 # Check if the hosted STL of MSVC is compatible with ComputeCpp
 if(MSVC)
@@ -210,8 +206,8 @@ if(CMAKE_CROSSCOMPILING)
   list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -target ${SDK_TARGET_TRIPLE})
 endif()
 
-separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
-list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS "-emit-llvm")
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
+list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS -emit-llvm)
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 if(NOT TARGET OpenCL::OpenCL)
@@ -322,13 +318,11 @@ function(__build_ir)
     list(APPEND target_compile_flags ${source_compile_flags})
   endif()
 
-  set(COMPUTECPP_DEVICE_COMPILER_FLAGS
+  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
     ${device_compiler_cxx_standard}
-    ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
     ${COMPUTECPP_USER_FLAGS}
     ${target_compile_flags}
   )
-  separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
   get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
