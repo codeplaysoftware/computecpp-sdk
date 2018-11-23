@@ -500,13 +500,13 @@ inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
  * \param size Size in bytes of the desired allocation
  * \throw cl::sycl::exception if error while creating the buffer
  */
-inline void* SYCLmalloc(size_t size, PointerMapper& pMap) {
+inline void* SYCLmalloc(size_t size, PointerMapper& pMap, const property_list &pList = {}) {
   if (size == 0) {
     return nullptr;
   }
   // Create a generic buffer of the given size
   using sycl_buffer_t = cl::sycl::buffer<buffer_data_type_t, 1>;
-  auto thePointer = pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}));
+  auto thePointer = pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}, pList));
   // Store the buffer on the global list
   return static_cast<void*>(thePointer);
 }
