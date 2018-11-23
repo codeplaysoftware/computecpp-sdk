@@ -121,27 +121,3 @@ TEST(accessor, two_buffers) {
   }
 }
 
-// Is this test still required, given that we no longer use allocators?
-TEST(accessor, allocator) {
-
-  PointerMapper pMap;
-  {
-    ASSERT_EQ(pMap.count(), 0u);
-
-    // add a pointer with the base allocator type
-    void* ptrA = SYCLmalloc(100 * sizeof(int), pMap);
-
-    // get the buffer with the base allocator type
-    auto bufA = pMap.get_buffer(ptrA);
-
-    ASSERT_EQ(pMap.count(), 1u);
-
-    // add a pointer with the allocator type
-    void* ptrB = SYCLmalloc(100 * sizeof(int), pMap);
-
-    // get the buffer with the allocator type
-    cl::sycl::buffer<uint8_t, 1> bufB = pMap.get_buffer(ptrB);
-
-    ASSERT_EQ(pMap.count(), 2u);
-  }
-}
