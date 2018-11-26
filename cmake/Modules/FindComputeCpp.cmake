@@ -131,13 +131,52 @@ execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
   "--dump-device-compiler-flags"
   OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
   RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS "-sycl-target ${COMPUTECPP_BITCODE}")
 
 if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
   message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
-else()
-  mark_as_advanced(COMPUTECPP_COMPILER_FLAGS)
 endif()
+mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+
+# Check if the hosted STL of MSVC is compatible with ComputeCpp
+if(MSVC)
+  set(ComputeCpp_STL_CHECK_SRC __STL_check)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
+    "#include <ios>\n"
+	"int main() { return 0; }\n")
+  execute_process(
+    COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
+            ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+            -isystem ${ComputeCpp_INCLUDE_DIRS}
+            -o ${ComputeCpp_STL_CHECK_SRC}.sycl
+            -c ${ComputeCpp_STL_CHECK_SRC}.cpp
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
+    ERROR_QUIET
+    OUTPUT_QUIET)
+  if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
+    # Try disabling compiler version checks
+    execute_process(
+      COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
+              ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+              -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
+              -isystem ${ComputeCpp_INCLUDE_DIRS}
+              -o ${ComputeCpp_STL_CHECK_SRC}.cpp.sycl
+              -c ${ComputeCpp_STL_CHECK_SRC}.cpp
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+      RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
+      ERROR_QUIET
+      OUTPUT_QUIET)
+    if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
+      message(STATUS "Device compiler cannot consume hosted STL headers. Using any parts of the STL will likely result in device compiler errors.")
+    else()
+	  message(STATUS "Device compiler does not meet certain STL version requirements. Disabling version checks and hoping for the best.")
+      list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
+    endif()
+  endif()
+  file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
+              ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp.sycl)
+endif(MSVC)
 
 find_package_handle_standard_args(ComputeCpp
   REQUIRED_VARS ComputeCpp_ROOT_DIR
@@ -167,8 +206,8 @@ if(CMAKE_CROSSCOMPILING)
   list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -target ${SDK_TARGET_TRIPLE})
 endif()
 
-separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
-list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS "-emit-llvm")
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
+list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS -emit-llvm)
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 if(NOT TARGET OpenCL::OpenCL)
@@ -279,13 +318,11 @@ function(__build_ir)
     list(APPEND target_compile_flags ${source_compile_flags})
   endif()
 
-  set(COMPUTECPP_DEVICE_COMPILER_FLAGS
+  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
     ${device_compiler_cxx_standard}
-    ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
     ${COMPUTECPP_USER_FLAGS}
     ${target_compile_flags}
   )
-  separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
   get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
@@ -375,15 +412,9 @@ function(__build_ir)
     # Add both source and the sycl files to the VS solution.
     target_sources(${SDK_BUILD_IR_TARGET} PUBLIC ${SDK_BUILD_IR_SOURCE} ${outputSyclFile})
 
-    # NOTE: The Visual Studio generators parse compile flags differently,
-    # hence the different argument syntax
-    if(CMAKE_GENERATOR MATCHES "Visual Studio")
-      set(forceIncludeFlags "/FI\"${includedFile}\" /TP")
-    else()
-      set(forceIncludeFlags /FI ${includedFile} /TP)
-    endif()
+    set(forceIncludeFlags "/FI ${includedFile} /TP")
   else()
-      set(forceIncludeFlags "-include ${includedFile} -x c++")
+    set(forceIncludeFlags "-include ${includedFile} -x c++")
   endif()
 
   set_property(
