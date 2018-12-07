@@ -106,34 +106,38 @@ get_filename_component(computecpp_canonical_root_dir "${ComputeCpp_INCLUDE_DIRS}
 set(ComputeCpp_ROOT_DIR "${computecpp_canonical_root_dir}" CACHE PATH
     "The root of the ComputeCpp install")
 
-execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
-  OUTPUT_VARIABLE ComputeCpp_VERSION
-  RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-  message(FATAL_ERROR "Package version - Error obtaining version!")
-endif()
-
-execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-is-supported"
-  OUTPUT_VARIABLE COMPUTECPP_PLATFORM_IS_SUPPORTED
-  RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-  message(FATAL_ERROR "platform - Error checking platform support!")
+if(NOT ComputeCpp_INFO_EXECUTABLE)
+  message(WARNING "Can't find computecpp_info - check ComputeCpp_DIR")
+  set(COMPUTECPP_DEVICE_COMPILER_FLAGS "")
 else()
-  mark_as_advanced(COMPUTECPP_PLATFORM_IS_SUPPORTED)
-  if (COMPUTECPP_PLATFORM_IS_SUPPORTED)
-    message(STATUS "platform - your system can support ComputeCpp")
-  else()
-    message(WARNING "platform - your system CANNOT support ComputeCpp")
+  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
+    OUTPUT_VARIABLE ComputeCpp_VERSION
+    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
+    message(WARNING "Package version - Error obtaining version!")
   endif()
-endif()
 
-execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
-  "--dump-device-compiler-flags"
-  OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
-  RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-is-supported"
+    OUTPUT_VARIABLE COMPUTECPP_PLATFORM_IS_SUPPORTED
+    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
+    message(WARNING "platform - Error checking platform support!")
+  else()
+    mark_as_advanced(COMPUTECPP_PLATFORM_IS_SUPPORTED)
+    if (COMPUTECPP_PLATFORM_IS_SUPPORTED)
+      message(STATUS "platform - your system can support ComputeCpp")
+    else()
+      message(WARNING "platform - your system CANNOT support ComputeCpp")
+    endif()
+  endif()
 
-if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-  message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
+  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
+    "--dump-device-compiler-flags"
+    OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
+    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
+    message(WARNING "compute++ flags - Error obtaining compute++ flags!")
+  endif()
 endif()
 mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
