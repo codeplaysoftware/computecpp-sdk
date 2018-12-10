@@ -144,7 +144,7 @@ class PointerMapper {
 
   /* basic type for all buffers
    */
-  using buffer_t = cl::sycl::buffer_mem;
+  using buffer_t = cl::sycl::buffer<buffer_data_type_t>;
 
   /**
    * Node that stores information about a device allocation.
@@ -234,11 +234,10 @@ class PointerMapper {
       const virtual_pointer_t ptr) {
     using sycl_buffer_t = cl::sycl::buffer<buffer_data_type, 1>;
 
-    // get_node() returns a `buffer_mem`, so we need to cast it to a `buffer<>`.
-    // We can do this without the `buffer_mem` being a pointer, as we
-    // only declare member variables in the base class (`buffer_mem`) and not in
-    // the child class (`buffer<>).
-    return *(static_cast<sycl_buffer_t*>(&get_node(ptr)->second.m_buffer));
+    auto& map_node = get_node(ptr)->second;
+    auto map_buffer = map_node.m_buffer;
+    return map_buffer.reinterpret<buffer_data_type>(
+        cl::sycl::range<1>{map_node.m_size / sizeof(buffer_data_type)});
   }
 
   /**
@@ -416,8 +415,11 @@ class PointerMapper {
   template <class BufferT>
   virtual_pointer_t add_pointer_impl(BufferT b) {
     virtual_pointer_t retVal = nullptr;
-    size_t bufSize = b.get_count();
-    pMapNode_t p{b, bufSize, false};
+    size_t bufSize = b.get_size() * sizeof(buffer_data_type_t);
+    auto byte_buffer =
+        b.template reinterpret<buffer_data_type_t>(cl::sycl::range<1>{bufSize});
+    pMapNode_t p{byte_buffer, bufSize, false};
+
     // If this is the first pointer:
     if (m_pointerMap.empty()) {
       virtual_pointer_t initialVal{m_baseAddress};
@@ -500,13 +502,15 @@ inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
  * \param size Size in bytes of the desired allocation
  * \throw cl::sycl::exception if error while creating the buffer
  */
-inline void* SYCLmalloc(size_t size, PointerMapper& pMap, const property_list &pList = {}) {
+inline void* SYCLmalloc(size_t size, PointerMapper& pMap,
+                        const property_list& pList = {}) {
   if (size == 0) {
     return nullptr;
   }
   // Create a generic buffer of the given size
   using sycl_buffer_t = cl::sycl::buffer<buffer_data_type_t, 1>;
-  auto thePointer = pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}, pList));
+  auto thePointer =
+      pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}, pList));
   // Store the buffer on the global list
   return static_cast<void*>(thePointer);
 }
