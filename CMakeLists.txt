@@ -6,12 +6,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 find_package(ComputeCpp REQUIRED)
 
 option(COMPUTECPP_SDK_USE_OPENMP "Enable OpenMP support in samples" OFF)
+option(COMPUTECPP_SDK_BUILD_TESTS "Build the tests for the header utilities in include/" OFF)
 
 set(CMAKE_CXX_STANDARD 14)
-
-# Set include ComputeCpp directories
-include_directories(SYSTEM ${COMPUTECPP_INCLUDE_DIRECTORY})
-
 enable_testing()
 
 add_subdirectory(samples)

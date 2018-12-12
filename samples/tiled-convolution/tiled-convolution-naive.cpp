@@ -18,72 +18,36 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  tiled-convolution.cpp
+ *  tiled-convolution-naive.cpp
  *
  *  Description:
  *    Sample code that illustrates how to divide data into tiles and launch
  *    separate kernels per tile by using ranged accessors and parallel for with
- *    offsets in SYCL. See the readme for further information
+ *    offsets in SYCL. Uses a naive convolution algorithm.
+ *    See the README for further information.
  *
  **************************************************************************/
 #include "common.hpp"
-#include "copy.hpp"
 
-// calculating halo around each tile
-void inline compute_index(const int total_size_dim, const int mat_size_dim,
-                          const int fil_size_dim, const int tile_offset_dim,
-                          int& range_src_dim, int& offset_src_dim,
-                          std::array<bool, 2>& clamp_edge_dim) {
-  if (tile_offset_dim == 0 && mat_size_dim < total_size_dim) {
-    offset_src_dim = tile_offset_dim;
-    range_src_dim = mat_size_dim + (fil_size_dim / 2);
-    // clamp to left/top
-    clamp_edge_dim[0] = true;
-    // dont clamp to right/left
-    clamp_edge_dim[1] = false;
-  } else if (tile_offset_dim != 0 &&
-             (tile_offset_dim + mat_size_dim) < total_size_dim) {
-    offset_src_dim = tile_offset_dim - (fil_size_dim / 2);
-    range_src_dim = mat_size_dim + fil_size_dim - 1;
-    // dont clamp to left/top
-    clamp_edge_dim[0] = false;
-    // dont clamp to right/left
-    clamp_edge_dim[1] = false;
-  } else if (tile_offset_dim != 0 &&
-             (tile_offset_dim + mat_size_dim) >= total_size_dim) {
-    offset_src_dim = tile_offset_dim - (fil_size_dim / 2);
-    range_src_dim = mat_size_dim + (fil_size_dim / 2);
-    // dont clamp to left/top
-    clamp_edge_dim[0] = false;
-    // clamp to right/left
-    clamp_edge_dim[1] = true;
-  } else if (tile_offset_dim == 0 && mat_size_dim >= total_size_dim) {
-    offset_src_dim = tile_offset_dim;
-    range_src_dim = mat_size_dim;
-    // clamp to left/top
-    clamp_edge_dim[0] = true;
-    // clamp to right/left
-    clamp_edge_dim[1] = true;
-  }
-}
+using time_point_vector_t =
+    std::vector<std::chrono::time_point<std::chrono::system_clock>>;
 
 // the tiled based convolution functor
-template <typename read_accessor_t, typename write_accessor_t,
-          typename mat_size_t>
+template <typename read_accessor_t, typename write_accessor_t>
 class conv {
  private:
-  read_accessor_t fil_acc;      // filter accessor
-  read_accessor_t in_acc;       // input accessor
-  write_accessor_t out_acc;     // output accessor
-  const mat_size_t total_size;  // total input size
-  const mat_size_t fil_size;    // filter size
+  read_accessor_t fil_acc;         // filter accessor
+  read_accessor_t in_acc;          // input accessor
+  write_accessor_t out_acc;        // output accessor
+  const matrix_size_t total_size;  // total input size
+  const matrix_size_t fil_size;    // filter size
   const std::array<bool, 2> clamp_edge_m;
   const std::array<bool, 2> clamp_edge_n;
 
  public:
   conv(read_accessor_t fil_acc_, read_accessor_t in_acc_,
-       write_accessor_t out_acc_, const mat_size_t total_size_,
-       const mat_size_t fil_size_, const std::array<bool, 2> clamp_edge_m_,
+       write_accessor_t out_acc_, const matrix_size_t total_size_,
+       const matrix_size_t fil_size_, const std::array<bool, 2> clamp_edge_m_,
        const std::array<bool, 2> clamp_edge_n_)
       : fil_acc(fil_acc_),
         in_acc(in_acc_),
@@ -104,8 +68,9 @@ class conv {
     int m_out = total_size.m - m_start_offset - m_end_offset;
     int n_out = total_size.n - n_start_offset - n_end_offset;
     // disabling all out of bound threads
-    if ((id_m >= m_out) || (id_n >= n_out))
+    if ((id_m >= m_out) || (id_n >= n_out)) {
       return;
+    }
 
     id_m += m_start_offset;
     id_n += n_start_offset;
@@ -126,49 +91,46 @@ class conv {
   }
 };
 
-template <typename kernel_t, typename read_buff_t, typename write_buff_t,
-          typename mat_size_t>
-void inline tiled_cov(
+template <typename kernel_t, typename read_buff_t, typename write_buff_t>
+void inline tiled_conv(
     cl::sycl::queue& sycl_queue, cl::sycl::program& sycl_program,
     read_buff_t in_buff, read_buff_t fill_buff, write_buff_t out_buff,
-    mat_size_t out_range_size, mat_size_t in_range_size,
-    mat_size_t fil_range_size, int i, std::vector<cl::sycl::event>& events,
-    std::vector<std::chrono::time_point<std::chrono::system_clock>>& starts,
-    std::array<bool, 2>& clamped_edge_m, std::array<bool, 2>& clamped_edge_n) {
+    matrix_size_t out_range_size, matrix_size_t in_range_size,
+    matrix_size_t fil_range_size, int i, std::vector<cl::sycl::event>& events,
+    time_point_vector_t& starts, std::array<bool, 2>& clamped_edge_m,
+    std::array<bool, 2>& clamped_edge_n) {
   // execute the tile
   starts[i] = std::chrono::system_clock::now();
   events[i] = sycl_queue.submit([&](cl::sycl::handler& cgh) {
     // this must be constant buffer
     auto in_acc =
-        in_buff.template get_access<cl::sycl::access::mode::read,
-                                    cl::sycl::access::target::global_buffer>(
-            cgh);
+        in_buff.template get_access<cl::sycl::access::mode::read>(cgh);
     auto fil_acc =
-        fill_buff.template get_access<cl::sycl::access::mode::read,
-                                      cl::sycl::access::target::global_buffer>(
-            cgh);
+        fill_buff.template get_access<cl::sycl::access::mode::read>(cgh);
     auto out_acc =
-        out_buff.template get_access<cl::sycl::access::mode::write,
-                                     cl::sycl::access::target::global_buffer>(
-            cgh);
-    auto global_size_m = round_up(out_range_size.m, 1);
-    auto global_size_n = round_up(out_range_size.n, 32);
+        out_buff.template get_access<cl::sycl::access::mode::write>(cgh);
+    const auto global_size =
+        round_up(out_range_size, opencl_configuration_t::local_size);
     cgh.parallel_for(
-        sycl_program.template get_kernel<kernel_t>(),
-        cl::sycl::nd_range<2>(cl::sycl::range<2>(global_size_m, global_size_n),
-                              cl::sycl::range<2>(1, 32)),
+        sycl_program.get_kernel<kernel_t>(),
+        cl::sycl::nd_range<2>(
+            cl::sycl::range<2>(global_size.m, global_size.n),
+            cl::sycl::range<2>(opencl_configuration_t::local_size.m,
+                               opencl_configuration_t::local_size.n)),
         kernel_t(fil_acc, in_acc, out_acc, in_range_size, fil_range_size,
                  clamped_edge_m, clamped_edge_n));
   });
 }
 
 int main() {
-  using data_t = float;
+  using data_t = input_data_info::data_t;
+
   // total input data size
-  auto total_buffer = matrix_size_t{1024, 1024};
+  constexpr auto total_buffer =
+      matrix_size_t{input_data_info::N, input_data_info::N};
   // tile size per iteration
-  auto mat_size = matrix_size_t{1024, 1024};
-  auto fil_size = matrix_size_t{3, 3};
+  constexpr auto mat_size = total_buffer / input_data_info::divider;
+  constexpr auto fil_size = matrix_size_t{3, 3};
 
   // constructing the tile size
   auto num_host_tile_n = total_buffer.n / mat_size.n;
@@ -183,7 +145,7 @@ int main() {
   std::vector<data_t> filter(fil_size.size(), filter_data);
 
   // enabling SYCL queue profiling
-  auto property_list =
+  auto prop_list =
       cl::sycl::property_list{cl::sycl::property::queue::enable_profiling()};
 
   auto sycl_queue = cl::sycl::queue(
@@ -202,21 +164,28 @@ int main() {
           throw std::runtime_error("SYCL errors detected");
         }
       },
-      property_list);
+      prop_list);
+
+  const auto context_bound_property =
+      cl::sycl::property::buffer::context_bound(sycl_queue.get_context());
+
   // building kernel before the execution by using program class
   // This will reduce the program overhead
   // input SYCL buffer
   auto in_buff = cl::sycl::buffer<data_t, 2>(
       input.data(), cl::sycl::range<2>(total_buffer.m, total_buffer.n),
-      {cl::sycl::property::buffer::context_bound(sycl_queue.get_context())});
+      {context_bound_property});
+  in_buff.set_write_back(false);
   // mask(filter) SYCL buffer
   auto fill_buff = cl::sycl::buffer<data_t, 2>(
       filter.data(), cl::sycl::range<2>(fil_size.m, fil_size.n),
-      {cl::sycl::property::buffer::context_bound(sycl_queue.get_context())});
+      {context_bound_property});
+  fill_buff.set_write_back(false);
   // output SYCL buffer
   auto out_buff = cl::sycl::buffer<data_t, 2>(
       cl::sycl::range<2>(total_buffer.m, total_buffer.n),
-      {cl::sycl::property::buffer::context_bound(sycl_queue.get_context())});
+      {context_bound_property});
+
   static constexpr auto read_t = cl::sycl::access::mode::read;
   static constexpr auto write_t = cl::sycl::access::mode::write;
   static constexpr auto global_buffer_t =
@@ -225,26 +194,35 @@ int main() {
       cl::sycl::accessor<data_t, 2, read_t, global_buffer_t>;
   using write_accessor_t =
       cl::sycl::accessor<data_t, 2, write_t, global_buffer_t>;
-  using from_kernel_type =
-      copy_from_rectangular_kernel<read_accessor_t, write_accessor_t,
-                                   matrix_size_t>;
-  using to_kernel_type =
-      copy_to_rectangular_kernel<read_accessor_t, write_accessor_t,
-                                 matrix_size_t>;
 
-  using conv_kernel_type =
-      conv<read_accessor_t, write_accessor_t, matrix_size_t>;
+  // Force output to zero
+  sycl_queue.submit([&](cl::sycl::handler& cgh) {
+    auto acc = out_buff.get_access<cl::sycl::access::mode::discard_write>(cgh);
+    cgh.parallel_for(out_buff.get_range(), init_to_zero<decltype(acc)>{acc});
+  });
+
+  using conv_kernel_type = conv<read_accessor_t, write_accessor_t>;
   // building kernel before the execution by using program class
   // This will reduce the program overhead
   auto sycl_program = cl::sycl::program(sycl_queue.get_context());
-  sycl_program.build_with_kernel_type<from_kernel_type>();
-  sycl_program.build_with_kernel_type<to_kernel_type>();
   sycl_program.build_with_kernel_type<conv_kernel_type>();
   // launching tiled-based kernel via two nested for-loop
   int host_offset_m = 0;
   std::vector<cl::sycl::event> events(num_host_tile_m * num_host_tile_n);
-  std::vector<std::chrono::time_point<std::chrono::system_clock>> starts(
-      num_host_tile_m * num_host_tile_n);
+  time_point_vector_t starts(num_host_tile_m * num_host_tile_n);
+
+  const auto use_onchip_memory_property =
+      cl::sycl::codeplay::property::buffer::use_onchip_memory(
+          cl::sycl::codeplay::property::prefer);
+  // Create temporary input buffer using on-chip memory
+  auto temp_in_buff = cl::sycl::buffer<data_t, 2>(
+      cl::sycl::range<2>(mat_size.m + 2, mat_size.n + 2),
+      {context_bound_property, use_onchip_memory_property});
+  // Create temporary output buffer using on-chip memory
+  auto temp_out_buff = cl::sycl::buffer<data_t, 2>(
+      cl::sycl::range<2>(mat_size.m, mat_size.n),
+      {context_bound_property, use_onchip_memory_property});
+
   for (int m = 0; m < num_host_tile_m; m++) {
     int host_offset_n = 0;
     for (int n = 0; n < num_host_tile_n; n++) {
@@ -260,50 +238,31 @@ int main() {
       // calculating the halo for the second dimension of the tile
       compute_index(total_buffer.n, mat_size.n, fil_size.n, host_offset_n,
                     range_src_n, offset_src_n, clamped_edge_n);
-      // the temporary input buffer value
-      auto temp_in_buff = cl::sycl::buffer<data_t, 2>(
-          cl::sycl::range<2>(range_src_m, range_src_n),
-          {cl::sycl::property::buffer::context_bound(
-              sycl_queue.get_context())});
-      auto temp_out_buff = cl::sycl::buffer<data_t, 2>(
-          cl::sycl::range<2>(mat_size.m, mat_size.n),
-          {cl::sycl::property::buffer::context_bound(
-              sycl_queue.get_context())});
-
       // copying an specific
       // region form in_buffer to the temporary input buffer
-      /* sycl_queue.submit([&](cl::sycl::handler& cgh) {
-         auto temp_in_acc =
-             temp_in_buff.template get_access<write_t, global_buffer_t>(cgh);
-         auto in_acc = in_buff.get_access<read_t, global_buffer_t>(
-             cgh, cl::sycl::range<2>(range_src_m, range_src_n),
-             cl::sycl::id<2>(offset_src_m, offset_src_n));
-         cgh.copy(in_acc, temp_in_acc);
-       });*/
-      // temporary work around rectangular copy in SYCL
-      copy_rectangular<from_kernel_type>(
-          sycl_queue, sycl_program, in_buff, temp_in_buff,
-          matrix_size_t(range_src_m, range_src_n),
-          matrix_size_t(offset_src_m, offset_src_n));
+      sycl_queue.submit([&](cl::sycl::handler& cgh) {
+        auto temp_in_acc =
+            temp_in_buff.template get_access<write_t, global_buffer_t>(cgh);
+        auto in_acc = in_buff.get_access<read_t, global_buffer_t>(
+            cgh, cl::sycl::range<2>(range_src_m, range_src_n),
+            cl::sycl::id<2>(offset_src_m, offset_src_n));
+        cgh.copy(in_acc, temp_in_acc);
+      });
 
       // execute the tile convolution
-      tiled_cov<conv_kernel_type>(
+      tiled_conv<conv_kernel_type>(
           sycl_queue, sycl_program, temp_in_buff, fill_buff, temp_out_buff,
-          mat_size, matrix_size_t(range_src_m, range_src_n), fil_size, i,
+          mat_size, matrix_size_t{range_src_m, range_src_n}, fil_size, i,
           events, starts, clamped_edge_m, clamped_edge_n);
 
       // copy the data back
-      /*sycl_queue.submit([&](cl::sycl::handler& cgh) {
+      sycl_queue.submit([&](cl::sycl::handler& cgh) {
         auto temp_out_acc = temp_out_buff.template get_access<read_t>(cgh);
-        auto out_acc = out_buff.get_access<write_t, global_buffer_t>(
+        auto out_acc = out_buff.get_access<write_t>(
             cgh, cl::sycl::range<2>(mat_size.m, mat_size.n),
             cl::sycl::id<2>(host_offset_m, host_offset_n));
         cgh.copy(temp_out_acc, out_acc);
-      });*/
-      // temporary work around rectangular copy in SYCL
-      copy_rectangular<to_kernel_type>(
-          sycl_queue, sycl_program, temp_out_buff, out_buff, mat_size,
-          matrix_size_t(host_offset_m, host_offset_n));
+      });
 
       host_offset_n += mat_size.n;
     }
@@ -311,7 +270,7 @@ int main() {
   }
   profiler(events, starts);
 
-  validate(total_buffer, out_buff.get_access<read_t>(),
-           (filter_data * input_data));
-  return 0;
+  const auto result = validate(total_buffer, out_buff.get_access<read_t>(),
+                               (filter_data * input_data));
+  return result ? 0 : -1;
 }

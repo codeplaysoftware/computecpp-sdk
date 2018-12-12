@@ -32,21 +32,6 @@
 cmake_minimum_required(VERSION 3.4.3)
 include(FindPackageHandleStandardArgs)
 
-# Check that a supported host compiler can be found
-if(CMAKE_COMPILER_IS_GNUCXX)
-    # Require at least gcc 4.8
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
-      message(FATAL_ERROR
-        "host compiler - gcc version must be at least 4.8")
-    endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    # Require at least clang 3.6
-    if (${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 3.6)
-      message(FATAL_ERROR
-        "host compiler - clang version must be at least 3.6")
-    endif()
-endif()
-
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
@@ -106,38 +91,41 @@ get_filename_component(computecpp_canonical_root_dir "${ComputeCpp_INCLUDE_DIRS}
 set(ComputeCpp_ROOT_DIR "${computecpp_canonical_root_dir}" CACHE PATH
     "The root of the ComputeCpp install")
 
-execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
-  OUTPUT_VARIABLE ComputeCpp_VERSION
-  RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-  message(FATAL_ERROR "Package version - Error obtaining version!")
-endif()
-
-execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-is-supported"
-  OUTPUT_VARIABLE COMPUTECPP_PLATFORM_IS_SUPPORTED
-  RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-  message(FATAL_ERROR "platform - Error checking platform support!")
+if(NOT ComputeCpp_INFO_EXECUTABLE)
+  message(WARNING "Can't find computecpp_info - check ComputeCpp_DIR")
+  set(COMPUTECPP_DEVICE_COMPILER_FLAGS "")
 else()
-  mark_as_advanced(COMPUTECPP_PLATFORM_IS_SUPPORTED)
-  if (COMPUTECPP_PLATFORM_IS_SUPPORTED)
-    message(STATUS "platform - your system can support ComputeCpp")
+  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
+    OUTPUT_VARIABLE ComputeCpp_VERSION
+    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
+    message(WARNING "Package version - Error obtaining version!")
+  endif()
+
+  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-is-supported"
+    OUTPUT_VARIABLE COMPUTECPP_PLATFORM_IS_SUPPORTED
+    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
+    message(WARNING "platform - Error checking platform support!")
   else()
-    message(WARNING "platform - your system CANNOT support ComputeCpp")
+    mark_as_advanced(COMPUTECPP_PLATFORM_IS_SUPPORTED)
+    if (COMPUTECPP_PLATFORM_IS_SUPPORTED)
+      message(STATUS "platform - your system can support ComputeCpp")
+    else()
+      message(WARNING "platform - your system CANNOT support ComputeCpp")
+    endif()
+  endif()
+
+  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
+    "--dump-device-compiler-flags"
+    OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
+    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
+  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
+    message(WARNING "compute++ flags - Error obtaining compute++ flags!")
   endif()
 endif()
-
-execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
-  "--dump-device-compiler-flags"
-  OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
-  RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS "-sycl-target ${COMPUTECPP_BITCODE}")
-
-if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-  message(FATAL_ERROR "compute++ flags - Error obtaining compute++ flags!")
-else()
-  mark_as_advanced(COMPUTECPP_COMPILER_FLAGS)
-endif()
+mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
 find_package_handle_standard_args(ComputeCpp
   REQUIRED_VARS ComputeCpp_ROOT_DIR
@@ -167,8 +155,8 @@ if(CMAKE_CROSSCOMPILING)
   list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -target ${SDK_TARGET_TRIPLE})
 endif()
 
-separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
-list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS "-emit-llvm")
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
+list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS -emit-llvm)
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 if(NOT TARGET OpenCL::OpenCL)
@@ -279,13 +267,11 @@ function(__build_ir)
     list(APPEND target_compile_flags ${source_compile_flags})
   endif()
 
-  set(COMPUTECPP_DEVICE_COMPILER_FLAGS
+  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
     ${device_compiler_cxx_standard}
-    ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
     ${COMPUTECPP_USER_FLAGS}
     ${target_compile_flags}
   )
-  separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
   get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
@@ -375,15 +361,9 @@ function(__build_ir)
     # Add both source and the sycl files to the VS solution.
     target_sources(${SDK_BUILD_IR_TARGET} PUBLIC ${SDK_BUILD_IR_SOURCE} ${outputSyclFile})
 
-    # NOTE: The Visual Studio generators parse compile flags differently,
-    # hence the different argument syntax
-    if(CMAKE_GENERATOR MATCHES "Visual Studio")
-      set(forceIncludeFlags "/FI\"${includedFile}\" /TP")
-    else()
-      set(forceIncludeFlags /FI ${includedFile} /TP)
-    endif()
+    set(forceIncludeFlags "/FI${includedFile} /TP")
   else()
-      set(forceIncludeFlags "-include ${includedFile} -x c++")
+    set(forceIncludeFlags "-include ${includedFile} -x c++")
   endif()
 
   set_property(
