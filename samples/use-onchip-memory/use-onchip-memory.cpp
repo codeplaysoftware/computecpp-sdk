@@ -18,7 +18,7 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  example_vptr.cpp
+ *  use-onchip-memory.cpp
  *
  *  Description:
  *  Sample code that demonstrates the use of the use_onchip_memory extension
@@ -33,31 +33,13 @@
 namespace sycl = cl::sycl;
 namespace access = sycl::access;
 
-// Sample kernel
-// -------------
-// Since kernels are no longer allowed to be declared inline, I dislike
-// declaring a random name in the global namespace that can potentially be
-// repurposed.
-//
+namespace sycl_kernel {
 // This kernel performs the same operation as std::iota, but also scales
 // the result by two.
 //
-class scaled_iota {
- public:
-  using accessor = sycl::accessor<int, 1, access::mode::discard_write,
-                                  access::target::global_buffer>;
-
-  explicit scaled_iota(accessor deviceAccess) noexcept
-      : m_deviceAccess{std::move(deviceAccess)} {}
-
-  void operator()(sycl::nd_item<2> itemId) const noexcept {
-    const auto linearId = itemId.get_global_linear_id();
-    m_deviceAccess[linearId] = linearId * 2;
-  }
-
- private:
-  accessor m_deviceAccess;
-};
+template <class>
+class scaled_iota;
+}  // namespace sycl_kernel
 
 namespace codeplay = sycl::codeplay;
 
@@ -67,60 +49,69 @@ void use_with_policy(Policy policy, sycl::queue& queue) {
   {
     auto taskContext = queue.get_context();
 
-    // Notice that the Codeplay property takes a policy argument: this is used
-    // to indicate whether the property is advantageous or genuinely necessary.
+    // clang-format off
+    //
+    // Notice that the on_chip_memory property takes a policy argument: this is
+    // used to indicate whether the property is advantageous or genuinely
+    // necessary.
     //
     auto deviceData = sycl::buffer<int, 1>{
-        hostData.data(),                  //
-        sycl::range<1>(hostData.size()),  //
+        hostData.data(),
+        sycl::range<1>(hostData.size()),
         sycl::property_list{
             sycl::property::buffer::context_bound(taskContext),
-            codeplay::property::buffer::use_onchip_memory(policy)  // <--------
-        }  //                                            ^---------------------
+            codeplay::property::buffer::use_onchip_memory(policy)
+        }
     };
+    // clang-format on
 
     deviceData.set_final_data(hostData.data());
 
-    queue.submit([&](sycl::handler & cgh) {
+    queue.submit([&](sycl::handler& cgh) {
       constexpr auto dimension_size = 2;
-      auto r = sycl::nd_range<dimension_size>{
-          sycl::range<dimension_size>{
-              hostData.size() / dimension_size,  //
-              dimension_size                     //
-          },
-          sycl::range<dimension_size>{dimension_size, 1}  //
-      };
-      cgh.parallel_for(
-          r,
-          scaled_iota(deviceData.get_access<access::mode::discard_write>(cgh)));
-    });
 
+      // clang-format off
+      auto r = sycl::nd_range<dimension_size>{
+        sycl::range<dimension_size>{
+          hostData.size() / dimension_size,
+          dimension_size
+        },
+        sycl::range<dimension_size>{dimension_size, 1}
+      };
+      cgh.parallel_for<sycl_kernel::scaled_iota<Policy>>(
+        r,
+        [access = deviceData.get_access<access::mode::discard_write>(cgh)]
+        (sycl::nd_item<2> id) noexcept {
+          const auto linearId = id.get_global_linear_id();
+          access[linearId] = linearId * 2;
+        });
+      // clang-format on
+    });
     queue.wait_and_throw();
   }
 }
 
-// Codeplay policy extensions have two different enabling mechanisms: the first
-// is to indicate that a policy is preferred. Using this policy means that if
-// the system supports the feature, then the feature will be enabled. If the
+// use_onchip_memory has two different enabling mechanisms: the first is to
+// indicate that a policy is preferred. Using this policy means that if the
+// system supports the feature, then the feature will be enabled. If the
 // feature is not present on the system, then it will not be enabled.
 //
 // Puns aside, this is the preferred default.
 //
-void how_to_use_with_prefer() {
-  auto queue = sycl::queue{};
+void how_to_use_with_prefer(sycl::queue& queue) {
   ::use_with_policy(codeplay::property::prefer, queue);
 }
 
 // Alternatively, if you can guarantee that your system will support this
-// policy, or if it is expected any system using your software must support the
-// policy, then you can use the require tag to indicate that the feature is
-// required by your software.
+// policy, or if it is expected any system using your software must support
+// the policy, then you can use the require tag to indicate that the feature
+// is required by your software.
 //
-// In the event that the property isn't supported, an exception will be thrown.
+// In the event that the property isn't supported, a SYCL exception will be
+// thrown.
 //
-void how_to_use_with_require() {
+void how_to_use_with_require(sycl::queue& queue) {
   try {
-    auto queue = sycl::queue{};
     ::use_with_policy(codeplay::property::require, queue);
   } catch (const sycl::exception& e) {
     std::cerr << "An error occurred: " << e.what()
@@ -134,9 +125,11 @@ void how_to_use_with_require() {
 }
 
 int main() {
+  auto queue = sycl::queue{};
+
   // Using the on-chip memory policy with the require tag.
-  how_to_use_with_require();
+  how_to_use_with_require(queue);
 
   // Using the on-chip memory policy with the prefer tag.
-  how_to_use_with_prefer();
+  how_to_use_with_prefer(queue);
 }
