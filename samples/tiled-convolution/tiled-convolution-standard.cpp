@@ -56,6 +56,9 @@ class conv {
   void inline operator()(cl::sycl::nd_item<2> item_id) {
     int id_m = item_id.get_global_id(0);  // global id with offset m
     int id_n = item_id.get_global_id(1);  // global id with offset n
+    if ((id_m >= total_size.m) || (id_n >= total_size.n)) {
+     return;
+    }
     // input index m , filter index fil_m , input index n, filter index fil_n
     int m, fil_m, n, fil_n;
     typename write_accessor_t::value_type val = 0.0;
