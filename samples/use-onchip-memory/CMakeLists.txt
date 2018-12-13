@@ -4,9 +4,6 @@ add_executable(
    ${SOURCE_NAME}
    ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
 )
-include_directories(
-  ${PROJECT_SOURCE_DIR}/include
-)
 add_sycl_to_target(
   TARGET ${SOURCE_NAME}
   SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp

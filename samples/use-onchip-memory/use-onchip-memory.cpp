@@ -63,14 +63,10 @@ void use_with_policy(Policy policy, sycl::queue& queue) {
             codeplay::property::buffer::use_onchip_memory(policy)
         }
     };
-    // clang-format on
-
-    deviceData.set_final_data(hostData.data());
 
     queue.submit([&](sycl::handler& cgh) {
       constexpr auto dimension_size = 2;
 
-      // clang-format off
       auto r = sycl::nd_range<dimension_size>{
         sycl::range<dimension_size>{
           hostData.size() / dimension_size,
