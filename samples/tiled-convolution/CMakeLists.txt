@@ -1,8 +1,10 @@
-file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
-message( STATUS "THIS IS ${CMAKE_CURRENT_SOURCE_DIR}")
-foreach(SOURCE_NAME ${files})
-message( STATUS "THIS IS ${SOURCE_NAME}")
+set(files
+  "tiled-convolution-naive.cpp"
+  "tiled-convolution-optimized.cpp"
+  "tiled-convolution-standard.cpp"
+)
 
+foreach(SOURCE_NAME ${files})
   get_filename_component(EXEC_NAME ${SOURCE_NAME} NAME_WE)
 
   add_executable(

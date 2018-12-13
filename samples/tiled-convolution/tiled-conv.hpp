@@ -1,33 +1,30 @@
 #include "common.hpp"
-// template<int col_per_thread> compute
 
 // the tiled based convolution functor
-template <typename read_accessor_t, typename write_accessor_t,
-          typename mat_size_t>
+template <typename read_accessor_t, typename write_accessor_t>
 class conv {
  private:
   using data_t = typename write_accessor_t::value_type;
   const read_accessor_t fil_acc;
   const read_accessor_t in_acc;
   write_accessor_t out_acc;
-  const mat_size_t total_size;
-  const mat_size_t mat_size;
+  const matrix_size_t total_size;
+  const matrix_size_t mat_size;
   const int m_start_offset;
   const int n_start_offset;
-  const mat_size_t num_group;
+  const matrix_size_t num_group;
   static constexpr int row_per_work_item =
       opencl_configuration_t::row_per_work_item;
   static constexpr int col_per_work_item =
       opencl_configuration_t::cache_line - 2;
-  static constexpr int fil_size_m = 3;
-  static constexpr int fil_size_n = 3;
+  static constexpr auto fil_size = matrix_size_t{3, 3};
 
  public:
   // constructing the functor
   conv(const read_accessor_t fil_acc_, const read_accessor_t in_acc_,
-       write_accessor_t out_acc_, const mat_size_t total_size_,
-       const mat_size_t mat_size_, const int m_start_offset_,
-       const int n_start_offset_, const mat_size_t num_group_)
+       write_accessor_t out_acc_, const matrix_size_t total_size_,
+       const matrix_size_t mat_size_, const int m_start_offset_,
+       const int n_start_offset_, const matrix_size_t num_group_)
       : fil_acc(fil_acc_),
         in_acc(in_acc_),
         out_acc(out_acc_),
@@ -42,21 +39,21 @@ class conv {
     const int group_n = item_id.get_group(0) - group_m * num_group.n;
     const int work_item =
         (group_m * (item_id.get_local_range()[0])) + item_id.get_local_id(0);
-    // the private memory tile of 2 * 6 for output that reads 2*8 inout
+    // the private memory tile of 2 * 6 for output that reads 2*8 input
     data_t private_result[row_per_work_item][col_per_work_item] = {};
-    data_t private_in[row_per_work_item + fil_size_m - 1]
+    data_t private_in[row_per_work_item + fil_size.m - 1]
                      [opencl_configuration_t::cache_line];
     // this is used to keep the filter in private memory to prevent the input
-    // zero level cache to be flushed befor being used by all threads
-    data_t filter[fil_size_m][fil_size_n];
+    // zero level cache to be flushed before being used by all threads
+    data_t filter[fil_size.m][fil_size.n];
 
 // set filter to private memory to prevent the level zero cache to be modified
 #pragma nounroll
-    for (int p_m = 0; p_m < fil_size_m; p_m++) {
+    for (int p_m = 0; p_m < fil_size.m; p_m++) {
 #pragma nounroll
-      for (int p_n = 0; p_n < fil_size_n; p_n++) {
+      for (int p_n = 0; p_n < fil_size.n; p_n++) {
         filter[p_m][p_n] =
-            fil_acc[p_m][p_n] / static_cast<data_t>(fil_size_m * fil_size_n);
+            fil_acc[p_m][p_n] / static_cast<data_t>(fil_size.m * fil_size.n);
       }
     }
     item_id.mem_fence(cl::sycl::access::fence_space::global_and_local);
@@ -85,14 +82,14 @@ class conv {
             (loop_n_check - index_n) < col_per_work_item;
         // loop over m to load the tile
 #pragma nounroll
-        for (f_m = 0, m = -(fil_size_m >> 1);
-             f_m < row_per_work_item + fil_size_m - 1; m++, f_m++) {
+        for (f_m = 0, m = -(fil_size.m >> 1);
+             f_m < row_per_work_item + fil_size.m - 1; m++, f_m++) {
           int in_id_m = (in_row + m >= 0) ? in_row + m : 0;
           in_id_m = (in_id_m < total_size.m) ? in_id_m : total_size.m - 1;
           int p_n, g_n;
 #pragma unroll
           // loop over n to load the tile
-          for (p_n = 0, g_n = -(fil_size_n >> 1);
+          for (p_n = 0, g_n = -(fil_size.n >> 1);
                p_n < opencl_configuration_t::cache_line; p_n++, g_n++) {  //
             int in_id_n = (in_base_col + g_n >= 0) ? in_base_col + g_n : 0;
             in_id_n = (in_id_n < total_size.n) ? in_id_n : total_size.n - 1;
@@ -106,9 +103,9 @@ class conv {
         for (int private_n = 0; private_n < col_per_work_item;
              private_n++) {  //
 #pragma unroll
-          for (int f_n = 0; f_n < fil_size_n; f_n++) {
+          for (int f_n = 0; f_n < fil_size.n; f_n++) {
 #pragma unroll
-            for (int in_id_m = 0; in_id_m < fil_size_m + row_per_work_item - 1;
+            for (int in_id_m = 0; in_id_m < fil_size.m + row_per_work_item - 1;
                  in_id_m++) {
               // compute both rows output for the read input element. This if
               // statement is flattened at compile time as the for loop is
@@ -119,12 +116,12 @@ class conv {
                   private_result[0][private_n] +=
                       (input * filter[in_id_m][f_n]);
                 } else if (in_id_m != 0 &&
-                           in_id_m != fil_size_m + row_per_work_item - 2) {
+                           in_id_m != fil_size.m + row_per_work_item - 2) {
                   private_result[0][private_n] +=
                       (input * filter[in_id_m][f_n]);
                   private_result[1][private_n] +=
                       (input * filter[in_id_m - 1][f_n]);
-                } else if (in_id_m == fil_size_m + row_per_work_item - 2) {
+                } else if (in_id_m == fil_size.m + row_per_work_item - 2) {
                   private_result[1][private_n] +=
                       (input * filter[in_id_m - 1][f_n]);
                 }
@@ -134,24 +131,21 @@ class conv {
             }
           }
         }
-        // flush the partial tile of privatememory to the global output memory
+        // flush the partial tile of private memory to the global output memory
         // check to see if it is internal block or external block
-        if (is_external_block_m == true && is_external_block_n == true) {
+        if (is_external_block_m && is_external_block_n) {
           write_back<true, true>(private_result, out_acc, row, base_col);
-        } else if (is_external_block_m == true &&
-                   is_external_block_n == false) {
+        } else if (is_external_block_m && !is_external_block_n) {
           write_back<true, false>(private_result, out_acc, row, base_col);
-        } else if (is_external_block_m == false &&
-                   is_external_block_n == true) {
+        } else if (!is_external_block_m && is_external_block_n) {
           write_back<false, true>(private_result, out_acc, row, base_col);
-        } else if (is_external_block_m == false &&
-                   is_external_block_n == false) {
+        } else if (!is_external_block_m && !is_external_block_n) {
           write_back<false, false>(private_result, out_acc, row, base_col);
         }
       }
     }
   }
-  // flush the partial tile of privatememory to the global output memory
+  // flush the partial tile of private memory to the global output memory
   template <bool is_external_block_m, bool is_external_block_n, typename data_t,
             typename acc>
   void write_back(
@@ -165,19 +159,18 @@ class conv {
             do_check<is_external_block_n>((col + p_n < mat_size.n))) {
           out_acc[row + p_m][col + p_n] = private_result[p_m][p_n];
         }
-        private_result[p_m][p_n] = data_t(0);
+        private_result[p_m][p_n] = 0;
       }
     }
   }
 };
 
-template <typename kernel_t, typename read_buff_t, typename write_buff_t,
-          typename mat_size_t>
+template <typename kernel_t, typename read_buff_t, typename write_buff_t>
 void inline tiled_cov(
     cl::sycl::queue& sycl_queue, cl::sycl::program& sycl_program,
     read_buff_t in_buff, read_buff_t fill_buff, write_buff_t out_buff,
-    mat_size_t out_range_size, mat_size_t in_range_size,
-    mat_size_t fil_range_size, int i, std::vector<cl::sycl::event>& events,
+    matrix_size_t out_range_size, matrix_size_t in_range_size,
+    matrix_size_t fil_range_size, int i, std::vector<cl::sycl::event>& events,
     std::vector<std::chrono::time_point<std::chrono::system_clock>>& starts,
     const bool clamped_edge_m, const bool clamped_edge_n) {
   // execute the tile
@@ -210,14 +203,14 @@ void inline tiled_cov(
         (opencl_configuration_t::col_per_thread);
     int num_group_m =
         ((out_range_size.m +
-          (local_thread * opencl_configuration_t::row_per_tread) - 1) /
-         (local_thread * opencl_configuration_t::row_per_tread));
-    auto num_group = matrix_size_t(num_group_m, num_group_n);
+          (local_thread * opencl_configuration_t::row_per_thread) - 1) /
+         (local_thread * opencl_configuration_t::row_per_thread));
+    auto num_group = matrix_size_t{num_group_m, num_group_n};
 
     const int m_start_offset = clamped_edge_m ? 0 : fil_range_size.m / 2;
     const int n_start_offset = clamped_edge_n ? 0 : fil_range_size.n / 2;
     cgh.parallel_for(
-        sycl_program.template get_kernel<kernel_t>(),
+        sycl_program.get_kernel<kernel_t>(),
         cl::sycl::nd_range<1>(
             cl::sycl::range<1>(num_group_n * num_group_m * local_thread),
             cl::sycl::range<1>(local_thread)),
