@@ -168,9 +168,7 @@ int main() {
 
   const auto context_bound_property =
       cl::sycl::property::buffer::context_bound(sycl_queue.get_context());
-
-  // building kernel before the execution by using program class
-  // This will reduce the program overhead
+    
   // input SYCL buffer
   auto in_buff = cl::sycl::buffer<data_t, 2>(
       input.data(), cl::sycl::range<2>(total_buffer.m, total_buffer.n),
