@@ -115,7 +115,7 @@ void how_to_use_with_require(sycl::queue& queue) {
                  "\n"
                  "This particular error has occurred because you are requiring "
                  "the policy use_onchip_memory be available, and your hardware "
-                 "doesn't support the use_onchip_memory, so the SYCL ecosystem "
+                 "doesn't support the use_onchip_memory, so the SYCL implementation "
                  "will raise an error.\n";
   }
 }
