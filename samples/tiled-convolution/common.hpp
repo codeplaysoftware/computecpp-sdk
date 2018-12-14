@@ -47,10 +47,9 @@ struct matrix_size_t {
 
 struct opencl_configuration_t {
   static constexpr int cache_line = 4;
-  // best case :(mat_size.n) 1024
   static constexpr int col_per_thread = 1024;
   static constexpr int row_per_thread = 4;
-  static constexpr int work_group_reduction_factor = 2;  // best case 2
+  static constexpr int work_group_reduction_factor = 2; 
   static constexpr int row_per_work_item = 1;
   static constexpr matrix_size_t local_size = {1, 32};
 };
