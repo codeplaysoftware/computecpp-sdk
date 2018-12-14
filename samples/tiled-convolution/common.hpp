@@ -24,8 +24,8 @@
  *    Common code for different implementations of the tiled convolution sample.
  *
  **************************************************************************/
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef TILED_CONV2D_COMMON_HPP_
+#define TILED_CONV2D_COMMON_HPP_
 
 #include <CL/sycl.hpp>
 #include <SYCL/codeplay.hpp>
@@ -181,4 +181,4 @@ struct init_to_zero {
 
 }  // namespace
 
-#endif  // COMMON_HPP
+#endif  // TILED_CONV2D_COMMON_HPP_
