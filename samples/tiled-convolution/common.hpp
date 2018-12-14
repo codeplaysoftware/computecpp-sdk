@@ -36,7 +36,8 @@
 #include <iostream>
 
 // define the 2-d matrix size
-struct matrix_size_t {
+class matrix_size_t {
+ public:
   const int m;
   const int n;
   constexpr int size() const { return m * n; }
@@ -49,9 +50,10 @@ struct opencl_configuration_t {
   static constexpr int cache_line = 4;
   static constexpr int col_per_thread = 1024;
   static constexpr int row_per_thread = 4;
-  static constexpr int work_group_reduction_factor = 2; 
+  static constexpr int work_group_reduction_factor = 2;
   static constexpr int row_per_work_item = 1;
-  static constexpr matrix_size_t local_size = {1, 32};
+  static constexpr int local_size_m = 1;
+  static constexpr int local_size_n = 32;
 };
 
 struct input_data_info {
@@ -71,8 +73,8 @@ constexpr matrix_size_t round_up(const matrix_size_t x, const matrix_size_t y) {
 
 namespace {
 
- //avoid doing certain boolean checks at runtime 
- //when they're not required
+// avoid doing certain boolean checks at runtime
+// when they're not required
 template <bool>
 inline bool do_check(bool cond) {
   return cond;
@@ -115,10 +117,9 @@ inline void profiler(
   per_tile_execution_time = total_execution_time / size;
   per_tile_application_execution_time = total_application_execution_time / size;
   std::cout << "Total kernel time: " << total_execution_time << " ms,"
-            << " total_application_time: "
-            << total_application_execution_time << " ms,"
-            << " average_kernel_time: "
-            << per_tile_execution_time << " ms,"
+            << " total_application_time: " << total_application_execution_time
+            << " ms,"
+            << " average_kernel_time: " << per_tile_execution_time << " ms,"
             << " average_application_time: "
             << per_tile_application_execution_time << "ms\n";
 }

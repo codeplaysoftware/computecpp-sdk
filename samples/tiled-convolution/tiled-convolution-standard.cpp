@@ -57,7 +57,7 @@ class conv {
     int id_m = item_id.get_global_id(0);  // global id with offset m
     int id_n = item_id.get_global_id(1);  // global id with offset n
     if ((id_m >= total_size.m) || (id_n >= total_size.n)) {
-     return;
+      return;
     }
     // input index m , filter index fil_m , input index n, filter index fil_n
     int m, fil_m, n, fil_n;
@@ -178,14 +178,15 @@ int main() {
         auto out_acc = out_buff.get_access<write_t, global_buffer_t>(
             cgh, cl::sycl::range<2>(mat_size.m, mat_size.n),
             cl::sycl::id<2>(host_offset_m, host_offset_n));
-        constexpr auto global_size =
-            round_up(mat_size, opencl_configuration_t::local_size);
+        constexpr auto global_size = round_up(
+            mat_size, matrix_size_t{opencl_configuration_t::local_size_m,
+                                    opencl_configuration_t::local_size_n});
         cgh.parallel_for(
             sycl_program.template get_kernel<kernel_type>(),
             cl::sycl::nd_range<2>(
                 cl::sycl::range<2>(global_size.m, global_size.n),
-                cl::sycl::range<2>(opencl_configuration_t::local_size.m,
-                                   opencl_configuration_t::local_size.n),
+                cl::sycl::range<2>(opencl_configuration_t::local_size_m,
+                                   opencl_configuration_t::local_size_n),
                 cl::sycl::id<2>(host_offset_m, host_offset_n)),
             kernel_type(fil_acc, in_acc, out_acc, total_buffer, fil_size));
       });

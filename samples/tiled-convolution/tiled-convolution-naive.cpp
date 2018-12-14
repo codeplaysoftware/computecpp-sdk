@@ -91,10 +91,10 @@ class conv {
   }
 };
 
-template <typename kernel_t, typename read_buff_t, typename write_buff_t>
+template <typename kernel_t, typename buff_t>
 void inline tiled_conv(
     cl::sycl::queue& sycl_queue, cl::sycl::program& sycl_program,
-    read_buff_t in_buff, read_buff_t fill_buff, write_buff_t out_buff,
+    buff_t in_buff, buff_t fill_buff, buff_t out_buff,
     matrix_size_t out_range_size, matrix_size_t in_range_size,
     matrix_size_t fil_range_size, int i, std::vector<cl::sycl::event>& events,
     time_point_vector_t& starts, std::array<bool, 2>& clamped_edge_m,
@@ -109,14 +109,15 @@ void inline tiled_conv(
         fill_buff.template get_access<cl::sycl::access::mode::read>(cgh);
     auto out_acc =
         out_buff.template get_access<cl::sycl::access::mode::write>(cgh);
-    const auto global_size =
-        round_up(out_range_size, opencl_configuration_t::local_size);
+    const auto global_size = round_up(
+        out_range_size, matrix_size_t{opencl_configuration_t::local_size_m,
+                                      opencl_configuration_t::local_size_n});
     cgh.parallel_for(
         sycl_program.get_kernel<kernel_t>(),
         cl::sycl::nd_range<2>(
             cl::sycl::range<2>(global_size.m, global_size.n),
-            cl::sycl::range<2>(opencl_configuration_t::local_size.m,
-                               opencl_configuration_t::local_size.n)),
+            cl::sycl::range<2>(opencl_configuration_t::local_size_m,
+                               opencl_configuration_t::local_size_n)),
         kernel_t(fil_acc, in_acc, out_acc, in_range_size, fil_range_size,
                  clamped_edge_m, clamped_edge_n));
   });
@@ -168,7 +169,7 @@ int main() {
 
   const auto context_bound_property =
       cl::sycl::property::buffer::context_bound(sycl_queue.get_context());
-    
+
   // input SYCL buffer
   auto in_buff = cl::sycl::buffer<data_t, 2>(
       input.data(), cl::sycl::range<2>(total_buffer.m, total_buffer.n),
