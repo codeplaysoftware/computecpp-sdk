@@ -36,8 +36,7 @@
 #include <iostream>
 
 // define the 2-d matrix size
-class matrix_size_t {
- public:
+struct matrix_size_t {
   const int m;
   const int n;
   constexpr int size() const { return m * n; }
