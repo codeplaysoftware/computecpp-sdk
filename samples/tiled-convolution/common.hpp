@@ -114,13 +114,13 @@ inline void profiler(
   // this part is used to profile the total execution time
   per_tile_execution_time = total_execution_time / size;
   per_tile_application_execution_time = total_application_execution_time / size;
-  std::cout << "  total_kernel_execution_time(ms), " << total_execution_time
-            << " , total_application_execution_time(ms), "
-            << total_application_execution_time
-            << " , average_kernel_execution_time(ms), "
-            << per_tile_execution_time
-            << " , average_application_execution_time(ms), "
-            << per_tile_application_execution_time << "\n";
+  std::cout << "Total kernel time: " << total_execution_time << " ms,"
+            << " total_application_time: "
+            << total_application_execution_time << " ms,"
+            << " average_kernel_time: "
+            << per_tile_execution_time << " ms,"
+            << " average_application_time: "
+            << per_tile_application_execution_time << "ms\n";
 }
 
 template <typename host_accessor_t, typename data_t>
