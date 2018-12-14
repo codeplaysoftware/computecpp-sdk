@@ -71,6 +71,8 @@ constexpr matrix_size_t round_up(const matrix_size_t x, const matrix_size_t y) {
 
 namespace {
 
+ //avoid doing certain boolean checks at runtime 
+ //when they're not required
 template <bool>
 inline bool do_check(bool cond) {
   return cond;
