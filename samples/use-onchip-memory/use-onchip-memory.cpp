@@ -36,7 +36,6 @@ namespace access = sycl::access;
 namespace sycl_kernel {
 // This kernel performs the same operation as std::iota, but also scales
 // the result by two.
-//
 template <class>
 class scaled_iota;
 }  // namespace sycl_kernel
@@ -49,39 +48,28 @@ void use_with_policy(Policy policy, sycl::queue& queue) {
   {
     auto taskContext = queue.get_context();
 
-    // clang-format off
-    //
     // Notice that the on_chip_memory property takes a policy argument: this is
     // used to indicate whether the property is advantageous or genuinely
     // necessary.
-    //
     auto deviceData = sycl::buffer<int, 1>{
-        hostData.data(),
-        sycl::range<1>(hostData.size()),
+        hostData.data(), sycl::range<1>(hostData.size()),
         sycl::property_list{
             sycl::property::buffer::context_bound(taskContext),
-            codeplay::property::buffer::use_onchip_memory(policy)
-        }
-    };
+            codeplay::property::buffer::use_onchip_memory(policy)}};
 
     queue.submit([&](sycl::handler& cgh) {
-      constexpr auto dimension_size = 2;
+      static constexpr size_t dims = 2;
 
-      auto r = sycl::nd_range<dimension_size>{
-        sycl::range<dimension_size>{
-          hostData.size() / dimension_size,
-          dimension_size
-        },
-        sycl::range<dimension_size>{dimension_size, 1}
-      };
+      auto r =
+          sycl::nd_range<dims>{sycl::range<dims>{hostData.size() / dims, dims},
+                               sycl::range<dims>{dims, 1}};
+      const auto access =
+          deviceData.get_access<access::mode::discard_write>(cgh);
       cgh.parallel_for<sycl_kernel::scaled_iota<Policy>>(
-        r,
-        [access = deviceData.get_access<access::mode::discard_write>(cgh)]
-        (sycl::nd_item<2> id) noexcept {
-          const auto linearId = id.get_global_linear_id();
-          access[linearId] = linearId * 2;
-        });
-      // clang-format on
+          r, [=](sycl::nd_item<2> id) noexcept {
+            const auto linearId = id.get_global_linear_id();
+            access[linearId] = linearId * 2;
+          });
     });
     queue.wait_and_throw();
   }
@@ -93,7 +81,6 @@ void use_with_policy(Policy policy, sycl::queue& queue) {
 // feature is not present on the system, then it will not be enabled.
 //
 // Puns aside, this is the preferred default.
-//
 void how_to_use_with_prefer(sycl::queue& queue) {
   ::use_with_policy(codeplay::property::prefer, queue);
 }
@@ -105,18 +92,15 @@ void how_to_use_with_prefer(sycl::queue& queue) {
 //
 // In the event that the property isn't supported, a SYCL exception will be
 // thrown.
-//
 void how_to_use_with_require(sycl::queue& queue) {
   try {
     ::use_with_policy(codeplay::property::require, queue);
   } catch (const sycl::exception& e) {
     std::cerr << "An error occurred: " << e.what()
-              << "\n"
-                 "\n"
-                 "This particular error has occurred because you are requiring "
-                 "the policy use_onchip_memory be available, and your hardware "
-                 "doesn't support the use_onchip_memory, so the SYCL implementation "
-                 "will raise an error.\n";
+              << "\n\nThis particular error has occurred because you are "
+                 "requiring the policy use_onchip_memory be available, and "
+                 "your hardware doesn't support the use_onchip_memory, so the "
+                 "SYCL implementation will raise an error.\n";
   }
 }
 
