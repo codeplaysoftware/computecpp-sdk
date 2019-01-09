@@ -178,7 +178,7 @@ int main() {
         auto out_acc = out_buff.get_access<write_t, global_buffer_t>(
             cgh, cl::sycl::range<2>(mat_size.m, mat_size.n),
             cl::sycl::id<2>(host_offset_m, host_offset_n));
-        constexpr auto global_size = round_up(
+        const auto global_size = round_up(
             mat_size, matrix_size_t{opencl_configuration_t::local_size_m,
                                     opencl_configuration_t::local_size_n});
         cgh.parallel_for(
