@@ -1,17 +1,29 @@
-set(SOURCE_NAME "tiled-convolution")
-add_executable(
-  ${SOURCE_NAME}
-  ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
+set(files
+  "tiled-convolution-naive.cpp"
+  "tiled-convolution-optimized.cpp"
+  "tiled-convolution-standard.cpp"
 )
-add_sycl_to_target(
-  TARGET ${SOURCE_NAME}
-  SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}.cpp
-)
-add_test(
-  NAME ${SOURCE_NAME}
-  COMMAND ${SOURCE_NAME}
-)
-install(
-  TARGETS ${SOURCE_NAME}
-  RUNTIME DESTINATION bin
-)
+
+foreach(SOURCE_NAME ${files})
+  get_filename_component(EXEC_NAME ${SOURCE_NAME} NAME_WE)
+
+  add_executable(
+    ${EXEC_NAME}
+    ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}
+  )
+
+  add_sycl_to_target(
+    TARGET ${EXEC_NAME}
+    SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE_NAME}
+  )
+
+  add_test(
+    NAME ${EXEC_NAME}
+    COMMAND ${EXEC_NAME}
+  )
+
+  install(
+    TARGETS ${EXEC_NAME}
+    RUNTIME DESTINATION bin
+  )
+endforeach()
