@@ -237,15 +237,19 @@ function(__build_ir)
   # Set the path to the integration header.
   # The .sycl filename must depend on the target so that different targets
   # using the same source file will be generated with a different rule.
-  set(outputSyclFile ${CMAKE_CURRENT_BINARY_DIR}/${SDK_BUILD_IR_TARGET}_${sourceFileName}.sycl)
-  set(depFileName ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl.d)
+  set(baseSyclName ${CMAKE_CURRENT_BINARY_DIR}/${SDK_BUILD_IR_TARGET}_${sourceFileName})
+  set(outputSyclFile ${baseSyclName}.sycl)
+  set(depFileName ${baseSyclName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
   set(compile_definitions "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},COMPILE_DEFINITIONS>")
+  set(compile_flags "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},COMPILE_OPTIONS>")
   set(generated_include_directories
     $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">)
   set(generated_compile_definitions
     $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},\t-D>>)
+  set(generated_compile_flags
+    $<$<BOOL:${compile_flags}>:$<JOIN:${compile_flags},\t>>)
 
   # Obtain language standard of the file
   set(device_compiler_cxx_standard)
@@ -276,12 +280,6 @@ function(__build_ir)
     list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS ${source_compile_flags})
   endif()
 
-  get_target_property(target_compile_flags ${SDK_BUILD_IR_TARGET} COMPILE_FLAGS)
-  separate_arguments(target_compile_flags)
-  if(target_compile_flags)
-    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS ${target_compile_flags})
-  endif()
-
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
   get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
   if(target_libraries)
@@ -304,6 +302,7 @@ function(__build_ir)
     OUTPUT ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+            ${generated_compile_flags}
             ${generated_include_directories}
             ${generated_compile_definitions}
             -o ${outputSyclFile}
