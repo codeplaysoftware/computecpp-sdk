@@ -266,19 +266,20 @@ function(__build_ir)
     set(device_compiler_cxx_standard "")
   endif()
 
-  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
-    ${device_compiler_cxx_standard}
-    ${COMPUTECPP_USER_FLAGS}
-  )
-
   get_property(source_compile_flags
     SOURCE ${SDK_BUILD_IR_SOURCE}
     PROPERTY COMPUTECPP_SOURCE_FLAGS
   )
   separate_arguments(source_compile_flags)
   if(source_compile_flags)
-    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS ${source_compile_flags})
+    list(APPEND computecpp_source_flags ${source_compile_flags})
   endif()
+
+  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
+    ${device_compiler_cxx_standard}
+    ${COMPUTECPP_USER_FLAGS}
+    ${computecpp_source_flags}
+  )
 
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
   get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
