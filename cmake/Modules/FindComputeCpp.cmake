@@ -33,6 +33,7 @@ cmake_minimum_required(VERSION 3.4.3)
 include(FindPackageHandleStandardArgs)
 
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
+separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 set(COMPUTECPP_BITCODE "spir64" CACHE STRING
@@ -234,7 +235,9 @@ function(__build_ir)
   get_filename_component(sourceFileName ${SDK_BUILD_IR_SOURCE} NAME)
 
   # Set the path to the integration header.
-  set(outputSyclFile ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl)
+  # The .sycl filename must depend on the target so that different targets
+  # using the same source file will be generated with a different rule.
+  set(outputSyclFile ${CMAKE_CURRENT_BINARY_DIR}/${SDK_BUILD_IR_TARGET}_${sourceFileName}.sycl)
   set(depFileName ${CMAKE_CURRENT_BINARY_DIR}/${sourceFileName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
@@ -259,19 +262,25 @@ function(__build_ir)
     set(device_compiler_cxx_standard "")
   endif()
 
+  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
+    ${device_compiler_cxx_standard}
+    ${COMPUTECPP_USER_FLAGS}
+  )
+
   get_property(source_compile_flags
     SOURCE ${SDK_BUILD_IR_SOURCE}
     PROPERTY COMPUTECPP_SOURCE_FLAGS
   )
+  separate_arguments(source_compile_flags)
   if(source_compile_flags)
-    list(APPEND target_compile_flags ${source_compile_flags})
+    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS ${source_compile_flags})
   endif()
 
-  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS
-    ${device_compiler_cxx_standard}
-    ${COMPUTECPP_USER_FLAGS}
-    ${target_compile_flags}
-  )
+  get_target_property(target_compile_flags ${SDK_BUILD_IR_TARGET} COMPILE_FLAGS)
+  separate_arguments(target_compile_flags)
+  if(target_compile_flags)
+    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS ${target_compile_flags})
+  endif()
 
   set(ir_dependencies ${SDK_BUILD_IR_SOURCE})
   get_target_property(target_libraries ${SDK_BUILD_IR_TARGET} LINK_LIBRARIES)
@@ -295,7 +304,6 @@ function(__build_ir)
     OUTPUT ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-            ${device_compiler_includes}
             ${generated_include_directories}
             ${generated_compile_definitions}
             -o ${outputSyclFile}
