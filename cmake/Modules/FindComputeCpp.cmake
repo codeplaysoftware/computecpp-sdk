@@ -323,8 +323,7 @@ function(__build_ir)
 
   # This property can be set on a per-target basis to indicate that the
   # integration header should appear after the main source listing
-  get_property(includeAfter TARGET ${SDK_BUILD_IR_TARGET}
-      PROPERTY COMPUTECPP_INCLUDE_AFTER)
+  get_target_property(includeAfter ${SDK_ADD_SYCL_TARGET} COMPUTECPP_INCLUDE_AFTER)
 
   if(includeAfter)
     # Change the source file to the integration header - e.g.
@@ -401,19 +400,44 @@ function(add_sycl_to_target)
     "${multi_value_args}"
     ${ARGN}
   )
-  set(fileCounter 0)
-  # Add custom target to run compute++ and generate the integration header
-  foreach(sourceFile ${SDK_ADD_SYCL_SOURCES})
-    if(NOT IS_ABSOLUTE ${sourceFile})
-      set(sourceFile "${CMAKE_CURRENT_SOURCE_DIR}/${sourceFile}")
+
+  # If the CXX compiler is set to compute++ enable the driver. This removes the
+  # need to explicitly generate the sycl integration header in a separate
+  # compiler pass.
+  get_filename_component(cmakeCxxCompilerFileName "${CMAKE_CXX_COMPILER}" NAME)
+  if("${cmakeCxxCompilerFileName}" STREQUAL "compute++")
+    if(MSVC)
+      message(FATAL_ERROR "The compiler driver is not supported by this system,
+                           revert the CXX compiler to your default host compiler.")
     endif()
-    __build_ir(
-      TARGET     ${SDK_ADD_SYCL_TARGET}
-      SOURCE     ${sourceFile}
-      COUNTER    ${fileCounter}
-    )
-    MATH(EXPR fileCounter "${fileCounter} + 1")
-  endforeach()
+
+    # Set all flags required to compile the target when using the compiler driver
+    list(APPEND computecppDriverCompileFlags ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+                                             ${COMPUTECPP_USER_FLAGS})
+    get_target_property(includeAfter ${SDK_ADD_SYCL_TARGET} COMPUTECPP_INCLUDE_AFTER)
+    if(includeAfter)
+      list(APPEND computecppDriverCompileFlags -fsycl-ih-last)
+    endif()
+    # Remove flags that are handled by the driver.
+    list(REMOVE_ITEM computecppDriverCompileFlags -emit-llvm -sycl)
+    list(INSERT computecppDriverCompileFlags 0 -sycl-driver)
+    target_compile_options(${SDK_ADD_SYCL_TARGET} PUBLIC ${computecppDriverCompileFlags})
+  else()
+    set(fileCounter 0)
+    # Add custom target to run compute++ and generate the integration header
+    foreach(sourceFile ${SDK_ADD_SYCL_SOURCES})
+      if(NOT IS_ABSOLUTE ${sourceFile})
+        set(sourceFile "${CMAKE_CURRENT_SOURCE_DIR}/${sourceFile}")
+      endif()
+      __build_ir(
+        TARGET     ${SDK_ADD_SYCL_TARGET}
+        SOURCE     ${sourceFile}
+        COUNTER    ${fileCounter}
+      )
+      MATH(EXPR fileCounter "${fileCounter} + 1")
+    endforeach()
+  endif()
+
   set_property(TARGET ${SDK_ADD_SYCL_TARGET}
     APPEND PROPERTY LINK_LIBRARIES ComputeCpp::ComputeCpp)
   set_property(TARGET ${SDK_ADD_SYCL_TARGET}
