@@ -243,13 +243,10 @@ function(__build_ir)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
   set(compile_definitions "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},COMPILE_DEFINITIONS>")
-  set(compile_options "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},COMPILE_OPTIONS>")
   set(generated_include_directories
     $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">)
   set(generated_compile_definitions
     $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},\t-D>>)
-  set(generated_compile_options
-    $<$<BOOL:${compile_options}>:$<JOIN:${compile_options},\t>>)
 
   # Obtain language standard of the file
   set(device_compiler_cxx_standard)
@@ -303,7 +300,6 @@ function(__build_ir)
     OUTPUT ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-            ${generated_compile_options}
             ${generated_include_directories}
             ${generated_compile_definitions}
             -o ${outputSyclFile}
