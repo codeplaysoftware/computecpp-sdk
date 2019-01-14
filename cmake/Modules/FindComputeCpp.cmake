@@ -94,7 +94,6 @@ set(ComputeCpp_ROOT_DIR "${computecpp_canonical_root_dir}" CACHE PATH
 
 if(NOT ComputeCpp_INFO_EXECUTABLE)
   message(WARNING "Can't find computecpp_info - check ComputeCpp_DIR")
-  set(COMPUTECPP_DEVICE_COMPILER_FLAGS "")
 else()
   execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
     OUTPUT_VARIABLE ComputeCpp_VERSION
@@ -116,17 +115,7 @@ else()
       message(WARNING "platform - your system CANNOT support ComputeCpp")
     endif()
   endif()
-
-  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
-    "--dump-device-compiler-flags"
-    OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
-    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-    message(WARNING "compute++ flags - Error obtaining compute++ flags!")
-  endif()
 endif()
-mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
-separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
 find_package_handle_standard_args(ComputeCpp
   REQUIRED_VARS ComputeCpp_ROOT_DIR
@@ -148,6 +137,9 @@ if(NOT ComputeCpp_FOUND)
   return()
 endif()
 
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -O2 -mllvm -inline-threshold=1000 -intelspirmetadata)
+mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+
 if(CMAKE_CROSSCOMPILING)
   if(NOT COMPUTECPP_DONT_USE_TOOLCHAIN)
     list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS --gcc-toolchain=${COMPUTECPP_TOOLCHAIN_DIR})
@@ -157,7 +149,6 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
-list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS -emit-llvm)
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 if(NOT TARGET OpenCL::OpenCL)
@@ -401,9 +392,7 @@ function(add_sycl_to_target)
     ${ARGN}
   )
 
-  # If the CXX compiler is set to compute++ enable the driver. This removes the
-  # need to explicitly generate the sycl integration header in a separate
-  # compiler pass.
+  # If the CXX compiler is set to compute++ enable the driver.
   get_filename_component(cmakeCxxCompilerFileName "${CMAKE_CXX_COMPILER}" NAME)
   if("${cmakeCxxCompilerFileName}" STREQUAL "compute++")
     if(MSVC)
@@ -411,19 +400,28 @@ function(add_sycl_to_target)
                            revert the CXX compiler to your default host compiler.")
     endif()
 
-    # Set all flags required to compile the target when using the compiler driver
-    list(APPEND computecppDriverCompileFlags ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-                                             ${COMPUTECPP_USER_FLAGS})
     get_target_property(includeAfter ${SDK_ADD_SYCL_TARGET} COMPUTECPP_INCLUDE_AFTER)
     if(includeAfter)
-      list(APPEND computecppDriverCompileFlags -fsycl-ih-last)
+      list(APPEND COMPUTECPP_USER_FLAGS -fsycl-ih-last)
     endif()
-    # Remove flags that are handled by the driver.
-    list(REMOVE_ITEM computecppDriverCompileFlags -emit-llvm -sycl)
-    list(INSERT computecppDriverCompileFlags 0 -sycl-driver)
-    target_compile_options(${SDK_ADD_SYCL_TARGET} PUBLIC ${computecppDriverCompileFlags})
+    list(INSERT COMPUTECPP_DEVICE_COMPILER_FLAGS 0 -sycl-driver)
+    # Prepend COMPUTECPP_DEVICE_COMPILER_FLAGS and append COMPUTECPP_USER_FLAGS
+    foreach(prop COMPILE_OPTIONS INTERFACE_COMPILE_OPTIONS)
+      get_target_property(target_compile_options ${SDK_ADD_SYCL_TARGET} ${prop})
+      if(NOT target_compile_options)
+        set(target_compile_options "")
+      endif()
+      set_property(
+        TARGET ${SDK_ADD_SYCL_TARGET}
+        PROPERTY ${prop}
+        ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+        ${target_compile_options}
+        ${COMPUTECPP_USER_FLAGS}
+      )
+    endforeach()
   else()
     set(fileCounter 0)
+    list(INSERT COMPUTECPP_DEVICE_COMPILER_FLAGS 0 -sycl)
     # Add custom target to run compute++ and generate the integration header
     foreach(sourceFile ${SDK_ADD_SYCL_SOURCES})
       if(NOT IS_ABSOLUTE ${sourceFile})
