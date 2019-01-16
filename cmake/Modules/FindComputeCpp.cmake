@@ -94,7 +94,6 @@ set(ComputeCpp_ROOT_DIR "${computecpp_canonical_root_dir}" CACHE PATH
 
 if(NOT ComputeCpp_INFO_EXECUTABLE)
   message(WARNING "Can't find computecpp_info - check ComputeCpp_DIR")
-  set(COMPUTECPP_DEVICE_COMPILER_FLAGS "")
 else()
   execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE} "--dump-version"
     OUTPUT_VARIABLE ComputeCpp_VERSION
@@ -116,17 +115,7 @@ else()
       message(WARNING "platform - your system CANNOT support ComputeCpp")
     endif()
   endif()
-
-  execute_process(COMMAND ${ComputeCpp_INFO_EXECUTABLE}
-    "--dump-device-compiler-flags"
-    OUTPUT_VARIABLE COMPUTECPP_DEVICE_COMPILER_FLAGS
-    RESULT_VARIABLE ComputeCpp_INFO_EXECUTABLE_RESULT OUTPUT_STRIP_TRAILING_WHITESPACE)
-  if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
-    message(WARNING "compute++ flags - Error obtaining compute++ flags!")
-  endif()
 endif()
-mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
-separate_arguments(COMPUTECPP_DEVICE_COMPILER_FLAGS)
 
 find_package_handle_standard_args(ComputeCpp
   REQUIRED_VARS ComputeCpp_ROOT_DIR
@@ -148,6 +137,9 @@ if(NOT ComputeCpp_FOUND)
   return()
 endif()
 
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -O2 -mllvm -inline-threshold=1000 -intelspirmetadata)
+mark_as_advanced(COMPUTECPP_DEVICE_COMPILER_FLAGS)
+
 if(CMAKE_CROSSCOMPILING)
   if(NOT COMPUTECPP_DONT_USE_TOOLCHAIN)
     list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS --gcc-toolchain=${COMPUTECPP_TOOLCHAIN_DIR})
@@ -157,7 +149,6 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
-list(REMOVE_ITEM COMPUTECPP_DEVICE_COMPILER_FLAGS -emit-llvm)
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 if(NOT TARGET OpenCL::OpenCL)
@@ -323,8 +314,7 @@ function(__build_ir)
 
   # This property can be set on a per-target basis to indicate that the
   # integration header should appear after the main source listing
-  get_property(includeAfter TARGET ${SDK_BUILD_IR_TARGET}
-      PROPERTY COMPUTECPP_INCLUDE_AFTER)
+  get_target_property(includeAfter ${SDK_ADD_SYCL_TARGET} COMPUTECPP_INCLUDE_AFTER)
 
   if(includeAfter)
     # Change the source file to the integration header - e.g.
@@ -401,19 +391,51 @@ function(add_sycl_to_target)
     "${multi_value_args}"
     ${ARGN}
   )
-  set(fileCounter 0)
-  # Add custom target to run compute++ and generate the integration header
-  foreach(sourceFile ${SDK_ADD_SYCL_SOURCES})
-    if(NOT IS_ABSOLUTE ${sourceFile})
-      set(sourceFile "${CMAKE_CURRENT_SOURCE_DIR}/${sourceFile}")
+
+  # If the CXX compiler is set to compute++ enable the driver.
+  get_filename_component(cmakeCxxCompilerFileName "${CMAKE_CXX_COMPILER}" NAME)
+  if("${cmakeCxxCompilerFileName}" STREQUAL "compute++")
+    if(MSVC)
+      message(FATAL_ERROR "The compiler driver is not supported by this system,
+                           revert the CXX compiler to your default host compiler.")
     endif()
-    __build_ir(
-      TARGET     ${SDK_ADD_SYCL_TARGET}
-      SOURCE     ${sourceFile}
-      COUNTER    ${fileCounter}
-    )
-    MATH(EXPR fileCounter "${fileCounter} + 1")
-  endforeach()
+
+    get_target_property(includeAfter ${SDK_ADD_SYCL_TARGET} COMPUTECPP_INCLUDE_AFTER)
+    if(includeAfter)
+      list(APPEND COMPUTECPP_USER_FLAGS -fsycl-ih-last)
+    endif()
+    list(INSERT COMPUTECPP_DEVICE_COMPILER_FLAGS 0 -sycl-driver)
+    # Prepend COMPUTECPP_DEVICE_COMPILER_FLAGS and append COMPUTECPP_USER_FLAGS
+    foreach(prop COMPILE_OPTIONS INTERFACE_COMPILE_OPTIONS)
+      get_target_property(target_compile_options ${SDK_ADD_SYCL_TARGET} ${prop})
+      if(NOT target_compile_options)
+        set(target_compile_options "")
+      endif()
+      set_property(
+        TARGET ${SDK_ADD_SYCL_TARGET}
+        PROPERTY ${prop}
+        ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+        ${target_compile_options}
+        ${COMPUTECPP_USER_FLAGS}
+      )
+    endforeach()
+  else()
+    set(fileCounter 0)
+    list(INSERT COMPUTECPP_DEVICE_COMPILER_FLAGS 0 -sycl)
+    # Add custom target to run compute++ and generate the integration header
+    foreach(sourceFile ${SDK_ADD_SYCL_SOURCES})
+      if(NOT IS_ABSOLUTE ${sourceFile})
+        set(sourceFile "${CMAKE_CURRENT_SOURCE_DIR}/${sourceFile}")
+      endif()
+      __build_ir(
+        TARGET     ${SDK_ADD_SYCL_TARGET}
+        SOURCE     ${sourceFile}
+        COUNTER    ${fileCounter}
+      )
+      MATH(EXPR fileCounter "${fileCounter} + 1")
+    endforeach()
+  endif()
+
   set_property(TARGET ${SDK_ADD_SYCL_TARGET}
     APPEND PROPERTY LINK_LIBRARIES ComputeCpp::ComputeCpp)
   set_property(TARGET ${SDK_ADD_SYCL_TARGET}
