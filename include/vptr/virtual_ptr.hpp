@@ -30,6 +30,9 @@
  *
  **************************************************************************/
 
+#ifndef VIRTUAL_PTR_HPP
+#define VIRTUAL_PTR_HPP
+
 #include <CL/sycl.hpp>
 
 #include <cstddef>
@@ -69,7 +72,7 @@ class PointerMapper {
    */
   struct virtual_pointer_t {
     /* Type for the pointers
-    */
+     */
     base_ptr_t m_contents;
 
     /** Conversions from virtual_pointer_t to
@@ -307,8 +310,8 @@ class PointerMapper {
   PointerMapper(const PointerMapper&) = delete;
 
   /**
-  * Empty the pointer list
-  */
+   * Empty the pointer list
+   */
   inline void clear() {
     m_freeList.clear();
     m_pointerMap.clear();
@@ -469,7 +472,7 @@ class PointerMapper {
   };
 
   /* Maps the pointer addresses to buffer and size pairs.
-    */
+   */
   pointerMap_t m_pointerMap;
 
   /* List of free nodes available for re-using
@@ -500,13 +503,15 @@ inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
  * \param size Size in bytes of the desired allocation
  * \throw cl::sycl::exception if error while creating the buffer
  */
-inline void* SYCLmalloc(size_t size, PointerMapper& pMap, const property_list &pList = {}) {
+inline void* SYCLmalloc(size_t size, PointerMapper& pMap,
+                        const property_list& pList = {}) {
   if (size == 0) {
     return nullptr;
   }
   // Create a generic buffer of the given size
   using sycl_buffer_t = cl::sycl::buffer<buffer_data_type_t, 1>;
-  auto thePointer = pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}, pList));
+  auto thePointer =
+      pMap.add_pointer(sycl_buffer_t(cl::sycl::range<1>{size}, pList));
   // Store the buffer on the global list
   return static_cast<void*>(thePointer);
 }
@@ -531,6 +536,7 @@ inline void SYCLfreeAll(PointerMapper& pMap) {
   pMap.clear();
 }
 
-}  // codeplay
-}  // sycl
-}  // cl
+}  // namespace codeplay
+}  // namespace sycl
+}  // namespace cl
+#endif  // VIRTUAL_PTR_HPP
