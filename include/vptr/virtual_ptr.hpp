@@ -30,8 +30,8 @@
  *
  **************************************************************************/
 
-#ifndef VIRTUAL_PTR_HPP
-#define VIRTUAL_PTR_HPP
+#ifndef CL_SYCL_SDK_CODEPLAY_VIRTUAL_PTR_HPP
+#define CL_SYCL_SDK_CODEPLAY_VIRTUAL_PTR_HPP
 
 #include <CL/sycl.hpp>
 
@@ -539,4 +539,4 @@ inline void SYCLfreeAll(PointerMapper& pMap) {
 }  // namespace codeplay
 }  // namespace sycl
 }  // namespace cl
-#endif  // VIRTUAL_PTR_HPP
+#endif  // CL_SYCL_SDK_CODEPLAY_VIRTUAL_PTR_HPP
