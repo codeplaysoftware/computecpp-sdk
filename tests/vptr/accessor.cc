@@ -120,4 +120,3 @@ TEST(accessor, two_buffers) {
     ASSERT_EQ(pMap.count(), 0u);
   }
 }
-

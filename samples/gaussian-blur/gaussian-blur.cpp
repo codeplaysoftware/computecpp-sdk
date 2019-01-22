@@ -159,8 +159,8 @@ int main(int argc, char* argv[]) {
         float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
         constexpr auto offset = 3 * stddev;
 
-        for (int x = - offset; x < offset; x++) {
-          for (int y = - offset; y < offset; y++) {
+        for (int x = -offset; x < offset; x++) {
+          for (int y = -offset; y < offset; y++) {
             auto inputCoords =
                 int2(itemID.get_global_id(0) + x, itemID.get_global_id(1) + y);
             newPixel += inPtr.read(inputCoords, smpl) *
@@ -168,7 +168,8 @@ int main(int argc, char* argv[]) {
           }
         }
 
-        auto outputCoords = int2(itemID.get_global_id(0), itemID.get_global_id(1));
+        auto outputCoords =
+            int2(itemID.get_global_id(0), itemID.get_global_id(1));
         newPixel.w() = 1.f;
         outPtr.write(outputCoords, newPixel);
       });

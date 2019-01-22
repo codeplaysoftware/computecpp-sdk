@@ -53,7 +53,6 @@ int main() {
     buffer<int, 1> buf(data, range<1>(nElems));
 
     myQueue.submit([&](handler& cgh) {
-
       auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
       /* We create an nd_range to describe the work space that the kernel is

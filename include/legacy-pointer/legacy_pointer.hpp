@@ -47,7 +47,7 @@ class PointerMapper {
  public:
   /* pointer information definitions
    */
-  static const unsigned long ADDRESS_BITS = sizeof(void *) * 8;
+  static const unsigned long ADDRESS_BITS = sizeof(void*) * 8;
   static const unsigned long BUFFER_ID_BITSIZE = 16u;
   static const unsigned long MAX_NUMBER_BUFFERS =
       (1UL << BUFFER_ID_BITSIZE) - 1;
@@ -65,14 +65,14 @@ class PointerMapper {
    */
   struct legacy_pointer_t {
     /* Type for the pointers
-    */
+     */
     base_ptr_t m_contents;
 
     /** Conversions from legacy_pointer_t to
      * the void * should just reinterpret_cast the integer
      * number
      */
-    operator void *() const { return reinterpret_cast<void *>(m_contents); }
+    operator void*() const { return reinterpret_cast<void*>(m_contents); }
 
     /**
      * Convert back to the integer number.
@@ -85,7 +85,7 @@ class PointerMapper {
      * already a legacy_pointer_t, but we have no way of
      * checking
      */
-    legacy_pointer_t(void *ptr)
+    legacy_pointer_t(void* ptr)
         : m_contents(reinterpret_cast<base_ptr_t>(ptr)){};
 
     /**
@@ -137,17 +137,16 @@ class PointerMapper {
   /**
    * Constructs the PointerMapper structure.
    */
-  PointerMapper()
-      : m_pointerMap{}{};
+  PointerMapper() : m_pointerMap{} {};
 
   /**
    * PointerMapper cannot be copied or moved
    */
-  PointerMapper(const PointerMapper &) = delete;
+  PointerMapper(const PointerMapper&) = delete;
 
   /**
-  *	empty the pointer list
-  */
+   *	empty the pointer list
+   */
   inline void clear() { m_pointerMap.clear(); }
 
   /* generate_id
@@ -162,7 +161,7 @@ class PointerMapper {
    * Adds a pointer to the map and returns the fake pointer id.
    * This will be the bufferId on the most significant bytes and 0 elsewhere.
    */
-  legacy_pointer_t add_pointer(buffer_t &&b) {
+  legacy_pointer_t add_pointer(buffer_t&& b) {
     auto nextNumber = m_pointerMap.size();
     buffer_id bId = generate_id();
     m_pointerMap.emplace(bId, b);
@@ -192,7 +191,7 @@ class PointerMapper {
   /* remove_pointer.
    * Removes the given pointer from the map.
    */
-  void remove_pointer(void *ptr) {
+  void remove_pointer(void* ptr) {
     buffer_id bId = this->get_buffer_id(ptr);
     m_pointerMap.erase(bId);
   }
@@ -206,7 +205,7 @@ class PointerMapper {
  private:
   /* Maps the buffer id numbers to the actual buffer
    * instances.
-    */
+   */
   std::unordered_map<buffer_id, buffer_t> m_pointerMap;
 };
 
@@ -215,7 +214,7 @@ class PointerMapper {
  * the generic malloc/free C interface without extra
  * parameters.
  */
-inline PointerMapper &getPointerMapper() {
+inline PointerMapper& getPointerMapper() {
   static PointerMapper thePointerMapper;
   return thePointerMapper;
 }
@@ -225,12 +224,12 @@ inline PointerMapper &getPointerMapper() {
  * Given a size, creates a byte-typed buffer and returns a
  * fake pointer to keep track of it.
  */
-inline void *malloc(size_t size) {
+inline void* malloc(size_t size) {
   // Create a generic buffer of the given size
   auto thePointer = getPointerMapper().add_pointer(
       PointerMapper::buffer_t(cl::sycl::range<1>{size}));
   // Store the buffer on the global list
-  return static_cast<void *>(thePointer);
+  return static_cast<void*>(thePointer);
 }
 
 /**
@@ -238,12 +237,16 @@ inline void *malloc(size_t size) {
  * Given a fake-pointer created with the legacy-pointer malloc,
  * destroys the buffer and remove it from the list.
  */
-inline void free(void *ptr) { getPointerMapper().remove_pointer(ptr); }
+inline void free(void* ptr) {
+  getPointerMapper().remove_pointer(ptr);
+}
 
 /**
  *clear the pointer list
  */
-inline void clear() { getPointerMapper().clear(); }
+inline void clear() {
+  getPointerMapper().clear();
+}
 
-}  // legacy
-}  // codeplay
+}  // namespace legacy
+}  // namespace codeplay

@@ -29,7 +29,6 @@
 
 #include <tuple>
 
-
 /* Given a function name and a one-line body, defines an auto-return-type
  * function with these parameters. */
 #define AUTO_FUNC(signature, body) \
@@ -54,7 +53,7 @@ using Concat = typename concat<S1, S2>::type;
 
 template <size_t N>
 struct gen_seq;
-}
+}  // namespace
 
 template <size_t N>
 using make_index_sequence = typename gen_seq<N>::type;
@@ -68,7 +67,7 @@ template <>
 struct gen_seq<0> : index_sequence<> {};
 template <>
 struct gen_seq<1> : index_sequence<0> {};
-}
+}  // namespace
 
 template <typename... Ts>
 using index_sequence_for = make_index_sequence<sizeof...(Ts)>;
@@ -86,7 +85,7 @@ void setvar_helper(tuple_t const& tpl, Arg& arg, Args&... args) {
   arg = std::get<K>(tpl);
   setvar_helper<K + 1>(tpl, args...);
 }
-}
+}  // namespace
 
 template <typename tuple_t, typename... Args>
 void setvar(tuple_t const& tpl, Args&... args) {
@@ -143,7 +142,7 @@ auto add_tuples_help(TupleA&& a, TupleB&& b, index_sequence<Ids...>)
   return std::make_tuple(std::get<Ids>(std::forward<TupleA>(a)) +
                          std::get<Ids>(std::forward<TupleB>(b))...);
 }
-}
+}  // namespace
 
 template <
     typename TupleA, typename TupleB,

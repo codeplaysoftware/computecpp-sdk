@@ -86,7 +86,6 @@ int main() {
     buffer<int, 1> buf(data, range<1>(size));
 
     myQueue.submit([&](handler& cgh) {
-
       auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
       /* We create an instance of the function object, passing it the

@@ -27,7 +27,6 @@
 
 #include "sim.hpp"
 
-
 template <>
 void GravSim<float>::step() {
   this->internal_step();

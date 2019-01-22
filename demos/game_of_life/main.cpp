@@ -38,7 +38,6 @@ namespace sycl = cl::sycl;
 
 #include "sim.hpp"
 
-
 class GameOfLifeApp
 #ifdef CODEPLAY_DRAW_LOGO
     : public CodeplayDemoApp

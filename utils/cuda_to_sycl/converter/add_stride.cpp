@@ -29,8 +29,8 @@
  *    Ruyman Reyes   Codeplay Software Ltd.
  *
  **************************************************************************/
-#include <iostream>
 #include <math.h>
+#include <iostream>
 
 // Header added by the source to source tool
 #include "compatibility_definitions.hpp"
