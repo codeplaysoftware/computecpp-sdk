@@ -34,7 +34,6 @@
 using namespace cl::sycl;
 
 int main() {
-
   queue testQueue;
   context testContext = testQueue.get_context();
 
@@ -47,9 +46,9 @@ int main() {
   auto builtinKernels = dev.get_info<info::device::built_in_kernels>();
 
   if (builtinKernels.size() == 0) {
-     std::cout << "[EXIT] No built-in kernels available for testing " 
-               << std::endl;
-      return 0;
+    std::cout << "[EXIT] No built-in kernels available for testing "
+              << std::endl;
+    return 0;
   }
 
   /*
@@ -61,12 +60,12 @@ int main() {
   const std::string kAortaTestKernelName{"copy_buffer"};
 
   auto kernelNamePos =
-    std::find(std::begin(builtinKernels), std::end(builtinKernels),
-        kAortaTestKernelName);
+      std::find(std::begin(builtinKernels), std::end(builtinKernels),
+                kAortaTestKernelName);
   if (kernelNamePos == std::end(builtinKernels)) {
-      std::cout << "[EXIT] Only ComputeAorta test built-in kernel is supported "
-                << " on this example " << std::endl;
-      return 0;
+    std::cout << "[EXIT] Only ComputeAorta test built-in kernel is supported "
+              << " on this example " << std::endl;
+    return 0;
   }
 
   const float goldenValue = 1234.0f;
@@ -81,7 +80,7 @@ int main() {
     program syclProgram(testContext);
 
     /*
-     * The "create_from_built_in_kernel" method from the 
+     * The "create_from_built_in_kernel" method from the
      * ComputeCpp program class uses the clCreateProgramWithBultinKernels
      * to load the OpenCL builtin kernels into the SYCL program object.
      */
@@ -93,7 +92,7 @@ int main() {
       auto accIn = buf.get_access<access::mode::read>(cgh);
       auto accOut = bufOut.get_access<access::mode::write>(cgh);
 
-      /* Using the OpenCL interoperability to set the kernel 
+      /* Using the OpenCL interoperability to set the kernel
        * arguments to match the accessors to the builtin kernel
        * arguments.
        */
@@ -101,7 +100,7 @@ int main() {
       cgh.set_arg(1, accOut);
 
       auto myRange = range<1>{1};
-      /* The kernel can be dispatched to the device using the 
+      /* The kernel can be dispatched to the device using the
        * parallel_for dispatch function.
        * In this case, since the range is 1, the single_task could
        * also have been used.
@@ -112,7 +111,7 @@ int main() {
 
   int retVal = 0;
   if (input != output) {
-    std::cout << " The result of the builtin kernel is not expected!" 
+    std::cout << " The result of the builtin kernel is not expected!"
               << std::endl;
     retVal = 1;
   }

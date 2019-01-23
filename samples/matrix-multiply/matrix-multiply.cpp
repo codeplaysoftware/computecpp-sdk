@@ -202,8 +202,8 @@ bool local_mxm(cl::sycl::queue& q, T* MA, T* MB, T* MC, int matSize) {
               // memory before continuing
               it.barrier(access::fence_space::local_space);
             }
-            auto elemIndex =
-                it.get_global_id(1) * it.get_global_range()[0] + it.get_global_id(0);
+            auto elemIndex = it.get_global_id(1) * it.get_global_range()[0] +
+                             it.get_global_id(0);
             // Each thread updates its position
             pC[elemIndex] = tmp;
           });

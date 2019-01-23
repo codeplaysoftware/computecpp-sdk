@@ -63,7 +63,7 @@ int main() {
   {
     default_selector selector;
     device d(selector);
-    if(d.is_host()) {
+    if (d.is_host()) {
       // This platform can't pass this test, it has no OpenCL devices
       return 0;
     }

@@ -34,7 +34,6 @@ namespace sycl = cl::sycl;
 
 #include <double_buf.hpp>
 
-
 enum class CellState : cl::sycl::cl_uint {
   LIVE = 1,
   DEAD = 0,
@@ -85,10 +84,10 @@ class GameOfLifeSim {
           }
         }) {
     // Initialize game grid to empty
-    auto acells = m_game.read()
-                      .cells.get_access<sycl::access::mode::discard_write>();
-    auto aimg = m_game.read()
-                    .img.get_access<sycl::access::mode::discard_write>();
+    auto acells =
+        m_game.read().cells.get_access<sycl::access::mode::discard_write>();
+    auto aimg =
+        m_game.read().img.get_access<sycl::access::mode::discard_write>();
     for (size_t y = 0; y < m_height; y++) {
       for (size_t x = 0; x < m_width; x++) {
         acells[sycl::id<2>(x, y)] = CellState::DEAD;
@@ -108,8 +107,7 @@ class GameOfLifeSim {
   /// Calls the provided function with image data
   template <typename Func>
   void with_img(Func&& func) {
-    auto acc = m_game.read()
-                   .img.get_access<sycl::access::mode::read>();
+    auto acc = m_game.read().img.get_access<sycl::access::mode::read>();
     func(acc.get_pointer());
   }
 
@@ -124,8 +122,7 @@ class GameOfLifeSim {
       // Have to write into read-buffer rather than write-buffer, since it is
       // the read-buffer
       // that will be read by the kernel.
-      auto acc = this->m_game.read()
-                     .cells.get_access<mode::write>();
+      auto acc = this->m_game.read().cells.get_access<mode::write>();
 
       while (!m_clicks.empty()) {
         auto press = m_clicks.back();

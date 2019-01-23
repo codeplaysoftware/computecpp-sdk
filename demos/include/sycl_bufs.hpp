@@ -33,7 +33,6 @@
 
 #include "tuple_utils.hpp"
 
-
 // Template function object which transforms buffers to device read accessors
 struct BufToReadAccFunc {
   template <typename In>
@@ -51,16 +50,17 @@ struct BufToDcdWriteAccFunc {
   template <typename In>
   AUTO_FUNC(operator()(In&& in),
             std::forward<In>(in)
-                .first.template get_access<cl::sycl::access::mode::discard_write>(
+                .first
+                .template get_access<cl::sycl::access::mode::discard_write>(
                     *std::forward<In>(in).second))
 };
 
 // Template function object which transforms buffers to host read accessors
 struct BufToHostReadAccFunc {
   template <typename In>
-  auto operator()(In&& in) -> decltype(
-      std::forward<In>(in)
-          .template get_access<cl::sycl::access::mode::read>()) {
+  auto operator()(In&& in)
+      -> decltype(std::forward<In>(in)
+                      .template get_access<cl::sycl::access::mode::read>()) {
     return std::forward<In>(in)
         .template get_access<cl::sycl::access::mode::read>();
   }

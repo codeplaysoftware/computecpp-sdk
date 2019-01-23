@@ -29,6 +29,7 @@
  **************************************************************************/
 #include "common.hpp"
 #include "tiled-conv.hpp"
+
 #include <SYCL/codeplay.hpp>
 
 int main() {

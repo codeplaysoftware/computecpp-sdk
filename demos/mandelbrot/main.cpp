@@ -40,7 +40,6 @@ namespace sycl = cl::sycl;
 
 #include "mandel.hpp"
 
-
 constexpr size_t WIDTH = 800;
 constexpr size_t HEIGHT = 600;
 

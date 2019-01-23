@@ -29,7 +29,6 @@
 
 #include "tuple_utils.hpp"
 
-
 /* Given a function `func` expressing a derivative of order N, a time step size
  * `step`,
  * and N+1 values `vals` with the initial conditions of y(N-1), .., y1, y, t, in
@@ -99,7 +98,7 @@ std::tuple<Args...> integrate_step_rk4(func_t func, time_t step, Args... vals) {
 template <typename time_t, typename func_t, typename... Args>
 std::tuple<Args...> integrate_step_euler(func_t func, time_t step, Args... vals
                                          // TODO kmem ptr for temporary storage
-                                         ) {
+) {
   static_assert(sizeof...(Args) >= 2,
                 "Do you want infinite loops in your compiler? Because this is "
                 "how you get infinite loops in your compiler.");

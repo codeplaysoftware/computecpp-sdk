@@ -29,7 +29,6 @@
 
 #include <utility>
 
-
 // Double-buffers any kind of value.
 template <typename T>
 class DoubleBuf {

@@ -51,8 +51,8 @@ T* get_host_ptr_as(AccessorT& acc) {
   return reinterpret_cast<T*>(acc.get_pointer());
 }
 
-}  // codeplay
-}  // sycl
-}  // cl
+}  // namespace codeplay
+}  // namespace sycl
+}  // namespace cl
 
 #endif  // CL_SYCL_POINTER_ALIAS

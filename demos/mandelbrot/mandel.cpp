@@ -27,7 +27,6 @@
 
 #include "mandel.hpp"
 
-
 template <>
 void MandelbrotCalculator<float>::calc() {
   this->internal_calc();

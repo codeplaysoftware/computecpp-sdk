@@ -129,8 +129,8 @@ struct ElemTypeHolder<k, Tuple<T, Ts...>> {
 #define TERMINATE_CONDS_TUPLE_GET(CVQual)                                      \
   template <size_t k, class... Ts>                                             \
   typename StaticIf<k == 0, CVQual                                             \
-                    typename ElemTypeHolder<0, Tuple<Ts...>>::type &>::type    \
-  get(CVQual Tuple<Ts...> &t) {                                                \
+                    typename ElemTypeHolder<0, Tuple<Ts...>>::type&>::type     \
+  get(CVQual Tuple<Ts...>& t) {                                                \
     static_assert(sizeof...(Ts) != 0,                                          \
                   "The requseted value is bigger than the size of the tuple"); \
     return t.head;                                                             \
@@ -146,12 +146,12 @@ TERMINATE_CONDS_TUPLE_GET()
 /// \tparam Ts... are the type of the elements  in the tuple.
 /// \param t is the tuple whose contents to extract
 /// \return  typename ElemTypeHolder<K, Tuple<Ts...> >::type &>::type
-#define RECURSIVE_TUPLE_GET(CVQual)                                            \
-  template <size_t k, class T, class... Ts>                                    \
-  typename StaticIf<k != 0, CVQual                                             \
-                    typename ElemTypeHolder<k, Tuple<T, Ts...>>::type &>::type \
-  get(CVQual Tuple<T, Ts...> &t) {                                             \
-    return utility::tuple::get<k - 1>(t.tail);                                 \
+#define RECURSIVE_TUPLE_GET(CVQual)                                           \
+  template <size_t k, class T, class... Ts>                                   \
+  typename StaticIf<k != 0, CVQual                                            \
+                    typename ElemTypeHolder<k, Tuple<T, Ts...>>::type&>::type \
+  get(CVQual Tuple<T, Ts...>& t) {                                            \
+    return utility::tuple::get<k - 1>(t.tail);                                \
   }
 RECURSIVE_TUPLE_GET(const)
 RECURSIVE_TUPLE_GET()
@@ -174,7 +174,7 @@ Tuple<Args...> make_tuple(Args... args) {
 /// \tparam Args the type of the arguments to construct the tuple from
 /// \return size_t
 template <typename... Args>
-static constexpr size_t size(Tuple<Args...> &) {
+static constexpr size_t size(Tuple<Args...>&) {
   return sizeof...(Args);
 }
 

@@ -32,7 +32,6 @@
 #include <CL/sycl.hpp>
 namespace sycl = cl::sycl;
 
-
 /* Computes an image representing the Mandelbrot set on the complex
  * plane at a given zoom level. */
 template <typename num_t>
@@ -177,12 +176,10 @@ class MandelbrotCalculator {
 
             // Linearly interpolate between the colors using the fractional part
             // of 'mandelness' to get smooth transitions
-            auto col =
-                col_a * (num_t(1) - fract) +
-                col_b * fract;
+            auto col = col_a * (num_t(1) - fract) + col_b * fract;
 
             // Store color in image
-            img_acc[item] = { col.x(), col.y(), col.z(), col.w() };
+            img_acc[item] = {col.x(), col.y(), col.z(), col.w()};
           });
     });
   }

@@ -81,7 +81,6 @@ int main() {
                    addressing_mode::clamp, filtering_mode::nearest);
 
       cgh.parallel_for<class mod_image>(range<2>(16, 16), [=](item<2> item) {
-
         /* SYCL vectors are used to specify the location of the image to
          * access. */
         auto coords = int2(item[0], item[1]);

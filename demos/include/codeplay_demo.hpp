@@ -33,7 +33,6 @@
 #include <cinder/app/RendererGl.h>
 #include <cinder/gl/gl.h>
 
-
 // Adds logo drawing functionality.
 class CodeplayDemoApp : public ci::app::App {
  protected:

@@ -25,8 +25,8 @@
  *
  **************************************************************************/
 
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 #include <cinder/CameraUi.h>
 #include <cinder/TriMesh.h>
@@ -42,447 +42,452 @@
 
 #include "sim.hpp"
 
-
 using num_t = float;
 constexpr num_t PI = num_t(3.141592653589793238462643383279502884197169399);
 
 class NBodyApp
 #ifdef CODEPLAY_DRAW_LOGO
-	: public CodeplayDemoApp
+    : public CodeplayDemoApp
 #else
-	: public ci::app::App
+    : public ci::app::App
 #endif
 {
-	// -- GUI --
-	// Distribution choice
-	enum {
-		UI_DISTRIB_CYLINDER = 0,
-		UI_DISTRIB_SPHERE = 1,
-	};
-	int32_t m_ui_distrib_id = UI_DISTRIB_CYLINDER;
+  // -- GUI --
+  // Distribution choice
+  enum {
+    UI_DISTRIB_CYLINDER = 0,
+    UI_DISTRIB_SPHERE = 1,
+  };
+  int32_t m_ui_distrib_id = UI_DISTRIB_CYLINDER;
 
-	// Distribution parameters
-	struct {
-		float min_radius = 0;
-		float max_radius = 25;
-		float min_angle_pis = 0;
-		float max_angle_pis = 2;
-		float min_height = -5;
-		float max_height = 5;
-		float lg_speed = 0;
-	} m_ui_distrib_cylinder_params;
+  // Distribution parameters
+  struct {
+    float min_radius = 0;
+    float max_radius = 25;
+    float min_angle_pis = 0;
+    float max_angle_pis = 2;
+    float min_height = -5;
+    float max_height = 5;
+    float lg_speed = 0;
+  } m_ui_distrib_cylinder_params;
 
-	struct {
-		float min_radius = 0;
-		float max_radius = 25;
-	} m_ui_distrib_sphere_params;
+  struct {
+    float min_radius = 0;
+    float max_radius = 25;
+  } m_ui_distrib_sphere_params;
 
-	int32_t m_ui_n_bodies = 128;
+  int32_t m_ui_n_bodies = 128;
 
-	// Whether 'initialize' was clicked
-	bool m_ui_initialize = false;
+  // Whether 'initialize' was clicked
+  bool m_ui_initialize = false;
 
-	// Whether the simulation is paused
-	bool m_ui_paused = true;
+  // Whether the simulation is paused
+  bool m_ui_paused = true;
 
-	// Whether the user has requested a single step to be computed
-	bool m_ui_step = false;
+  // Whether the user has requested a single step to be computed
+  bool m_ui_step = false;
 
-	// Force choice
-	enum {
-		UI_FORCE_GRAVITY = 0,
-		UI_FORCE_LJ = 1,
-		UI_FORCE_COULOMB = 2,
-	};
-	int32_t m_ui_force_id = UI_FORCE_GRAVITY;
+  // Force choice
+  enum {
+    UI_FORCE_GRAVITY = 0,
+    UI_FORCE_LJ = 1,
+    UI_FORCE_COULOMB = 2,
+  };
+  int32_t m_ui_force_id = UI_FORCE_GRAVITY;
 
-	// Force parameters
-	struct {
-		float lg_G = -3;
-		float lg_damping = -3;
-	} m_ui_force_gravity_params;
+  // Force parameters
+  struct {
+    float lg_G = -3;
+    float lg_damping = -3;
+  } m_ui_force_gravity_params;
 
-	struct {
-		float eps = 1;
-		float lg_sigma = -5;
-	} m_ui_force_lj_params;
+  struct {
+    float eps = 1;
+    float lg_sigma = -5;
+  } m_ui_force_lj_params;
 
-	std::array<char, 256> m_ui_force_coulomb_file;
+  std::array<char, 256> m_ui_force_coulomb_file;
 
-	// Integrator choice
-	enum {
-		UI_INTEGRATOR_EULER = 0,
-		UI_INTEGRATOR_RK4 = 1,
-	};
-	int32_t m_ui_integrator_id = UI_INTEGRATOR_EULER;
+  // Integrator choice
+  enum {
+    UI_INTEGRATOR_EULER = 0,
+    UI_INTEGRATOR_RK4 = 1,
+  };
+  int32_t m_ui_integrator_id = UI_INTEGRATOR_EULER;
 
-	// -- PROGRAM VARIABLES --
-	size_t m_n_bodies = m_ui_n_bodies;
+  // -- PROGRAM VARIABLES --
+  size_t m_n_bodies = m_ui_n_bodies;
 
-	// Cinder-GL variables
-	ci::CameraPersp m_cam;
-	ci::CameraUi m_cam_ui;
-	ci::gl::VboRef m_vbo;
-	ci::gl::Texture2dRef m_star_tex;
-	ci::gl::GlslProgRef m_shader;
-	ci::gl::BatchRef m_batch;
+  // Cinder-GL variables
+  ci::CameraPersp m_cam;
+  ci::CameraUi m_cam_ui;
+  ci::gl::VboRef m_vbo;
+  ci::gl::Texture2dRef m_star_tex;
+  ci::gl::GlslProgRef m_shader;
+  ci::gl::BatchRef m_batch;
 
-	// The simulation
-	GravSim<num_t> m_sim;
+  // The simulation
+  GravSim<num_t> m_sim;
 
-public:
-	NBodyApp() : m_sim(m_n_bodies, distrib_cylinder<num_t>{}) {}
+ public:
+  NBodyApp() : m_sim(m_n_bodies, distrib_cylinder<num_t>{}) {}
 
-	void setup() override {
-		// Create star texture and bind it to GL slot 0
-		m_star_tex = ci::gl::Texture2d::create(loadImage(loadAsset("star.png")));
-		m_star_tex->bind(0);
+  void setup() override {
+    // Create star texture and bind it to GL slot 0
+    m_star_tex = ci::gl::Texture2d::create(loadImage(loadAsset("star.png")));
+    m_star_tex->bind(0);
 
-		// Create shader to display the stars
-		m_shader = ci::gl::GlslProg::create(
-			ci::gl::GlslProg::Format()
-			.vertex(CI_GLSL(
-				        330, uniform mat4 ciModelView;
-				        uniform mat4 ciModelViewProjection; in vec3 ciPosition;
-				        in vec3 ciColor;
-				        out vec3 vColor;
+    // Create shader to display the stars
+    m_shader = ci::gl::GlslProg::create(
+        ci::gl::GlslProg::Format()
+            .vertex(CI_GLSL(
+                330, uniform mat4 ciModelView;
+                uniform mat4 ciModelViewProjection; in vec3 ciPosition;
+                in vec3 ciColor; out vec3 vColor;
 
-				        vec3 speedColors[9] = vec3[](
-					        vec3(0.0, 0.0, 0.2),
-					        vec3(0.0, 0.0, 0.4),
-					        vec3(0.0, 0.0, 0.8),
-					        vec3(0.0, 0.4, 0.4),
-					        vec3(0.0, 0.8, 0.8),
-					        vec3(0.0, 0.8, 0.4),
-					        vec3(0.4, 0.8, 0.0),
-					        vec3(0.8, 0.6, 0.0),
-					        vec3(0.8, 0.2, 0.0)
-				        );
+                vec3 speedColors[9] =
+                    vec3[](vec3(0.0, 0.0, 0.2), vec3(0.0, 0.0, 0.4),
+                           vec3(0.0, 0.0, 0.8), vec3(0.0, 0.4, 0.4),
+                           vec3(0.0, 0.8, 0.8), vec3(0.0, 0.8, 0.4),
+                           vec3(0.4, 0.8, 0.0), vec3(0.8, 0.6, 0.0),
+                           vec3(0.8, 0.2, 0.0));
 
-				        void main() {
-					        vec4 viewSpacePos = ciModelView * vec4(ciPosition, 1.0);
-					        // The further away a point is, the smaller its sprite
-					        float scale = log2(length(viewSpacePos));
-					        gl_PointSize = 10.0 / clamp(scale, 0.1, 1);
-					        gl_Position = ciModelViewProjection * vec4(ciPosition / 10.0, 1.0);
-					        float len = length(ciColor);
-					        int speed = int(ceil(len));
-					        vColor = mix(speedColors[max(0, speed)], speedColors[min(8, speed)], speed - len);
-				        }))
-			.fragment(CI_GLSL(
-				          330, uniform sampler2D star_tex; in vec3 vColor; out vec4 oColor; void main() {
-					          vec2 uv = vec2(gl_PointCoord.x, gl_PointCoord.y);
-					          vec4 tex = texture2D(star_tex, uv);
-					          oColor = vec4(vColor, tex.a);
-				          })));
+                void main() {
+                  vec4 viewSpacePos = ciModelView * vec4(ciPosition, 1.0);
+                  // The further away a point is, the smaller its sprite
+                  float scale = log2(length(viewSpacePos));
+                  gl_PointSize = 10.0 / clamp(scale, 0.1, 1);
+                  gl_Position =
+                      ciModelViewProjection * vec4(ciPosition / 10.0, 1.0);
+                  float len = length(ciColor);
+                  int speed = int(ceil(len));
+                  vColor = mix(speedColors[max(0, speed)],
+                               speedColors[min(8, speed)], speed - len);
+                }))
+            .fragment(CI_GLSL(330, uniform sampler2D star_tex; in vec3 vColor;
+                              out vec4 oColor; void main() {
+                                vec2 uv =
+                                    vec2(gl_PointCoord.x, gl_PointCoord.y);
+                                vec4 tex = texture2D(star_tex, uv);
+                                oColor = vec4(vColor, tex.a);
+                              })));
 
-		// Make the texture uniform use slot 0, which we bound the texture to
-		m_shader->uniform("star_tex", 0);
+    // Make the texture uniform use slot 0, which we bound the texture to
+    m_shader->uniform("star_tex", 0);
 
-		m_ui_force_coulomb_file.fill(0);
-		ui::initialize();
+    m_ui_force_coulomb_file.fill(0);
+    ui::initialize();
 
-		// Start with a perspective camera looking at the center
-		m_cam.lookAt(ci::vec3(200), ci::vec3(0));
-		m_cam.setPerspective(60.0f, getWindowAspectRatio(), 0.01f, 50000.0f);
-		m_cam_ui = ci::CameraUi(&m_cam, getWindow());
+    // Start with a perspective camera looking at the center
+    m_cam.lookAt(ci::vec3(200), ci::vec3(0));
+    m_cam.setPerspective(60.0f, getWindowAspectRatio(), 0.01f, 50000.0f);
+    m_cam_ui = ci::CameraUi(&m_cam, getWindow());
 
-		init_gl_bufs();
-	}
+    init_gl_bufs();
+  }
 
-	// Initializes the GL buffer for star position data with the current number of
-	// bodies
-	void init_gl_bufs() {
-		auto layout = ci::geom::BufferLayout();
-		layout.append(ci::geom::Attrib::POSITION, 3, sizeof(sycl::vec<num_t, 3>),
-		              0);
-		layout.append(ci::geom::Attrib::COLOR, 3, sizeof(sycl::vec<num_t, 3>), m_n_bodies * sizeof(sycl::vec<num_t, 3>));
+  // Initializes the GL buffer for star position data with the current number of
+  // bodies
+  void init_gl_bufs() {
+    auto layout = ci::geom::BufferLayout();
+    layout.append(ci::geom::Attrib::POSITION, 3, sizeof(sycl::vec<num_t, 3>),
+                  0);
+    layout.append(ci::geom::Attrib::COLOR, 3, sizeof(sycl::vec<num_t, 3>),
+                  m_n_bodies * sizeof(sycl::vec<num_t, 3>));
 
-		m_vbo = cinder::gl::Vbo::create(GL_ARRAY_BUFFER);
-		m_vbo->bufferData(m_n_bodies * sizeof(sycl::vec<num_t, 3>) * 2, nullptr,
-		                  GL_DYNAMIC_DRAW);
+    m_vbo = cinder::gl::Vbo::create(GL_ARRAY_BUFFER);
+    m_vbo->bufferData(m_n_bodies * sizeof(sycl::vec<num_t, 3>) * 2, nullptr,
+                      GL_DYNAMIC_DRAW);
 
-		auto mesh = cinder::gl::VboMesh::create(m_n_bodies, GL_POINTS,
-		                                        {std::make_pair(layout, m_vbo)});
-		m_batch = ci::gl::Batch::create(mesh, m_shader);
-	}
+    auto mesh = cinder::gl::VboMesh::create(m_n_bodies, GL_POINTS,
+                                            {std::make_pair(layout, m_vbo)});
+    m_batch = ci::gl::Batch::create(mesh, m_shader);
+  }
 
-	void update() override {
-		// Initialize simulation if requested in UI
-		if (m_ui_initialize) {
-			m_n_bodies = m_ui_n_bodies;
+  void update() override {
+    // Initialize simulation if requested in UI
+    if (m_ui_initialize) {
+      m_n_bodies = m_ui_n_bodies;
 
-			if (m_ui_force_id == UI_FORCE_COULOMB) {
-				printf("Loading Coulomb data from %s\n", m_ui_force_coulomb_file.data());
+      if (m_ui_force_id == UI_FORCE_COULOMB) {
+        printf("Loading Coulomb data from %s\n",
+               m_ui_force_coulomb_file.data());
 
-				// First line is the particle count
-				std::ifstream fin { m_ui_force_coulomb_file.data() };
-				fin >> m_n_bodies;
+        // First line is the particle count
+        std::ifstream fin{m_ui_force_coulomb_file.data()};
+        fin >> m_n_bodies;
 
-				// Following lines are particle data
-				std::vector<particle_data<num_t>> particles(m_n_bodies);
-				for (auto &particle : particles) {
-					num_t pos[3];
-					fin >> particle.charge >> pos[0] >> pos[1] >> pos[2];
-					particle.pos = { pos[0], pos[1], pos[2] };
-				}
+        // Following lines are particle data
+        std::vector<particle_data<num_t>> particles(m_n_bodies);
+        for (auto& particle : particles) {
+          num_t pos[3];
+          fin >> particle.charge >> pos[0] >> pos[1] >> pos[2];
+          particle.pos = {pos[0], pos[1], pos[2]};
+        }
 
-				m_sim = GravSim<num_t>(m_n_bodies, std::move(particles));
-			} else if (m_ui_distrib_id == UI_DISTRIB_CYLINDER) {
-				m_sim = GravSim<num_t>(
-					m_n_bodies,
-					distrib_cylinder<num_t>{
-						{m_ui_distrib_cylinder_params.min_radius,
-							m_ui_distrib_cylinder_params.max_radius},
-						{m_ui_distrib_cylinder_params.min_angle_pis * PI,
-							m_ui_distrib_cylinder_params.max_angle_pis * PI},
-						{m_ui_distrib_cylinder_params.min_height,
-							m_ui_distrib_cylinder_params.max_height},
-						sycl::pow(num_t(10), m_ui_distrib_cylinder_params.lg_speed)});
-			} else if (m_ui_distrib_id == UI_DISTRIB_SPHERE) {
-				m_sim = GravSim<num_t>(
-					m_n_bodies,
-					distrib_sphere<num_t>{{m_ui_distrib_sphere_params.min_radius,
-							m_ui_distrib_sphere_params.max_radius}});
-			}
+        m_sim = GravSim<num_t>(m_n_bodies, std::move(particles));
+      } else if (m_ui_distrib_id == UI_DISTRIB_CYLINDER) {
+        m_sim = GravSim<num_t>(
+            m_n_bodies,
+            distrib_cylinder<num_t>{
+                {m_ui_distrib_cylinder_params.min_radius,
+                 m_ui_distrib_cylinder_params.max_radius},
+                {m_ui_distrib_cylinder_params.min_angle_pis * PI,
+                 m_ui_distrib_cylinder_params.max_angle_pis * PI},
+                {m_ui_distrib_cylinder_params.min_height,
+                 m_ui_distrib_cylinder_params.max_height},
+                sycl::pow(num_t(10), m_ui_distrib_cylinder_params.lg_speed)});
+      } else if (m_ui_distrib_id == UI_DISTRIB_SPHERE) {
+        m_sim = GravSim<num_t>(
+            m_n_bodies,
+            distrib_sphere<num_t>{{m_ui_distrib_sphere_params.min_radius,
+                                   m_ui_distrib_sphere_params.max_radius}});
+      }
 
-			init_gl_bufs();
+      init_gl_bufs();
 
-			m_ui_initialize = false;
-		}
+      m_ui_initialize = false;
+    }
 
-		if (!m_ui_paused || m_ui_step) {
-			// Update force parameters
-			switch (m_ui_force_id) {
-			case UI_FORCE_GRAVITY: {
-				m_sim.set_grav_G(sycl::pow(num_t(10), m_ui_force_gravity_params.lg_G));
-				m_sim.set_grav_damping(
-					sycl::pow(num_t(10), m_ui_force_gravity_params.lg_damping));
-				m_sim.set_force_type(force_t::GRAVITY);
-			} break;
+    if (!m_ui_paused || m_ui_step) {
+      // Update force parameters
+      switch (m_ui_force_id) {
+        case UI_FORCE_GRAVITY: {
+          m_sim.set_grav_G(
+              sycl::pow(num_t(10), m_ui_force_gravity_params.lg_G));
+          m_sim.set_grav_damping(
+              sycl::pow(num_t(10), m_ui_force_gravity_params.lg_damping));
+          m_sim.set_force_type(force_t::GRAVITY);
+        } break;
 
-			case UI_FORCE_LJ: {
-				m_sim.set_lj_eps(m_ui_force_lj_params.eps);
-				m_sim.set_lj_sigma(sycl::pow(num_t(10), m_ui_force_lj_params.lg_sigma));
-				m_sim.set_force_type(force_t::LENNARD_JONES);
-			} break;
+        case UI_FORCE_LJ: {
+          m_sim.set_lj_eps(m_ui_force_lj_params.eps);
+          m_sim.set_lj_sigma(
+              sycl::pow(num_t(10), m_ui_force_lj_params.lg_sigma));
+          m_sim.set_force_type(force_t::LENNARD_JONES);
+        } break;
 
-			case UI_FORCE_COULOMB: {
-				m_sim.set_force_type(force_t::COULOMB);
-			} break;
+        case UI_FORCE_COULOMB: {
+          m_sim.set_force_type(force_t::COULOMB);
+        } break;
 
-			default:
-				throw "unreachable";
-			}
+        default:
+          throw "unreachable";
+      }
 
-			// Update integration method
-			switch (m_ui_integrator_id) {
-			case UI_INTEGRATOR_EULER: {
-				m_sim.set_integrator(integrator_t::EULER);
-			} break;
+      // Update integration method
+      switch (m_ui_integrator_id) {
+        case UI_INTEGRATOR_EULER: {
+          m_sim.set_integrator(integrator_t::EULER);
+        } break;
 
-			case UI_INTEGRATOR_RK4: {
-				m_sim.set_integrator(integrator_t::RK4);
-			} break;
+        case UI_INTEGRATOR_RK4: {
+          m_sim.set_integrator(integrator_t::RK4);
+        } break;
 
-			default:
-				throw "unreachable";
-			}
+        default:
+          throw "unreachable";
+      }
 
-			// Run simulation frame
-			if (m_ui_step) {
-				m_sim.sync_queue();
+      // Run simulation frame
+      if (m_ui_step) {
+        m_sim.sync_queue();
 
-				// Measure submission, execution and sync
-				auto tstart = std::chrono::high_resolution_clock::now();
-				m_sim.step();
-				m_sim.sync_queue();
-				auto tend = std::chrono::high_resolution_clock::now();
+        // Measure submission, execution and sync
+        auto tstart = std::chrono::high_resolution_clock::now();
+        m_sim.step();
+        m_sim.sync_queue();
+        auto tend = std::chrono::high_resolution_clock::now();
 
-				// Convert to seconds
-				auto diff = tend - tstart;
-				auto sdiff = std::chrono::duration_cast<std::chrono::duration<num_t, std::ratio<1, 1>>>(diff).count();
+        // Convert to seconds
+        auto diff = tend - tstart;
+        auto sdiff = std::chrono::duration_cast<
+                         std::chrono::duration<num_t, std::ratio<1, 1>>>(diff)
+                         .count();
 
-				std::cout << "Time taken for step: " << sdiff << "s" << std::endl;
-			} else {
-				m_sim.step();
-			}
+        std::cout << "Time taken for step: " << sdiff << "s" << std::endl;
+      } else {
+        m_sim.step();
+      }
 
-			// Make sure not to step until clicked again
-			m_ui_step = false;
-		}
+      // Make sure not to step until clicked again
+      m_ui_step = false;
+    }
+  }
 
-	}
+  void draw() override {
+    ci::gl::clear();
 
-	void draw() override {
-		ci::gl::clear();
+    // Disable depth to avoid black outlines
+    ci::gl::disableDepthRead();
+    ci::gl::disableDepthWrite();
 
-		// Disable depth to avoid black outlines
-		ci::gl::disableDepthRead();
-		ci::gl::disableDepthWrite();
+    // Colors add to a bright white with additive blending
+    ci::gl::enableAdditiveBlending();
 
-		// Colors add to a bright white with additive blending
-		ci::gl::enableAdditiveBlending();
+    // Set transform to the camera view
+    ci::gl::setMatrices(m_cam);
 
-		// Set transform to the camera view
-		ci::gl::setMatrices(m_cam);
+    // Update star buffer data with new positions
+    m_sim.with_mapped(
+        read_bufs_t<1>{}, [&](sycl::vec<num_t, 3> const* positions) {
+          m_vbo->bufferSubData(0, m_n_bodies * sizeof(sycl::vec<num_t, 3>),
+                               positions);
+        });
+    m_sim.with_mapped(
+        read_bufs_t<0>{}, [&](sycl::vec<num_t, 3> const* velocities) {
+          m_vbo->bufferSubData(m_n_bodies * sizeof(sycl::vec<num_t, 3>),
+                               m_n_bodies * sizeof(sycl::vec<num_t, 3>),
+                               velocities);
+        });
 
-		// Update star buffer data with new positions
-		m_sim.with_mapped(
-			read_bufs_t<1>{}, [&](sycl::vec<num_t, 3> const* positions) {
-				                  m_vbo->bufferSubData(0, m_n_bodies * sizeof(sycl::vec<num_t, 3>),
-				                                       positions);
-			                  });
-		m_sim.with_mapped(
-			read_bufs_t<0>{}, [&](sycl::vec<num_t, 3> const* velocities) {
-				                  m_vbo->bufferSubData(m_n_bodies * sizeof(sycl::vec<num_t, 3>), m_n_bodies * sizeof(sycl::vec<num_t, 3>),
-				                                       velocities);
-			                  });
+    // Enable setting point size in shader
+    ci::gl::enable(GL_VERTEX_PROGRAM_POINT_SIZE, true);
 
-		// Enable setting point size in shader
-		ci::gl::enable(GL_VERTEX_PROGRAM_POINT_SIZE, true);
+    // Draw bodies
+    m_batch->draw();
 
-		// Draw bodies
-		m_batch->draw();
-
-		// Draw coordinate system arrows
-		ci::gl::color(ci::Color(1.0f, 0.0f, 0.0f));
-		ci::gl::drawVector(ci::vec3(90, 0, 0), ci::vec3(100, 0, 0), 2, 2);
-		ci::gl::color(ci::Color(0.0f, 1.0f, 0.0f));
-		ci::gl::drawVector(ci::vec3(0, 90, 0), ci::vec3(0, 100, 0), 2, 2);
-		ci::gl::color(ci::Color(0.0f, 0.0f, 1.0f));
-		ci::gl::drawVector(ci::vec3(0, 0, 90), ci::vec3(0, 0, 100), 2, 2);
+    // Draw coordinate system arrows
+    ci::gl::color(ci::Color(1.0f, 0.0f, 0.0f));
+    ci::gl::drawVector(ci::vec3(90, 0, 0), ci::vec3(100, 0, 0), 2, 2);
+    ci::gl::color(ci::Color(0.0f, 1.0f, 0.0f));
+    ci::gl::drawVector(ci::vec3(0, 90, 0), ci::vec3(0, 100, 0), 2, 2);
+    ci::gl::color(ci::Color(0.0f, 0.0f, 1.0f));
+    ci::gl::drawVector(ci::vec3(0, 0, 90), ci::vec3(0, 0, 100), 2, 2);
 
 #ifdef CODEPLAY_DRAW_LOGO
-		draw_codeplay_logo();
+    draw_codeplay_logo();
 #endif
 
-		// Draw the UI
-		ui::Begin("Simulation Settings");
+    // Draw the UI
+    ui::Begin("Simulation Settings");
 
-		std::array<const char*, 3> forces = {{"Gravity", "Lennard-Jones", "Coulomb"}};
-		ui::ListBox("Type of force", &m_ui_force_id, forces.data(), forces.size(),
-		            forces.size());
+    std::array<const char*, 3> forces = {
+        {"Gravity", "Lennard-Jones", "Coulomb"}};
+    ui::ListBox("Type of force", &m_ui_force_id, forces.data(), forces.size(),
+                forces.size());
 
-		std::array<const char*, 2> integrators = {
-			{"Euler [fast, inaccurate]", "RK4 [slow, accurate]"}};
-		ui::ListBox("Integrator", &m_ui_integrator_id, integrators.data(),
-		            integrators.size(), integrators.size());
+    std::array<const char*, 2> integrators = {
+        {"Euler [fast, inaccurate]", "RK4 [slow, accurate]"}};
+    ui::ListBox("Integrator", &m_ui_integrator_id, integrators.data(),
+                integrators.size(), integrators.size());
 
-		switch (m_ui_force_id) {
-		case UI_FORCE_GRAVITY: {
-			if (ui::TreeNode("Gravity settings")) {
-				ui::SliderFloat("G constant [lg]", &m_ui_force_gravity_params.lg_G,
-				                -8, 2);
+    switch (m_ui_force_id) {
+      case UI_FORCE_GRAVITY: {
+        if (ui::TreeNode("Gravity settings")) {
+          ui::SliderFloat("G constant [lg]", &m_ui_force_gravity_params.lg_G,
+                          -8, 2);
 
-				ui::SliderFloat("Damping factor [lg]",
-				                &m_ui_force_gravity_params.lg_damping, -14, 0);
+          ui::SliderFloat("Damping factor [lg]",
+                          &m_ui_force_gravity_params.lg_damping, -14, 0);
 
-				ui::TreePop();
-			}
-		} break;
+          ui::TreePop();
+        }
+      } break;
 
-		case UI_FORCE_LJ: {
-			if (ui::TreeNode("Lennard-Jones settings")) {
-				ui::SliderFloat("Potential well depth", &m_ui_force_lj_params.eps,
-				                0.1, 10);
+      case UI_FORCE_LJ: {
+        if (ui::TreeNode("Lennard-Jones settings")) {
+          ui::SliderFloat("Potential well depth", &m_ui_force_lj_params.eps,
+                          0.1, 10);
 
-				ui::SliderFloat("Zero potential radius [lg]",
-				                &m_ui_force_lj_params.lg_sigma, -8, -2);
+          ui::SliderFloat("Zero potential radius [lg]",
+                          &m_ui_force_lj_params.lg_sigma, -8, -2);
 
-				ui::TreePop();
-			}
-		} break;
+          ui::TreePop();
+        }
+      } break;
 
-		case UI_FORCE_COULOMB: {
-			if (ui::TreeNode("Coulomb settings")) {
-                ui::Text("Data format:\nLine 1: particle count (N)\nLines 2-(N+1): <charge> <x> <y> <z>");
-				ui::InputText("Data input file", m_ui_force_coulomb_file.data(), m_ui_force_coulomb_file.size());
+      case UI_FORCE_COULOMB: {
+        if (ui::TreeNode("Coulomb settings")) {
+          ui::Text(
+              "Data format:\nLine 1: particle count (N)\nLines 2-(N+1): "
+              "<charge> <x> <y> <z>");
+          ui::InputText("Data input file", m_ui_force_coulomb_file.data(),
+                        m_ui_force_coulomb_file.size());
 
-				if (ui::Button("Initialize from file")) {
-					m_ui_initialize = true;
-				}
+          if (ui::Button("Initialize from file")) {
+            m_ui_initialize = true;
+          }
 
-				ui::TreePop();
-			}
+          ui::TreePop();
+        }
 
-		} break;
+      } break;
 
-		default:
-			throw std::runtime_error("unreachable");
-		}
+      default:
+        throw std::runtime_error("unreachable");
+    }
 
-		if (ui::TreeNode("Initialization")) {
-			std::array<const char*, 2> distribs = {{"Cylinder", "Sphere"}};
-			ui::ListBox("Distribution", &m_ui_distrib_id, distribs.data(),
-			            distribs.size(), distribs.size());
+    if (ui::TreeNode("Initialization")) {
+      std::array<const char*, 2> distribs = {{"Cylinder", "Sphere"}};
+      ui::ListBox("Distribution", &m_ui_distrib_id, distribs.data(),
+                  distribs.size(), distribs.size());
 
-			ui::SliderInt("Number of bodies", &m_ui_n_bodies, 128, 16384);
+      ui::SliderInt("Number of bodies", &m_ui_n_bodies, 128, 16384);
 
-			switch (m_ui_distrib_id) {
-			case UI_DISTRIB_CYLINDER: {
-				if (ui::TreeNode("Cylinder distribution settings")) {
-					ui::DragFloatRange2(
-						"Radius", &m_ui_distrib_cylinder_params.min_radius,
-						&m_ui_distrib_cylinder_params.max_radius, 0.1f, 0.0f, 100.0f);
+      switch (m_ui_distrib_id) {
+        case UI_DISTRIB_CYLINDER: {
+          if (ui::TreeNode("Cylinder distribution settings")) {
+            ui::DragFloatRange2(
+                "Radius", &m_ui_distrib_cylinder_params.min_radius,
+                &m_ui_distrib_cylinder_params.max_radius, 0.1f, 0.0f, 100.0f);
 
-					ui::DragFloatRange2(
-						"Angle [pi]", &m_ui_distrib_cylinder_params.min_angle_pis,
-						&m_ui_distrib_cylinder_params.max_angle_pis, 0.01f, 0.0f, 2.0f);
+            ui::DragFloatRange2(
+                "Angle [pi]", &m_ui_distrib_cylinder_params.min_angle_pis,
+                &m_ui_distrib_cylinder_params.max_angle_pis, 0.01f, 0.0f, 2.0f);
 
-					ui::DragFloatRange2("Height",
-					                    &m_ui_distrib_cylinder_params.min_height,
-					                    &m_ui_distrib_cylinder_params.max_height, 0.1f,
-					                    -100.0f, 100.0f);
+            ui::DragFloatRange2("Height",
+                                &m_ui_distrib_cylinder_params.min_height,
+                                &m_ui_distrib_cylinder_params.max_height, 0.1f,
+                                -100.0f, 100.0f);
 
-					ui::SliderFloat("Speed [lg]",
-					                &m_ui_distrib_cylinder_params.lg_speed, -3, 1);
+            ui::SliderFloat("Speed [lg]",
+                            &m_ui_distrib_cylinder_params.lg_speed, -3, 1);
 
-					if (ui::Button("Initialize from distribution")) {
-						m_ui_initialize = true;
-					}
+            if (ui::Button("Initialize from distribution")) {
+              m_ui_initialize = true;
+            }
 
-					ui::TreePop();
-				}
-			} break;
+            ui::TreePop();
+          }
+        } break;
 
-			case UI_DISTRIB_SPHERE: {
-				if (ui::TreeNode("Sphere distribution settings")) {
-					ui::DragFloatRange2(
-						"Radius", &m_ui_distrib_sphere_params.min_radius,
-						&m_ui_distrib_sphere_params.max_radius, 0.1f, 0.0f, 100.0f);
+        case UI_DISTRIB_SPHERE: {
+          if (ui::TreeNode("Sphere distribution settings")) {
+            ui::DragFloatRange2(
+                "Radius", &m_ui_distrib_sphere_params.min_radius,
+                &m_ui_distrib_sphere_params.max_radius, 0.1f, 0.0f, 100.0f);
 
-					if (ui::Button("Initialize from distribution")) {
-						m_ui_initialize = true;
-					}
+            if (ui::Button("Initialize from distribution")) {
+              m_ui_initialize = true;
+            }
 
-					ui::TreePop();
-				}
-			} break;
+            ui::TreePop();
+          }
+        } break;
 
-			default:
-				throw std::runtime_error("unreachable");
-			}
+        default:
+          throw std::runtime_error("unreachable");
+      }
 
+      ui::TreePop();
+    }
 
-			ui::TreePop();
-		}
+    if (m_ui_paused) {
+      if (ui::Button("Start")) {
+        m_ui_paused = false;
+      }
+      if (ui::Button("Step")) {
+        m_ui_step = true;
+      }
+    } else {
+      if (ui::Button("Pause")) {
+        m_ui_paused = true;
+      }
+    }
 
-		if (m_ui_paused) {
-			if (ui::Button("Start")) {
-				m_ui_paused = false;
-			}
-			if (ui::Button("Step")) {
-				m_ui_step = true;
-			}
-		} else {
-			if (ui::Button("Pause")) {
-				m_ui_paused = true;
-			}
-		}
-
-		ui::End();
-	}
+    ui::End();
+  }
 };
 
 CINDER_APP(NBodyApp, ci::app::RendererGl(ci::app::RendererGl::Options{}))
