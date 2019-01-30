@@ -113,7 +113,16 @@ int main(int argc, char* argv[]) {
   range<2> imgRange(inputWidth, inputHeight);
   /* This is the range representing the size of the blur. */
   range<2> gaussianRange(6 * stddev, 6 * stddev);
-  queue myQueue;
+  queue myQueue([](cl::sycl::exception_list l) {
+    for (auto ep : l) {
+      try {
+        std::rethrow_exception(ep);
+      } catch (const cl::sycl::exception& e) {
+        std::cout << "Async exception caught:\n" << e.what() << "\n";
+        throw;
+      }
+    }
+  });
 
   {
     buffer<float, 2> gaussian(gaussianRange);
@@ -174,6 +183,7 @@ int main(int argc, char* argv[]) {
         outPtr.write(outputCoords, newPixel);
       });
     });
+    myQueue.wait_and_throw();
   }
 
   /* Attempt to change the name from x.png or x.jpg to x-blurred.png and so
