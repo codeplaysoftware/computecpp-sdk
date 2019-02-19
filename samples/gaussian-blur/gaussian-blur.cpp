@@ -42,6 +42,9 @@ typedef unsigned int uint;
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+class fillGaussian;
+class GaussianKernel;
+
 using namespace cl::sycl;
 /* It is possible to refer to the enum name in these using statements, used
  * here to make referencing the members more convenient (for example). */
@@ -129,7 +132,7 @@ int main(int argc, char* argv[]) {
     myQueue.submit([&](cl::sycl::handler& cgh) {
       auto globalGaussian =
           gaussian.get_access<access::mode::discard_write>(cgh);
-      cgh.parallel_for<class fillGaussian>(
+      cgh.parallel_for<fillGaussian>(
           gaussianRange, [=](cl::sycl::item<2> i) {
             auto x = i[0] - 3 * stddev, y = i[1] - 3 * stddev;
             auto elem =
@@ -164,7 +167,7 @@ int main(int argc, char* argv[]) {
       sampler smpl(coordinate_normalization_mode::unnormalized,
                    addressing_mode::clamp, filtering_mode::nearest);
 
-      cgh.parallel_for<class GaussianKernel>(myRange, [=](nd_item<2> itemID) {
+      cgh.parallel_for<GaussianKernel>(myRange, [=](nd_item<2> itemID) {
         float4 newPixel = float4(0.0f, 0.0f, 0.0f, 0.0f);
         constexpr auto offset = 3 * stddev;
 

@@ -35,6 +35,10 @@ using namespace cl::sycl;
 const size_t N = 100;
 const size_t M = 150;
 
+class init_a;
+class init_b;
+class matrix_add;
+
 /* This sample creates three device-only arrays, then initialises them
  * on the device. After that, it adds two of them together, storing the
  * result in the third buffer. It then verifies the result of the kernel
@@ -54,7 +58,7 @@ int main() {
      * write access. */
     myQueue.submit([&](handler& cgh) {
       auto A = a.get_access<access::mode::write>(cgh);
-      cgh.parallel_for<class init_a>(range<2>{N, M}, [=](id<2> index) {
+      cgh.parallel_for<init_a>(range<2>{N, M}, [=](id<2> index) {
         A[index] = index[0] * 2 + index[1];
       });
     });
@@ -66,7 +70,7 @@ int main() {
      * to the device with no dependencies between each other. */
     myQueue.submit([&](handler& cgh) {
       auto B = b.get_access<access::mode::write>(cgh);
-      cgh.parallel_for<class init_b>(range<2>{N, M}, [=](id<2> index) {
+      cgh.parallel_for<init_b>(range<2>{N, M}, [=](id<2> index) {
         B[index] = index[0] * 2014 + index[1] * 42;
       });
     });
@@ -81,7 +85,7 @@ int main() {
       auto A = a.get_access<access::mode::read>(cgh);
       auto B = b.get_access<access::mode::read>(cgh);
       auto C = c.get_access<access::mode::write>(cgh);
-      cgh.parallel_for<class matrix_add>(
+      cgh.parallel_for<matrix_add>(
           range<2>{N, M}, [=](id<2> index) { C[index] = A[index] + B[index]; });
     });
 

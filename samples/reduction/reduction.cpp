@@ -33,6 +33,9 @@
 #include <random>
 #include <vector>
 
+template <typename T>
+class sycl_reduction;
+
 /* Implements a reduction of an STL vector using SYCL.
  * The input vector is not modified. */
 template <typename T>
@@ -89,7 +92,7 @@ T sycl_reduce(const std::vector<T>& v) {
 
           /* The parallel_for invocation chosen is the variant with an nd_item
            * parameter, since the code requires barriers for correctness. */
-          h.parallel_for<class sycl_reduction>(
+          h.parallel_for<sycl_reduction<T>>(
               r, [aI, scratch, local, length](cl::sycl::nd_item<1> id) {
                 size_t globalid = id.get_global_id(0);
                 size_t localid = id.get_local_id(0);

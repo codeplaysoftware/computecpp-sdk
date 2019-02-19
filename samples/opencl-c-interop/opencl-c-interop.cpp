@@ -33,6 +33,8 @@
 
 using namespace cl::sycl;
 
+class pow_comp;
+
 /* The source of the OpenCL C kernel is stored in C strings as usual.
  * It is convenient to use C++11 raw string literals to store OpenCL C
  * source inside your code, as everything between the delimiters (here

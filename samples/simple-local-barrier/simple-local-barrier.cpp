@@ -33,6 +33,8 @@
 
 using namespace cl::sycl;
 
+class example_kernel;
+
 /* This sample demonstrates the usage of a local_barrier inside
  * a command group. The program creates an array with 64 integers
  * and swaps each pair. */
@@ -56,7 +58,7 @@ int main() {
                access::target::local>
           tile(range<1>(2), cgh);
 
-      cgh.parallel_for<class example_kernel>(
+      cgh.parallel_for<example_kernel>(
           nd_range<1>(range<1>(size), range<1>(2)), [=](nd_item<1> item) {
             size_t idx = item.get_global_linear_id();
             int pos = idx & 1;

@@ -40,6 +40,8 @@
 
 using namespace cl::sycl;
 
+class mxm_kernel;
+
 void display_matrix(float* m, int matSize) {
   if (matSize > 16) {
     return;
@@ -162,7 +164,7 @@ bool local_mxm(cl::sycl::queue& q, T* MA, T* MB, T* MC, int matSize) {
       accessor<T, 1, access::mode::read_write, access::target::local> pBB(
           localRange, cgh);
 
-      cgh.parallel_for<class mxm_kernel>(
+      cgh.parallel_for<mxm_kernel>(
           nd_range<2>{range<2>(matSize, matSize),
                       range<2>(blockSize, blockSize)},
           [=](nd_item<2> it) {

@@ -44,6 +44,8 @@ using namespace cl::sycl;
  *
  *  The expected outcome of the sample code is to trigger the
  *  asynchronous handler a number of times. */
+class kernel0;
+
 int main() {
   bool error = false;
   unsigned nTimesCall = 0;
@@ -90,7 +92,7 @@ int main() {
   auto cgh_error = [&](handler& cgh) {
     auto myRange = nd_range<2>(range<2>(6, 2), range<2>(20000, 20000));
 
-    cgh.parallel_for<class kernel0>(myRange, [=](nd_item<2> itemID) {});
+    cgh.parallel_for<kernel0>(myRange, [=](nd_item<2> itemID) {});
   };
 
   default_selector mySelector;

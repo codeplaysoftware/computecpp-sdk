@@ -34,6 +34,8 @@ using namespace cl::sycl;
 /* We define the number of work items to enqueue. */
 const int nElems = 64u;
 
+class assign_elements;
+
 int main() {
   /* We define and initialize data to be copied to the device. */
   int data[nElems] = {0};
@@ -82,7 +84,7 @@ int main() {
        * we constructed above and the lambda that we constructed. Because
        * the kernel is a lambda we *must* specify a template parameter to
        * use as a name. */
-      cgh.parallel_for<class assign_elements>(myRange, myKernel);
+      cgh.parallel_for<assign_elements>(myRange, myKernel);
     });
 
   } catch (const exception& e) {

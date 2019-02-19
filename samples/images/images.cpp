@@ -31,6 +31,8 @@
 
 using namespace cl::sycl;
 
+class mod_image;
+
 int main() {
   /* We define and populate arrays for the input and output data. */
   float4 src[256];
@@ -80,7 +82,7 @@ int main() {
       sampler smpl(coordinate_normalization_mode::unnormalized,
                    addressing_mode::clamp, filtering_mode::nearest);
 
-      cgh.parallel_for<class mod_image>(range<2>(16, 16), [=](item<2> item) {
+      cgh.parallel_for<mod_image>(range<2>(16, 16), [=](item<2> item) {
         /* SYCL vectors are used to specify the location of the image to
          * access. */
         auto coords = int2(item[0], item[1]);
