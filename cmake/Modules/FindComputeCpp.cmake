@@ -230,6 +230,7 @@ function(__build_ir)
   # using the same source file will be generated with a different rule.
   set(baseSyclName ${CMAKE_CURRENT_BINARY_DIR}/${SDK_BUILD_IR_TARGET}_${sourceFileName})
   set(outputSyclFile ${baseSyclName}.sycl)
+  set(outputDeviceFile ${baseSyclName}.o)
   set(depFileName ${baseSyclName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
@@ -281,19 +282,20 @@ function(__build_ir)
   # CMake throws an error if it is unsupported by the generator (i. e. not ninja)
   if((NOT CMAKE_VERSION VERSION_LESS 3.7.0) AND
           CMAKE_GENERATOR MATCHES "Ninja")
-    file(RELATIVE_PATH relOutputFile ${CMAKE_BINARY_DIR} ${outputSyclFile})
+    file(RELATIVE_PATH relOutputFile ${CMAKE_BINARY_DIR} ${outputDeviceFile})
     set(generate_depfile -MMD -MF ${depFileName} -MT ${relOutputFile})
     set(enable_depfile DEPFILE ${depFileName})
   endif()
 
   # Add custom command for running compute++
   add_custom_command(
-    OUTPUT ${outputSyclFile}
+    OUTPUT ${outputDeviceFile} ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
             ${generated_include_directories}
             ${generated_compile_definitions}
-            -o ${outputSyclFile}
+            -sycl-ih ${outputSyclFile}
+            -o ${outputDeviceFile}
             -c ${SDK_BUILD_IR_SOURCE}
             ${generate_depfile}
     DEPENDS ${ir_dependencies}
@@ -308,7 +310,7 @@ function(__build_ir)
 
   if(NOT MSVC)
     # Add a custom target for the generated integration header
-    add_custom_target(${headerTargetName} DEPENDS ${outputSyclFile})
+    add_custom_target(${headerTargetName} DEPENDS ${outputDeviceFile} ${outputSyclFile})
     add_dependencies(${SDK_BUILD_IR_TARGET} ${headerTargetName})
   endif()
 
