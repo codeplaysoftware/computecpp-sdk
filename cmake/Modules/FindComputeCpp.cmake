@@ -200,7 +200,7 @@ define_property(
 ####################
 #
 #  Adds a custom target for running compute++ and adding a dependency for the
-#  resulting integration header.
+#  resulting integration header and kernel binary.
 #
 #  TARGET : Name of the target.
 #  SOURCE : Source file to be compiled.
