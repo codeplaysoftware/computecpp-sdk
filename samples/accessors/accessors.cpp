@@ -32,6 +32,8 @@
 
 using namespace cl::sycl;
 
+class multiply;
+
 int main() {
   /* We define the data to be passed to the device. */
   int data = 5;
@@ -59,7 +61,7 @@ int main() {
        * to access::mode::global) */
       auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
-      cgh.single_task<class multiply>([=]() {
+      cgh.single_task<multiply>([=]() {
         /* We use the subscript operator of the accessor constructed above to
          * read the value, multiply it by itself and then write it back to the
          * accessor again. */

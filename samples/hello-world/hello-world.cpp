@@ -29,6 +29,8 @@
 
 #include <iostream>
 
+class hello_world;
+
 /* This is a basic example to illustrate the main components of a SYCL
  * program. It executes a single-threaded kernel on the default device
  * (as determined by the SYCL implementation) whose only function is to
@@ -64,7 +66,7 @@ int main() {
      * lambda. The template parameter needs to be a unique name that
      * the runtime can use to identify the kernel (since lambdas have
      * no accessible name). */
-    cgh.single_task<class hello_world>([=]() {
+    cgh.single_task<hello_world>([=]() {
       /* We use the stream operator on the stream object we created above
        * to print to stdout from the device. */
       os << "Hello, World!\n";

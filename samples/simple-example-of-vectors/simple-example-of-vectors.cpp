@@ -31,6 +31,8 @@
 
 using namespace cl::sycl;
 
+class vector_example;
+
 int ret = 0;
 
 /* The purpose of this sample code is to demonstrate
@@ -76,14 +78,13 @@ int main() {
        *   vector
        *
        *   Vectors can also be scaled easily using operator overloads */
-      cgh.parallel_for<class vector_example>(
-          range<3>(4, 4, 4), [=](item<3> item) {
-            auto in = ptrA[item.get_linear_id()];
-            float w = in.w();
-            float3 swizzle = in.xyz();
-            float3 scaled = swizzle * w;
-            ptrB[item.get_linear_id()] = scaled;
-          });
+      cgh.parallel_for<vector_example>(range<3>(4, 4, 4), [=](item<3> item) {
+        auto in = ptrA[item.get_linear_id()];
+        float w = in.w();
+        float3 swizzle = in.xyz();
+        float3 scaled = swizzle * w;
+        ptrB[item.get_linear_id()] = scaled;
+      });
     });
   }
 

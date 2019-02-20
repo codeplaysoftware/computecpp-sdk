@@ -29,6 +29,8 @@
 
 using namespace cl::sycl;
 
+class PrivateMemory;
+
 /* Helper function to compute a globalID from a group and item in a
  * hierarchical parallel_for_work_item context */
 static inline cl::sycl::id<1> get_global_id(cl::sycl::group<1>& group,
@@ -90,8 +92,8 @@ int main() {
           ptr[globalID] = globalID;
         });
       };
-      cgh.parallel_for_work_group<class PrivateMemory>(groupRange, localRange,
-                                                       hierarchicalKernel);
+      cgh.parallel_for_work_group<PrivateMemory>(groupRange, localRange,
+                                                 hierarchicalKernel);
     });
   }
 

@@ -29,6 +29,8 @@
 
 using namespace cl::sycl;
 
+class example_kernel;
+
 /* Classes can inherit from the device_selector class to allow users
  * to dictate the criteria for choosing a device from those that might be
  * present on a system. This example looks for a device with SPIR support
@@ -74,7 +76,7 @@ int main() {
   myQueue.submit([&](handler& cgh) {
     auto ptr = buf.get_access<access::mode::read_write>(cgh);
 
-    cgh.parallel_for<class example_kernel>(dataRange, [=](item<1> item) {
+    cgh.parallel_for<example_kernel>(dataRange, [=](item<1> item) {
       size_t idx = item.get_linear_id();
       ptr[item.get_linear_id()] = static_cast<float>(idx);
     });

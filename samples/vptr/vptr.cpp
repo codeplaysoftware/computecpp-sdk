@@ -34,6 +34,10 @@
 
 using namespace cl::sycl;
 
+class init_a;
+class init_b;
+class matrix_add;
+
 const size_t N = 100;
 const size_t M = 150;
 
@@ -61,7 +65,7 @@ int main() {
     myQueue.submit([&](handler& cgh) {
       auto accA = pMap.get_access<access::mode::discard_write,
                                   access::target::global_buffer, float>(a, cgh);
-      cgh.parallel_for<class init_a>(
+      cgh.parallel_for<init_a>(
           range<1>{N * M}, [=](item<1> index) { accA[index] = index[0] * 2; });
     });
 
@@ -69,7 +73,7 @@ int main() {
     myQueue.submit([&](handler& cgh) {
       auto accB = pMap.get_access<access::mode::discard_write,
                                   access::target::global_buffer, float>(b, cgh);
-      cgh.parallel_for<class init_b>(range<1>{N * M}, [=](item<1> index) {
+      cgh.parallel_for<init_b>(range<1>{N * M}, [=](item<1> index) {
         accB[index] = index[0] * 2014;
       });
     });
@@ -82,7 +86,7 @@ int main() {
                                   access::target::global_buffer, float>(b, cgh);
       auto accC = pMap.get_access<access::mode::discard_write,
                                   access::target::global_buffer, float>(c, cgh);
-      cgh.parallel_for<class matrix_add>(range<1>{N * M}, [=](item<1> index) {
+      cgh.parallel_for<matrix_add>(range<1>{N * M}, [=](item<1> index) {
         accC[index] = accA[index] + accB[index];
       });
     });

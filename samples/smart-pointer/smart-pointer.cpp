@@ -32,6 +32,10 @@
 
 using namespace cl::sycl;
 
+class kernel0;
+class kernel1;
+class kernel2;
+
 int main() {
   const unsigned int nElems = 12;
   std::shared_ptr<int> p(new int[nElems]);
@@ -54,7 +58,7 @@ int main() {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
 
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
-        cgh.parallel_for<class kernel0>(myRange, [=](nd_item<2> itemID) {
+        cgh.parallel_for<kernel0>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] =
               (int) (itemID.get_global_linear_id());
         });
@@ -102,7 +106,7 @@ int main() {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
 
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
-        cgh.parallel_for<class kernel1>(myRange, [=](nd_item<2> itemID) {
+        cgh.parallel_for<kernel1>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] = itemID.get_global_linear_id();
         });
       });
@@ -134,7 +138,7 @@ int main() {
         auto myRange = nd_range<2>(range<2>(6, 2), range<2>(2, 1));
 
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
-        cgh.parallel_for<class kernel2>(myRange, [=](nd_item<2> itemID) {
+        cgh.parallel_for<kernel2>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] =
               (int) (itemID.get_global_linear_id());
         });
