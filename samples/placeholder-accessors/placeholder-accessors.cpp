@@ -36,41 +36,45 @@ class Worker;
 }
 
 class Doubler {
-  /* These are placeholder accessors a class members so they are visible to both
-   * perform_doubling and operator(). As placeholder accessors, they do not have
-   * a buffer associated with them yet. It will be attached during the command
-   * group */
-  accessor<const uint8_t, 1, access::mode::read, access::target::global_buffer,
-           access::placeholder::true_t>
-      in_accessor;
-  accessor<uint8_t, 1, access::mode::discard_write,
-           access::target::global_buffer, access::placeholder::true_t>
-      out_accessor;
-
  public:
   void perform_doubling(const uint8_t* input, uint8_t* output, size_t items) {
     try {
       queue myQueue;
 
+      /* These placeholder accessors
+       * do not have a buffer associated with them yet.
+       * It will be attached later.
+       */
+      accessor<const uint8_t, 1, access::mode::read,
+               access::target::global_buffer, access::placeholder::true_t>
+          in_accessor;
+      accessor<uint8_t, 1, access::mode::discard_write,
+               access::target::global_buffer, access::placeholder::true_t>
+          out_accessor;
+
       /* Create buffers from the provided pointers */
       auto in_buffer = buffer<const uint8_t, 1>(input, items);
       auto out_buffer = buffer<uint8_t, 1>(output, items);
 
+      /* Attach a memory object to existing placeholder accessors. */
+      in_accessor = decltype(in_accessor){in_buffer};
+      out_accessor = decltype(out_accessor){out_buffer};
+
       myQueue.submit([&](handler& cgh) {
-        /* Associate buffers with the accessors */
-        cgh.require(in_buffer, in_accessor);
-        cgh.require(out_buffer, out_accessor);
+        /* Register accessors */
+        cgh.require(in_accessor);
+        cgh.require(out_accessor);
 
         /* The accessors can now be used to access the buffers created above */
-        cgh.parallel_for<Worker>(range<1>(items), *this);
+        cgh.parallel_for<Worker>(range<1>(items), [=](item<1> item) {
+          out_accessor[item] = in_accessor[item] * 2;
+        });
       });
     } catch (const exception& e) {
       std::cerr << "SYCL exception caught: " << e.what() << "\n";
       throw;
     }
   }
-
-  void operator()(item<1> item) { out_accessor[item] = in_accessor[item] * 2; }
 };
 
 /* Input data, and array length */
