@@ -72,6 +72,6 @@ int main() {
       os << "Hello, World!\n";
     });
   });
-
+  myQueue.wait_and_throw();
   return 0;
 }
