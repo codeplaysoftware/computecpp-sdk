@@ -31,6 +31,7 @@
 
 cmake_minimum_required(VERSION 3.4.3)
 include(FindPackageHandleStandardArgs)
+include(ComputeCppIRMap)
 
 set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
@@ -230,7 +231,7 @@ function(__build_ir)
   # using the same source file will be generated with a different rule.
   set(baseSyclName ${CMAKE_CURRENT_BINARY_DIR}/${SDK_BUILD_IR_TARGET}_${sourceFileName})
   set(outputSyclFile ${baseSyclName}.sycl)
-  set(outputDeviceFile ${baseSyclName}.o)
+  set(outputDeviceFile ${baseSyclName}.${IR_MAP_${COMPUTECPP_BITCODE}})
   set(depFileName ${baseSyclName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")
