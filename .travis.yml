@@ -20,11 +20,10 @@ before_install:
   - bash .travis/before_install.sh
 
 install:
-  - if [ "$IMPL" = "COMPUTECPP" ]; then bash .travis/build_computecpp.sh; fi
+  - bash .travis/build_computecpp.sh
 
 script:
-    - mkdir build
-    - cd build
-    - cmake ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1
-    - make -j2
+    - mkdir build && cd build
+    - cmake -GNinja ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1
+    - ninja
     - COMPUTECPP_TARGET="host" ctest -V
