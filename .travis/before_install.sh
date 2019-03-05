@@ -1,5 +1,4 @@
 #!/bin/bash
 
 set -ev
-sudo apt-get update -q
-sudo apt-get install ocl-icd-libopencl1 ocl-icd-dev opencl-headers -y
+sudo apt-get install ocl-icd-opencl-dev opencl-headers -y
