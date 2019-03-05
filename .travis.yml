@@ -1,48 +1,30 @@
 language: cpp
 sudo: required
-dist: trusty
+dist: xenial
+
 os:
   - linux
-
-compiler:
-  - gcc
-  - clang
 
 branches:
   only:
     - master
 
 env:
-  - IMPL=COMPUTECPP
+  - CXX=g++-7 CC=gcc-7
+  - CXX=clang++-6.0 CC=clang-6.0
 
 matrix:
   fast_finish: true
-
-addons:
-  apt:
-    sources:
-      - llvm-toolchain-precise
-      - ubuntu-toolchain-r-test
-
-    packages:
-      - python-yaml
-      - gcc-5
-      - g++-5
-      - libc++-dev
 
 before_install:
   - bash .travis/before_install.sh
 
 install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-5" CC="gcc-5"; fi
   - if [ "$IMPL" = "COMPUTECPP" ]; then bash .travis/build_computecpp.sh; fi
 
 script:
-    ###########################
-    # Build ComputeCpp SDK
-    ###########################
     - mkdir build
     - cd build
-    - cmake ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1 -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"
+    - cmake ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1
     - make -j2
     - COMPUTECPP_TARGET="host" ctest -V
