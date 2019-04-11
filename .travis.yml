@@ -9,15 +9,16 @@ branches:
   only:
     - master
 
-env:
-  - CXX=g++-7 CC=gcc-7
-  - CXX=clang++-6.0 CC=clang-6.0
+compiler:
+  - gcc
+  - clang
 
 matrix:
   fast_finish: true
 
 before_install:
-  - bash .travis/before_install.sh
+  - sudo apt-get update -q
+  - sudo apt-get install ocl-icd-opencl-dev opencl-headers ninja-build -y
 
 install:
   - bash .travis/build_computecpp.sh
