@@ -78,7 +78,7 @@ void par_scan(sycl::buffer<T, 1>& in, sycl::queue& q) {
 
   // Check if there is enough global memory.
   size_t global_mem_size = dev.get_info<sycl::info::device::global_mem_size>();
-  if (in.get_count() > (global_mem_size / 2)) {
+  if (!dev.is_host() && in.get_count() > (global_mem_size / 2)) {
     throw std::runtime_error("Input size exceeds device global memory size.");
   }
 
