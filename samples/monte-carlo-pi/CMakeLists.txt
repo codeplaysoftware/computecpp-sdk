@@ -15,4 +15,3 @@ install(
   TARGETS ${SOURCE_NAME}
   RUNTIME DESTINATION bin
 )
-

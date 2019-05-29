@@ -21,10 +21,10 @@
  *  monte-carlo-pi.cpp
  *
  *  Description:
- *    Example of Monte-Carlo Pi approxamtion algorithm in SYCL.
- *    Also demonstrating how to query the maximum number of work-items in a
- *    work-group to check if a kernel can be executed with the initially set
- *    size.
+ *    Example of Monte-Carlo Pi approxamtion algorithm in SYCL. Also,
+ *    demonstrating how to query the maximum number of work-items in a
+ *    work-group to check if a kernel can be executed with the initially 
+ *    desired work-group size.
  *
  *
  **************************************************************************/
@@ -100,14 +100,55 @@ class monte_carlo_pi_kernel {
   write_local_accessor<sycl::cl_int> _local_results_ptr;
 };
 
+/* A helper to define a "perfect" work-group size dependant on selected device
+ * and kernel maximum allowance */
+size_t get_best_work_group_size(size_t work_group_size,
+                                const sycl::device& device,
+                                const sycl::kernel& kernel) {
+  if (device.is_host()) {
+    /* Maximum Work-Group Size on selected device.
+     * (See: sycl-1.2.1.pdf: p.180, table 4.85) */
+    const size_t max_device_work_group_size =
+        device.get_info<cl::sycl::info::device::max_work_group_size>();
+    /* Check if the desired work-group size will be allowed on the host device
+     * and query the maximum possible size on that device in case the desired
+     * one is more than the allowed */
+    if (work_group_size > max_device_work_group_size) {
+      std::cout << "Maximum work-group size for device "
+                << device.get_info<cl::sycl::info::device::name>() << ": "
+                << max_device_work_group_size << "\n\n";
+      return max_device_work_group_size;
+    }
+    return work_group_size;
+  } else {
+    /* Maximum Work-Group Size for given kernel on selected device.
+     * (See: sycl-1.2.1.pdf: p.180, table 4.85) */
+    const size_t max_kernel_work_group_size = kernel.get_work_group_info<
+        sycl::info::kernel_work_group::work_group_size>(device);
+    /* Verify if the kernel can be executed with our desired work-group size,
+     * and if it can't use the maximum allowed kernel work-group size for the
+     * selected device.
+     */
+    if (work_group_size > max_kernel_work_group_size) {
+      std::cout << "Maximum work-group size for "
+                << typeid(monte_carlo_pi_kernel).name() << " on device "
+                << device.get_info<sycl::info::device::name>() << ": "
+                << max_kernel_work_group_size << "\n\n";
+      return max_kernel_work_group_size;
+    }
+    // otherwise, the work-size will stay the originally desired one
+    return work_group_size;
+  }
+}
+
 int main() {
-  // 2 ^ 26 = 67108864, large enough and is not going to cause memory
-  // allocation problems in vector as opposed to going with the absoulte maximum
-  // power of 2 number of elements we could store in the vector
-  constexpr size_t iterations = 1 << 26;
+  /* 2 ^ 20 = 262144, large enough and is not going to cause memory allocation
+   * problems in vector as opposed to going with the absoulte maximum power of 2
+   * number of elements we could store in the vector. Moreover, it is safe to go
+   * with this size in case of running on host device */
+  constexpr size_t iterations = 1 << 20;
   // 2 ^ 10 = 1024, desirable number of work-items per work-group
   size_t work_group_size = 1 << 10;
-  // iterations / work_group_size = 65536 (work-groups to have)
 
   auto selector = sycl::default_selector{};
   std::cout << "SYCL runtime using " << typeid(selector).name() << "\n";
@@ -140,7 +181,7 @@ int main() {
       }
     });
 
-    // Display ...
+    // Get device and display information: name and platform
     auto device = queue.get_device();
     std::cout << "Selected " << device.get_info<sycl::info::device::name>()
               << " on platform "
@@ -150,29 +191,15 @@ int main() {
 
     // Define the SYCL program and kernel
     auto context = queue.get_context();
-    sycl::program pi_program(context);
+    sycl::program program(context);
     // Build the Monte-Carlo Pi kernel
-    pi_program.build_with_kernel_type<monte_carlo_pi_kernel>();
-    sycl::kernel pi_kernel = pi_program.get_kernel<monte_carlo_pi_kernel>();
+    program.build_with_kernel_type<monte_carlo_pi_kernel>();
+    sycl::kernel kernel = program.get_kernel<monte_carlo_pi_kernel>();
 
-    /* Maximum Work-Group Size for given kernel on given device.
-     * (See: sycl-1.2.1.pdf: p.180, table 4.85) */
-    const size_t max_kernel_work_group_size = pi_kernel.get_work_group_info<
-        sycl::info::kernel_work_group::work_group_size>(device);
-    /* Verify if the kernel can be executed with our desired work-group size,
-     * and if it can't use the maximum allowed kernel work-group size for the
-     * selected device.
-     */
-    if (work_group_size > max_kernel_work_group_size) {
-      std::cout << "The kernel cannot be executed with work-group size "
-                   "initially set to: "
-                << work_group_size << "\nContinuing execution with ...\n";
-      std::cout << "Maximum work-group size for "
-                << typeid(monte_carlo_pi_kernel).name() << " on device "
-                << device.get_info<sycl::info::device::name>() << ": "
-                << max_kernel_work_group_size << "\n\n";
-      work_group_size = max_kernel_work_group_size;
-    }
+    /* If the desired work-group size doesn't satisfy the device, define a
+     * perfect/max work-group depending on the selected device and kernel
+     * maximum size allowance */
+    work_group_size = get_best_work_group_size(work_group_size, device, kernel);
 
     /* Size of the total sums that are going to be stored in the results vector
      * is set based on the defined work-group size */
@@ -200,7 +227,7 @@ int main() {
 
       // Run the kernel
       cgh.parallel_for(
-          pi_program.get_kernel<monte_carlo_pi_kernel>(),
+          program.get_kernel<monte_carlo_pi_kernel>(),
           sycl::nd_range<1>(sycl::range<1>(global_size),
                             sycl::range<1>(local_size)),
           monte_carlo_pi_kernel(points_ptr, results_ptr, local_results_ptr));
@@ -226,4 +253,3 @@ int main() {
 
   return 0;
 }
-
