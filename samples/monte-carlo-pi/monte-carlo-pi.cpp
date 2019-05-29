@@ -107,7 +107,7 @@ size_t get_best_work_group_size(size_t work_group_size,
                                 const sycl::kernel& kernel) {
   if (device.is_host()) {
     /* Maximum Work-Group Size on selected device.
-     * (See: sycl-1.2.1.pdf: p.180, table 4.85) */
+     * (See: sycl-1.2.1.pdf: p.62, table 4.20) */
     const size_t max_device_work_group_size =
         device.get_info<cl::sycl::info::device::max_work_group_size>();
     /* Check if the desired work-group size will be allowed on the host device
