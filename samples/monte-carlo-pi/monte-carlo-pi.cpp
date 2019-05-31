@@ -23,7 +23,7 @@
  *  Description:
  *    Example of Monte-Carlo Pi approxamtion algorithm in SYCL. Also,
  *    demonstrating how to query the maximum number of work-items in a
- *    work-group to check if a kernel can be executed with the initially 
+ *    work-group to check if a kernel can be executed with the initially
  *    desired work-group size.
  *
  *
@@ -31,7 +31,7 @@
 
 #include <CL/sycl.hpp>
 
-// Standard C++ includes
+#include <algorithm>
 #include <iostream>
 #include <random>
 #include <typeinfo>
@@ -50,34 +50,34 @@ class monte_carlo_pi_kernel {
       sycl::accessor<dataT, 1, sycl::access::mode::write,
                      sycl::access::target::global_buffer>;
   template <typename dataT>
-  using write_local_accessor =
-      sycl::accessor<dataT, 1, sycl::access::mode::write,
+  using read_write_local_accessor =
+      sycl::accessor<dataT, 1, sycl::access::mode::read_write,
                      sycl::access::target::local>;
 
  public:
-  monte_carlo_pi_kernel(read_const_accessor<sycl::cl_float2> points_ptr,
-                        write_global_accessor<sycl::cl_int> results_ptr,
-                        write_local_accessor<sycl::cl_int> local_results_ptr)
-      : _points_ptr(points_ptr),
-        _results_ptr(results_ptr),
-        _local_results_ptr(local_results_ptr) {}
+  monte_carlo_pi_kernel(
+      read_const_accessor<sycl::cl_float2> points_ptr,
+      write_global_accessor<sycl::cl_int> results_ptr,
+      read_write_local_accessor<sycl::cl_int> local_results_ptr)
+      : m_points_ptr(points_ptr),
+        m_results_ptr(results_ptr),
+        m_local_results_ptr(local_results_ptr) {}
 
   void operator()(sycl::nd_item<1> item) {
-    // Get our id
-    auto global_id = item.get_global_id(0);
-    auto local_id = item.get_local_id(0);
-    auto local_dim = item.get_local_range(0);
-    auto group_id = item.get_group(0);
+    size_t global_id = item.get_global_id(0);
+    size_t local_id = item.get_local_id(0);
+    size_t local_dim = item.get_local_range(0);
+    size_t group_id = item.get_group(0);
 
     // Get the point to work on
-    sycl::float2 point = _points_ptr[global_id];
+    sycl::float2 point = m_points_ptr[global_id];
 
     // Calculate the length - built-in SYCL function
     // length: sqrt(point.x * point.x + point.y * point.y)
-    auto len = sycl::length(point);
+    float len = sycl::length(point);
 
     // Result is either 1 or 0
-    _local_results_ptr[local_id] = (len <= 1.0) ? 1 : 0;
+    m_local_results_ptr[local_id] = (len <= 1.0f) ? 1 : 0;
 
     // Wait for the entire work group to get here.
     item.barrier(sycl::access::fence_space::local_space);
@@ -85,19 +85,20 @@ class monte_carlo_pi_kernel {
     // If work item 0 in work group sum local values
     if (local_id == 0) {
       int sum = 0;
-      for (auto i = 0u; i < local_dim; ++i) {
-        if (_local_results_ptr[i] == 1)
+      for (size_t i = 0; i < local_dim; i++) {
+        if (m_local_results_ptr[i] == 1) {
           ++sum;
+        }
       }
       // Store the sum in global memory
-      _results_ptr[group_id] = sum;
+      m_results_ptr[group_id] = sum;
     }
   }
 
  private:
-  read_const_accessor<sycl::cl_float2> _points_ptr;
-  write_global_accessor<sycl::cl_int> _results_ptr;
-  write_local_accessor<sycl::cl_int> _local_results_ptr;
+  read_const_accessor<sycl::cl_float2> m_points_ptr;
+  write_global_accessor<sycl::cl_int> m_results_ptr;
+  read_write_local_accessor<sycl::cl_int> m_local_results_ptr;
 };
 
 /* A helper to define a "perfect" work-group size dependant on selected device
@@ -116,7 +117,7 @@ size_t get_best_work_group_size(size_t work_group_size,
     if (work_group_size > max_device_work_group_size) {
       std::cout << "Maximum work-group size for device "
                 << device.get_info<cl::sycl::info::device::name>() << ": "
-                << max_device_work_group_size << "\n\n";
+                << max_device_work_group_size << "\n";
       return max_device_work_group_size;
     }
     return work_group_size;
@@ -133,53 +134,45 @@ size_t get_best_work_group_size(size_t work_group_size,
       std::cout << "Maximum work-group size for "
                 << typeid(monte_carlo_pi_kernel).name() << " on device "
                 << device.get_info<sycl::info::device::name>() << ": "
-                << max_kernel_work_group_size << "\n\n";
+                << max_kernel_work_group_size << "\n";
       return max_kernel_work_group_size;
     }
-    // otherwise, the work-size will stay the originally desired one
+    // Otherwise, the work-size will stay the originally desired one
     return work_group_size;
   }
 }
 
 int main() {
-  /* 2 ^ 20 = 262144, large enough and is not going to cause memory allocation
-   * problems in vector as opposed to going with the absoulte maximum power of 2
-   * number of elements we could store in the vector. Moreover, it is safe to go
-   * with this size in case of running on host device */
   constexpr size_t iterations = 1 << 20;
-  // 2 ^ 10 = 1024, desirable number of work-items per work-group
   size_t work_group_size = 1 << 10;
-
-  auto selector = sycl::default_selector{};
-  std::cout << "SYCL runtime using " << typeid(selector).name() << "\n";
 
   // Container for the sum calculated per each work-group.
   std::vector<sycl::cl_int> results;
 
   // Generate random points on the host - one point for each thread
-  std::vector<sycl::float2> points;
-  points.reserve(iterations);
-  // fill up with random values
-  std::random_device r;
-  std::default_random_engine e(r());
-  std::uniform_real_distribution<float> dist;
-  for (size_t i = 0; i < iterations; i++) {
-    points[i].x() = dist(e);
-    points[i].y() = dist(e);
-  }
+  std::vector<sycl::float2> points(iterations);
+  // Fill up with (pseudo) random values in the range: [0, 1]
+  std::generate(points.begin(), points.end(), []() {
+    static std::random_device r;
+    static std::default_random_engine e(r());
+    static std::uniform_real_distribution<float> dist;
+    return sycl::float2(dist(e), dist(e));
+  });
 
   try {
-    // create a SYCL queue with a handler for asynchronous errors
-    sycl::queue queue(selector, [](sycl::exception_list errors) {
-      for (auto error : errors) {
-        try {
-          std::rethrow_exception(error);
-        } catch (sycl::exception e) {
-          std::cerr << "There is an exception in the kernel\n";
-          std::cerr << e.what() << "\n";
-        }
-      }
-    });
+    /* Create a SYCL queue with default device selector and a policy for
+     * handling asynchronous errors */
+    sycl::queue queue(
+        sycl::default_selector{}, [](const sycl::exception_list& errors) {
+          for (auto error : errors) {
+            try {
+              std::rethrow_exception(error);
+            } catch (const sycl::exception& e) {
+              std::cerr << "There is an exception in the kernel\n";
+              std::cerr << e.what() << "\n";
+            }
+          }
+        });
 
     // Get device and display information: name and platform
     auto device = queue.get_device();
@@ -192,9 +185,10 @@ int main() {
     // Define the SYCL program and kernel
     auto context = queue.get_context();
     sycl::program program(context);
-    // Build the Monte-Carlo Pi kernel
+    // Build the Monte-Carlo Pi program
     program.build_with_kernel_type<monte_carlo_pi_kernel>();
-    sycl::kernel kernel = program.get_kernel<monte_carlo_pi_kernel>();
+    // Get the kernel object for our program
+    auto kernel = program.get_kernel<monte_carlo_pi_kernel>();
 
     /* If the desired work-group size doesn't satisfy the device, define a
      * perfect/max work-group depending on the selected device and kernel
@@ -221,13 +215,13 @@ int main() {
                                 sycl::access::target::constant_buffer>(cgh);
       auto results_ptr = results_buf.get_access<sycl::access::mode::write>(cgh);
       // Allocate local memory on the device (to compute results)
-      sycl::accessor<sycl::cl_int, 1, sycl::access::mode::write,
+      sycl::accessor<sycl::cl_int, 1, sycl::access::mode::read_write,
                      sycl::access::target::local>
           local_results_ptr(sycl::range<1>(local_size), cgh);
 
       // Run the kernel
       cgh.parallel_for(
-          program.get_kernel<monte_carlo_pi_kernel>(),
+          kernel,
           sycl::nd_range<1>(sycl::range<1>(global_size),
                             sycl::range<1>(local_size)),
           monte_carlo_pi_kernel(points_ptr, results_ptr, local_results_ptr));
@@ -242,13 +236,12 @@ int main() {
 
   // Sum the results (auto copied back to host)
   int in_circle = 0;
-  for (auto& result : results) {
+  for (int& result : results) {
     in_circle += result;
   }
 
   // Calculate the final result of "pi"
-  float pi =
-      (4.0f * static_cast<float>(in_circle)) / static_cast<float>(iterations);
+  float pi = (4.0f * in_circle) / iterations;
   std::cout << "pi = " << pi << "\n";
 
   return 0;
