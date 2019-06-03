@@ -82,7 +82,7 @@ class monte_carlo_pi_kernel {
     // Wait for the entire work group to get here.
     item.barrier(sycl::access::fence_space::local_space);
 
-    // If work item 0 in work group sum local values
+    // If work item 0 in work group, sum local values
     if (local_id == 0) {
       int sum = 0;
       for (size_t i = 0; i < local_dim; i++) {
@@ -152,12 +152,11 @@ int main() {
   // Generate random points on the host - one point for each thread
   std::vector<sycl::float2> points(iterations);
   // Fill up with (pseudo) random values in the range: [0, 1]
-  std::generate(points.begin(), points.end(), []() {
-    static std::random_device r;
-    static std::default_random_engine e(r());
-    static std::uniform_real_distribution<float> dist;
-    return sycl::float2(dist(e), dist(e));
-  });
+  std::random_device r;
+  std::default_random_engine e(r());
+  std::uniform_real_distribution<float> dist;
+  std::generate(points.begin(), points.end(),
+                [&r, &e, &dist]() { return sycl::float2(dist(e), dist(e)); });
 
   try {
     /* Create a SYCL queue with default device selector and a policy for
@@ -227,10 +226,10 @@ int main() {
           monte_carlo_pi_kernel(points_ptr, results_ptr, local_results_ptr));
     });
   } catch (const sycl::exception& e) {
-    std::cerr << "SYCL exception caught: " << e.what();
+    std::cerr << "SYCL exception caught: " << e.what() << "\n";
     return 1;
   } catch (const std::exception& e) {
-    std::cerr << "C++ exception caught: " << e.what();
+    std::cerr << "C++ exception caught: " << e.what() << "\n";
     return 2;
   }
 
