@@ -32,6 +32,13 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCINDER_BOOST_USE_SYSTEM=1 ..
 make
 ```
 
+Then navigate to the `Cinder-ImGui` folder where you have to change the commit of the `imgui` dependency. \
+After `cd lib/imgui`, checkout the working commit as follows:
+
+```
+git checkout df8a9c49eb6d9f134411eeffa0441f561aec3967
+```
+
 ## Building
 After building Cinder, you can build the demos by running these commands in the
 `demos` folder of the SDK:
