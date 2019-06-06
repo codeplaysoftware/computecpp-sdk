@@ -32,11 +32,14 @@ cmake -DCMAKE_BUILD_TYPE=Release -DCINDER_BOOST_USE_SYSTEM=1 ..
 make
 ```
 
-Then navigate to the `Cinder-ImGui` folder where you have to change the commit of the `imgui` dependency. \
-After `cd lib/imgui`, checkout the working commit as follows:
+Then navigate to the Cinder-ImGui folder where you have to change the 
+commit of  the `imgui` dependency. This is required because imgui has 
+made changes with which Cinder-ImGui doesn't seem to have caught up yet.
+
+To checkout the working commit of imgui, after `cd lib/imgui`, execute:
 
 ```
-git checkout df8a9c49eb6d9f134411eeffa0441f561aec3967
+git checkout df8a9c4
 ```
 
 ## Building
