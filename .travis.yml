@@ -27,4 +27,4 @@ script:
     - mkdir build && cd build
     - cmake -GNinja ../ -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1
     - ninja
-    - COMPUTECPP_TARGET="host" ctest -V -E scan
+    - COMPUTECPP_TARGET="host" ctest -V
