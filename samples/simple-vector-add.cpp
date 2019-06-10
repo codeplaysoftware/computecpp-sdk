@@ -54,10 +54,10 @@ void simple_vadd(const std::array<T, N>& VA, const std::array<T, N>& VB,
     auto accessorB = bufferB.template get_access<sycl_read>(cgh);
     auto accessorC = bufferC.template get_access<sycl_write>(cgh);
 
-    cgh.parallel_for<class SimpleVadd<T>>(numOfItems,
-		[=](cl::sycl::id<1> wiID) {
+    auto kern = [=](cl::sycl::id<1> wiID) {
       accessorC[wiID] = accessorA[wiID] + accessorB[wiID];
-    });
+    };
+    cgh.parallel_for<class SimpleVadd<T>>(numOfItems, kern);
   });
 }
 
