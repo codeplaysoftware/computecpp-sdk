@@ -50,6 +50,8 @@ if(COMPUTECPP_SDK_USE_OPENMP)
 endif()
 add_test(NAME matrix-multiply_sycl COMMAND matrix-multiply 64 sycl)
 
+add_sample(TARGET ivka SOURCES ivka.cpp)
+target_include_directories(ivka PRIVATE ${PROJECT_SOURCE_DIR}/include)
 add_sample(TARGET monte-carlo-pi SOURCES monte-carlo-pi.cpp)
 add_sample(TARGET opencl-c-interop SOURCES opencl-c-interop.cpp)
 add_sample(TARGET parallel-for SOURCES parallel-for.cpp)
