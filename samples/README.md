@@ -15,6 +15,7 @@
 | `reduction.cpp`  | Example of a **reduction operation** in SYCL. It is a good demonstration of **memory management** in SYCL. |
 | `matrix-multiply.cpp`  | Example of **tiled matrix multiplication** in SYCL. It compares similarities/differences to an alternative OpenMP implementation.  |
 | `monte-carlo-pi.cpp`  | Example of Monte-Carlo Pi approximation algorithm in SYCL. It also demonstrates how to **query** the **maximum** number of **work-items** in a work-group to check if a kernel can be executed with the initially desired work-group size.  |
+| `simple-private-memory.cpp`  | Sample showing how to utilize private memory on a device using the hierarchical API in SYCL.  |
 | `images.cpp`  |  Sample code that demonstrates a **basic** use of SYCL **image** and **sampler** objects.  |
 | `gaussian-blur.cpp`  | This code implements a **Gaussian Blur filter**, blurring a JPG or PNG image from the command line. The original image file is not modified. Demonstrates a **more advanced** use of SYCL **image** and **sampler** objects. |
 | `reinterpret.cpp`  | Sample code showing the **reinterpret buffer** feature of SYCL 1.2.1. Buffers of **one type** can be **transformed** into buffers of **another type**, similar to C++'s reinterpret_cast feature. |
