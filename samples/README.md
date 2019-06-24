@@ -12,6 +12,8 @@
 | `simple-local-barrier.cpp`  | Sample code demonstrating a basic use of **local barriers** in device code.  |
 | `custom-device-selector.cpp`  | Sample code that shows how to write a **custom device selector** in SYCL.  |
 | `ivka.cpp`  | Sample showing the different kinds of things that are **valid** and **not valid** when used as **kernel arguments**.  |
+| `using-function-objects.cpp`  | Sample code that demonstrates how to use **function objects as kernels** in SYCL.  |
+| `template-function-object.cpp`  |  Sample code that demonstrates how to **template function objects as kernels** in SYCL.  |
 | `reduction.cpp`  | Example of a **reduction operation** in SYCL. It is a good demonstration of **memory management** in SYCL. |
 | `matrix-multiply.cpp`  | Example of **tiled matrix multiplication** in SYCL. It compares similarities/differences to an alternative OpenMP implementation.  |
 | `monte-carlo-pi.cpp`  | Example of Monte-Carlo Pi approximation algorithm in SYCL. It also demonstrates how to **query** the **maximum** number of **work-items** in a work-group to check if a kernel can be executed with the initially desired work-group size.  |
@@ -21,8 +23,6 @@
 | `reinterpret.cpp`  | Sample code showing the **reinterpret buffer** feature of SYCL 1.2.1. Buffers of **one type** can be **transformed** into buffers of **another type**, similar to C++'s reinterpret_cast feature. |
 | `scan.cpp`  | Example of a **parallel inclusive scan** with a given associative **binary operation** in SYCL.  |
 | `placeholder-accessors.cpp`  | Sample code that illustrates how to use placeholder accessors.  |
-| `using-function-objects.cpp`  | Sample code that demonstrates how to use **function objects as kernels** in SYCL.  |
-| `template-function-object.cpp`  |  Sample code that demonstrates how to **template function objects as kernels** in SYCL.  |
 | `builtin-kernel-example.cpp`  | Example of using an **OpenCL built-in kernel** with SYCL via the codeplay extension.  |
 | `use-onchip-memory.cpp`  | Sample code that demonstrates the use of the **use_onchip_memory extension** to SYCL provided by ComputeCpp.  |
 | `smart-pointer.cpp`  | Sample code that shows how SYCL can use custom allocators. <br> Dependency: `stack_allocator.hpp` |
