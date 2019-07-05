@@ -14,7 +14,7 @@ Sample File                       | Description
 `simple-local-barrier.cpp`        | Basic use of local barriers in device code.
 `using-function-objects.cpp`      | Using function objects as kernels in SYCL.
 `template-function-object.cpp`    | Using template function objects as kernels in SYCL.
-`reduction.cpp`                   | Example of a reduction operation in SYCL. A good of memory management in SYCL.
+`reduction.cpp`                   | Exemplifies good memory management in SYCL by implementing a reduction operation.
 `matrix-multiply.cpp`             | Tiled matrix multiplication - comparing SYCL and OpenMP implementations.
 `simple-private-memory.cpp`       | Utilizing private memory on a device using the hierarchical API in SYCL.
 `images.cpp`                      | Basic use of SYCL image and sampler objects.
@@ -34,6 +34,6 @@ Sample File                       | Description
 `placeholder-accessors.cpp`       | Example use of SYCL placeholder accessors.
 `builtin-kernel-example.cpp`      | Using an OpenCL built-in kernel with SYCL via the codeplay extension.
 `use-onchip-memory.cpp`           | Demonstrating the use_onchip_memory extension to SYCL provided by ComputeCpp.
-`smart-pointer.cpp`               | Custom Allocators in SYCL. Dependency: `stack_allocator.hpp`
-`vptr.cpp`                        | Using the Virtual Pointer interface in SYCL on matrix addition kernel. Dependency: `/include/vptr/virtual_ptr.hpp`
+`smart-pointer.cpp`               | Custom Allocators in SYCL.
+`vptr.cpp`                        | Using the Virtual Pointer interface in SYCL on matrix addition kernel.
 `opencl-c-interop.cpp`            | OpenCL/SYCL interopability example.
