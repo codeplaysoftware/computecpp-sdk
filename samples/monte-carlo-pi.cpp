@@ -21,7 +21,7 @@
  *  monte-carlo-pi.cpp
  *
  *  Description:
- *    Example of Monte-Carlo Pi approxamtion algorithm in SYCL. Also,
+ *    Example of Monte-Carlo Pi approximation algorithm in SYCL. Also,
  *    demonstrating how to query the maximum number of work-items in a
  *    work-group to check if a kernel can be executed with the initially
  *    desired work-group size.

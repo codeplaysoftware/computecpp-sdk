@@ -21,8 +21,8 @@
  *  example_vptr.cpp
  *
  *  Description:
- *  Sample code that demonstrates the use of the virtual pointer intrface in
- *SYCL on matrix addition.
+ *  Sample code that demonstrates the use of the virtual pointer interface in
+ *  SYCL on matrix addition.
  *
  **************************************************************************/
 
