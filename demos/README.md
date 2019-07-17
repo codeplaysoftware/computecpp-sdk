@@ -2,26 +2,22 @@
 This folder contains graphical demos using SYCL for acceleration.
 
 ## Dependencies
+---
 The demos use the following libraries:
-
-- [Cinder](https://www.libcinder.org/)
-- [ImGui](https://github.com/ocornut/imgui/)
-- [Cinder-ImGui](https://github.com/simongeilfus/Cinder-ImGui/)
+* [Cinder](https://www.libcinder.org/)
+* [ImGui](https://github.com/ocornut/imgui/)
+* [Cinder-ImGui](https://github.com/simongeilfus/Cinder-ImGui/)
 
 These have to be built manually. First, please install the dependencies outlined
 [here](https://libcinder.org/docs/branch/master/guides/linux-notes/ubuntu.html),
 as well as libboost-system-dev and libboost-filesystem-dev on Ubuntu or their
-equivalents on other distributions. Then, clone two repositories into a folder
-of your choosing:
-
-```shell
+equivalents on other distributions. Then, clone two repositories into a folder of your choosing:
+```bash
 git clone --recursive https://github.com/cinder/Cinder
 git clone --recursive https://github.com/simongeilfus/Cinder-ImGui
 ```
-
 In the Cinder folder (after `cd Cinder`), execute the following:
-
-```shell
+```bash
 rm -rf include/boost/
 rm -rf lib/linux/x86_64/libboost_*
 mkdir build
@@ -31,22 +27,19 @@ make
 cmake -DCMAKE_BUILD_TYPE=Release -DCINDER_BOOST_USE_SYSTEM=1 ..
 make
 ```
-
 Then navigate to the Cinder-ImGui folder where you have to change the 
 commit of  the `imgui` dependency. This is required because imgui has 
 made changes with which Cinder-ImGui doesn't seem to have caught up yet.
 
 To checkout the working commit of imgui, after `cd lib/imgui`, execute:
-
-```
+```bash
 git checkout df8a9c4
 ```
 
 ## Building
-After building Cinder, you can build the demos by running these commands in the
-`demos` folder of the SDK:
-
-```shell
+---
+After building Cinder, you can build the demos by running these commands in the `demos` folder of the SDK:
+```bash
 mkdir build
 cd build
 cmake -DComputeCpp_DIR=/path/to/ccp/package/ \
@@ -59,6 +52,7 @@ make
 ```
 
 ## Running
+---
 The demo binaries will be built in the `build/Debug` or `build/Release`
 folder and can be run from there.
 
