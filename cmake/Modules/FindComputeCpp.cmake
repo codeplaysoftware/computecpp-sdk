@@ -65,11 +65,13 @@ endif()
 
 find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
   HINTS ${computecpp_host_find_hint}
-  PATH_SUFFIXES bin)
+  PATH_SUFFIXES bin
+  NO_SYSTEM_ENVIRONMENT_PATH)
 
 find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
   HINTS ${computecpp_host_find_hint}
-  PATH_SUFFIXES bin)
+  PATH_SUFFIXES bin
+  NO_SYSTEM_ENVIRONMENT_PATH)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY
   NAMES ComputeCpp ComputeCpp_vs2015
