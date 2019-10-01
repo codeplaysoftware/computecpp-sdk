@@ -31,9 +31,9 @@
 
 #include <array>
 #include <iostream>
-
-constexpr cl::sycl::access::mode sycl_read = cl::sycl::access::mode::read;
-constexpr cl::sycl::access::mode sycl_write = cl::sycl::access::mode::write;
+#include <algorithm>
+#include <numeric>
+#include <functional>
 
 /* This is the class used to name the kernel for the runtime.
  * This must be done when the kernel is expressed as a lambda. */
@@ -43,11 +43,17 @@ class SimpleVadd;
 template <typename T, size_t N>
 void simple_vadd(const std::array<T, N>& VA, const std::array<T, N>& VB,
                  std::array<T, N>& VC) {
-  cl::sycl::queue deviceQueue;
-  cl::sycl::range<1> numOfItems{N};
-  cl::sycl::buffer<T, 1> bufferA(VA.data(), numOfItems);
-  cl::sycl::buffer<T, 1> bufferB(VB.data(), numOfItems);
-  cl::sycl::buffer<T, 1> bufferC(VC.data(), numOfItems);
+
+  using namespace cl::sycl;
+  
+  constexpr access::mode sycl_read = access::mode::read;
+  constexpr access::mode sycl_write = access::mode::write;
+
+  queue deviceQueue;
+  range<1> numOfItems{N};
+  buffer<T, 1> bufferA(VA.data(), numOfItems);
+  buffer<T, 1> bufferB(VB.data(), numOfItems);
+  buffer<T, 1> bufferC(VC.data(), numOfItems);
 
   deviceQueue.submit([&](cl::sycl::handler& cgh) {
     auto accessorA = bufferA.template get_access<sycl_read>(cgh);
@@ -62,25 +68,43 @@ void simple_vadd(const std::array<T, N>& VA, const std::array<T, N>& VB,
 }
 
 int main() {
-  const size_t array_size = 4;
-  std::array<cl::sycl::cl_int, array_size> A = {{1, 2, 3, 4}},
-                                           B = {{1, 2, 3, 4}}, C;
-  std::array<cl::sycl::cl_float, array_size> D = {{1.f, 2.f, 3.f, 4.f}},
-                                             E = {{1.f, 2.f, 3.f, 4.f}}, F;
-  simple_vadd(A, B, C);
-  simple_vadd(D, E, F);
-  for (unsigned int i = 0; i < array_size; i++) {
-    if (C[i] != A[i] + B[i]) {
-      std::cout << "The results are incorrect (element " << i << " is " << C[i]
-                << "!\n";
-      return 1;
-    }
-    if (F[i] != D[i] + E[i]) {
-      std::cout << "The results are incorrect (element " << i << " is " << F[i]
-                << "!\n";
-      return 1;
-    }
+  const size_t sample_size = 4;
+  using namespace cl::sycl;
+  
+  auto arrA = std::array<int, sample_size>();
+  auto arrB = std::array<int, sample_size>();
+  auto arrC = std::array<int, sample_size>();
+
+  using std::begin;
+  using std::end;
+  std::iota(begin(arrA), end(arrA), 0);
+  std::iota(begin(arrB), end(arrB), 0);  
+  
+  simple_vadd(arrA, arrB, arrC);
+  auto sumOfAandB = std::array<float, sample_size>();
+  std::transform(begin(arrA), end(arrA),
+                 begin(arrB),
+                 begin(sumOfAandB), std::plus<int>());
+  auto result = std::equal(begin(arrC), end(arrC), begin(sumOfAandB));
+  if(!result) {
+    std::cout << "The result of simple_vadd(arrA, arrB, arrC) is incorrect! \n";
   }
-  std::cout << "The results are correct!\n";
+
+  auto arrD = std::array<float, sample_size>();
+  auto arrE = std::array<float, sample_size>();
+  auto arrF = std::array<float, sample_size>();    
+  std::iota(begin(arrD), end(arrD), 0.0f);
+  std::iota(begin(arrE), end(arrE), 0.0f);  
+
+  simple_vadd(arrD, arrE, arrF);
+  auto sumOfDandE = std::array<float, sample_size>();
+  std::transform(begin(arrD), end(arrD),
+                 begin(arrE),
+                 begin(sumOfDandE), std::plus<float>());
+  result = std::equal(begin(arrF), end(arrF), begin(sumOfDandE));
+  if(!result) {
+    std::cout << "The result of simple_vadd(arrD, arrE, arrF) is incorrect! \n";
+  }
+  
   return 0;
 }
