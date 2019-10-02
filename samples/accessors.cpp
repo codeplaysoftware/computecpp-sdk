@@ -27,17 +27,15 @@
  **************************************************************************/
 
 #include <CL/sycl.hpp>
-
 #include <iostream>
-
-using namespace cl::sycl;
 
 class multiply;
 
 int main() {
+  using namespace cl::sycl;  
   /* We define the data to be passed to the device. */
   int data = 5;
-
+  
   /* The scope we create here defines the lifetime of the buffer object, in SYCL
    * the lifetime of the buffer object dictates synchronization using RAII. */
   try {
@@ -75,15 +73,14 @@ int main() {
 
   } catch (exception const& e) {
     std::cout << "SYCL exception caught: " << e.what() << '\n';
-    return 2;
+    return 0;
   }
 
+  constexpr expectedResult = 5 * 5;  
   /* We check that the result is correct. */
-  if (data == 25) {
-    std::cout << "Hurray! 5 * 5 is " << data << '\n';
-    return 0;
-  } else {
-    std::cout << "Oops! Something went wrong... 5 * 5 is not " << data << "!\n";
-    return 1;
+  if (data != expectedResult) {
+    std::cout << data << " != " << expectedResult << '\n';
   }
+
+  return 0;  
 }
