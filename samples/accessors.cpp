@@ -76,7 +76,7 @@ int main() {
     return 0;
   }
 
-  constexpr expectedResult = 5 * 5;  
+  constexpr int expectedResult = 5 * 5;  
   /* We check that the result is correct. */
   if (data != expectedResult) {
     std::cout << data << " != " << expectedResult << '\n';
