@@ -42,7 +42,7 @@ class matrix_add;
  *  - host accessor to gain access to the data. */
 int main() {
   using namespace cl::sycl;
-  
+
   constexpr size_t row = 100;
   constexpr size_t col = 150;
   constexpr size_t totalEntries = row * col;
@@ -65,42 +65,47 @@ int main() {
     myQueue.submit([&](handler& cgh) {
       constexpr size_t dim = 1;
 
-      auto accA = pMap.get_access<access::mode::discard_write,
-                                  access::target::global_buffer, float>(vptrA, cgh);
+      auto accA =
+          pMap.get_access<access::mode::discard_write,
+                          access::target::global_buffer, float>(vptrA, cgh);
       auto functor = [=](item<dim> index) {
-                       accA[index] = index[0] * multiplier1;
-                     };
+        accA[index] = index[0] * multiplier1;
+      };
 
       cgh.parallel_for<init_a>(range<dim>{totalEntries}, functor);
     });
 
-    //Similarly, this kernel will initialise the buffer pointed to by b.
+    // Similarly, this kernel will initialise the buffer pointed to by b.
     myQueue.submit([&](handler& cgh) {
-      constexpr size_t dim = 1;      
+      constexpr size_t dim = 1;
 
-      auto accB = pMap.get_access<access::mode::discard_write,
-                                  access::target::global_buffer, float>(vptrB, cgh);
+      auto accB =
+          pMap.get_access<access::mode::discard_write,
+                          access::target::global_buffer, float>(vptrB, cgh);
       auto functor = [=](item<dim> index) {
-                       accB[index] = index[0] * multiplier2;
-                     };
+        accB[index] = index[0] * multiplier2;
+      };
 
       cgh.parallel_for<init_b>(range<dim>{totalEntries}, functor);
-      });
+    });
 
-    //This kernel will perform the computation c = a + b.
+    // This kernel will perform the computation c = a + b.
     myQueue.submit([&](handler& cgh) {
-      auto accA = pMap.get_access<access::mode::read,
-                                  access::target::global_buffer, float>(vptrA, cgh);
-      auto accB = pMap.get_access<access::mode::read,
-                                  access::target::global_buffer, float>(vptrB, cgh);
-      auto accC = pMap.get_access<access::mode::discard_write,
-                                  access::target::global_buffer, float>(vptrC, cgh);
+      auto accA =
+          pMap.get_access<access::mode::read, access::target::global_buffer,
+                          float>(vptrA, cgh);
+      auto accB =
+          pMap.get_access<access::mode::read, access::target::global_buffer,
+                          float>(vptrB, cgh);
+      auto accC =
+          pMap.get_access<access::mode::discard_write,
+                          access::target::global_buffer, float>(vptrC, cgh);
 
       constexpr size_t dim = 1;
       auto functor = [=](item<dim> index) {
-                       accC[index] = accA[index] + accB[index];
-                     };
-      
+        accC[index] = accA[index] + accB[index];
+      };
+
       cgh.parallel_for<matrix_add>(range<dim>{totalEntries}, functor);
     });
 
@@ -109,17 +114,18 @@ int main() {
     // the virtual pointer.
     auto c_row = vptrC;
     for (size_t i = 0; i < row; ++i) {
-      /* Get the number of elements by which the row is offset. */
+      // Get the number of elements by which the row is offset.
       auto row_offset = pMap.get_element_offset<float>(c_row);
 
-      /* Create a host accessor to access the data on the host. */
+      // Create a host accessor to access the data on the host.
       auto accC = pMap.get_access<access::mode::read,
                                   access::target::host_buffer, float>(c_row);
       for (size_t j = 0; j < col; ++j) {
-        if (accC[row_offset + j] != (i * col + j) * (multiplier1 + multiplier2)) {
+        if (accC[row_offset + j] !=
+            (i * col + j) * (multiplier1 + multiplier2)) {
           std::cout << "Wrong value " << accC[row_offset + j] << " for element "
                     << i * col + j << '\n';
-          break;
+          return 1;
         }
         ++c_row;
       }
