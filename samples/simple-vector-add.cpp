@@ -29,11 +29,11 @@
  * can be. That said, it includes no error checking and is rather terse. */
 #include <CL/sycl.hpp>
 
-#include <array>
-#include <iostream>
 #include <algorithm>
-#include <numeric>
+#include <array>
 #include <functional>
+#include <iostream>
+#include <numeric>
 
 /* This is the class used to name the kernel for the runtime.
  * This must be done when the kernel is expressed as a lambda. */
@@ -43,9 +43,8 @@ class SimpleVadd;
 template <typename T, size_t N>
 void simple_vadd(const std::array<T, N>& VA, const std::array<T, N>& VB,
                  std::array<T, N>& VC) {
-
   using namespace cl::sycl;
-  
+
   constexpr access::mode sycl_read = access::mode::read;
   constexpr access::mode sycl_write = access::mode::write;
 
@@ -70,7 +69,7 @@ void simple_vadd(const std::array<T, N>& VA, const std::array<T, N>& VB,
 int main() {
   const size_t sample_size = 4;
   using namespace cl::sycl;
-  
+
   auto arrA = std::array<int, sample_size>();
   auto arrB = std::array<int, sample_size>();
   auto arrC = std::array<int, sample_size>();
@@ -78,33 +77,33 @@ int main() {
   using std::begin;
   using std::end;
   std::iota(begin(arrA), end(arrA), 0);
-  std::iota(begin(arrB), end(arrB), 0);  
-  
+  std::iota(begin(arrB), end(arrB), 0);
+
   simple_vadd(arrA, arrB, arrC);
   auto sumOfAandB = std::array<float, sample_size>();
-  std::transform(begin(arrA), end(arrA),
-                 begin(arrB),
-                 begin(sumOfAandB), std::plus<int>());
+  std::transform(begin(arrA), end(arrA), begin(arrB), begin(sumOfAandB),
+                 std::plus<int>());
   auto result = std::equal(begin(arrC), end(arrC), begin(sumOfAandB));
-  if(!result) {
+  if (!result) {
     std::cout << "The result of simple_vadd(arrA, arrB, arrC) is incorrect! \n";
+    return 1;
   }
 
   auto arrD = std::array<float, sample_size>();
   auto arrE = std::array<float, sample_size>();
-  auto arrF = std::array<float, sample_size>();    
+  auto arrF = std::array<float, sample_size>();
   std::iota(begin(arrD), end(arrD), 0.0f);
-  std::iota(begin(arrE), end(arrE), 0.0f);  
+  std::iota(begin(arrE), end(arrE), 0.0f);
 
   simple_vadd(arrD, arrE, arrF);
   auto sumOfDandE = std::array<float, sample_size>();
-  std::transform(begin(arrD), end(arrD),
-                 begin(arrE),
-                 begin(sumOfDandE), std::plus<float>());
+  std::transform(begin(arrD), end(arrD), begin(arrE), begin(sumOfDandE),
+                 std::plus<float>());
   result = std::equal(begin(arrF), end(arrF), begin(sumOfDandE));
-  if(!result) {
+  if (!result) {
     std::cout << "The result of simple_vadd(arrD, arrE, arrF) is incorrect! \n";
+    return 1;
   }
-  
+
   return 0;
 }
