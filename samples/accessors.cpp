@@ -27,14 +27,12 @@
  **************************************************************************/
 
 #include <CL/sycl.hpp>
-
 #include <iostream>
-
-using namespace cl::sycl;
 
 class multiply;
 
 int main() {
+  using namespace cl::sycl;
   /* We define the data to be passed to the device. */
   int data = 5;
 
@@ -75,15 +73,17 @@ int main() {
 
   } catch (exception const& e) {
     std::cout << "SYCL exception caught: " << e.what() << '\n';
-    return 2;
-  }
-
-  /* We check that the result is correct. */
-  if (data == 25) {
-    std::cout << "Hurray! 5 * 5 is " << data << '\n';
-    return 0;
-  } else {
-    std::cout << "Oops! Something went wrong... 5 * 5 is not " << data << "!\n";
     return 1;
   }
+
+  constexpr int expectedResult = 5 * 5;
+  /* We check that the result is correct. */
+  if (data != expectedResult) {
+    std::cout << "Oops! Something went wrong... " << expectedResult
+              << " != " << data << '\n';
+    return 1;
+  }
+
+  std::cout << "Hurray! 5 * 5 is " << data << '\n';
+  return 0;
 }
