@@ -4,7 +4,7 @@
 
 ## Introduction
 
-[![Build Status](https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master)](https://travis-ci.org/codeplaysoftware/computecpp-sdk)
+[![Build Status]](https://travis-ci.org/codeplaysoftware/computecpp-sdk)
 
 This is the README for the ComputeCpp SDK, a collection of sample code,
 utilities and tools for Codeplay’s ComputeCpp, an implementation of the
@@ -16,7 +16,8 @@ SYCL programming standard. You can find more information at:
 ## Contents
 
 * CMakeLists.txt
-  * The entry point for this project’s CMake configuration. Adds samples/ subdirectory and optionally adds tests.
+  * The entry point for this project’s CMake configuration. Adds `samples/`
+    subdirectory and optionally adds tests.
 * LICENSE.txt
   * The license this package is available under: Apache 2.0
 * README.md
@@ -120,6 +121,7 @@ integration or even a fix for something that is broken, please get in
 contact.
 
 [ComputeCpp™]: https://www.codeplay.com/public/uploaded/public/computecpp_logo.png
+[Build Status]: https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master
 [getting started guide]: https://developer.codeplay.com/computecppce/latest/getting-started-guide
 [Integration guide]: https://developer.codeplay.com/computecppce/latest/integration-guide
 [FAQ page]: https://developer.codeplay.com/computecppce/latest/faq
