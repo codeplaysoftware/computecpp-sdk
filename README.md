@@ -1,9 +1,9 @@
 # ComputeCpp SDK Readme
 
-![ComputeCpp™](https://www.codeplay.com/public/uploaded/public/computecpp_logo.png)
+![ComputeCpp™]
 
 ## Introduction
----
+
 [![Build Status](https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master)](https://travis-ci.org/codeplaysoftware/computecpp-sdk)
 
 This is the README for the ComputeCpp SDK, a collection of sample code,
@@ -14,12 +14,12 @@ SYCL programming standard. You can find more information at:
 * http://sycl.tech
 
 ## Contents
----
+
 * CMakeLists.txt
-  * The entry point for this project’s CMake configuration. Adds samples/      subdirectory and optionally adds tests.
+  * The entry point for this project’s CMake configuration. Adds samples/ subdirectory and optionally adds tests.
 * LICENSE.txt
   * The license this package is available under: Apache 2.0
-* README<span></span>.md
+* README.md
   * This readme file
 * cmake/
   * Contains a CMake module for integrating ComputeCpp with existing
@@ -44,7 +44,7 @@ SYCL programming standard. You can find more information at:
     projects as a starting point.
 
 ## Setup
----
+
 CMake files are provided as a build system for this software. CMake
 version 3.4.3 is required at minimum, though later versions of CMake
 should continue to be compatible.
@@ -77,47 +77,51 @@ are using to be set in the environment. They cannot be specificed in the
 CMake cache. The toolchains will identify which variables have not been
 set when used.
 
-On the Codeplay website there is a 
-[getting started guide](https://developer.codeplay.com/computecppce/latest/getting-started-guide) that serves as an introduction to SYCL and ComputeCpp.
-Additionally, there is an 
-[Integration guide](https://developer.codeplay.com/computecppce/latest/integration-guide) should you wish to add ComputeCpp to existing projects.
+On the Codeplay website there is a [getting started guide] that serves as an
+introduction to SYCL and ComputeCpp. Additionally, there is an
+[Integration guide] should you wish to add ComputeCpp to existing projects.
 
 ## Requirements
----
+
 * The samples should work with any SYCL 1.2.1 implementation, though
-    have only been tested with the ComputeCpp CE Public Beta
+  have only been tested with the ComputeCpp CE Public Beta
 * OpenCL 1.2-capable hardware and drivers with SPIR 1.2/SPIR-V support
 * C++11-compliant compiler and libstdc++ on GNU/Linux (GCC 4.9+, Clang 3.6+)
 * Microsoft Visual C++ 2015 on Windows
 * CMake 3.4.3 and newer
 
 ## Troubleshooting
----
+
 The sample code should compile without error on our supported platforms.
 If you run into trouble, or think you have found a bug, we have a JIRA
-Service Desk available through the [ComputeCpp
-website](https://computecpp.codeplay.com/).
+Service Desk available through the [ComputeCpp website].
 
 ## Frequently Asked Questions
----
-We have a [FAQ page](https://developer.codeplay.com/computecppce/latest/faq)
-available on our website.
+
+We have a [FAQ page] available on our website.
 
 ## Maintainers
----
-This SDK is maintained by [Codeplay Software Ltd.](https://www.codeplay.com/)
+
+This SDK is maintained by [Codeplay Software Ltd.]
 If you have any problems, please contact sycl@codeplay.com.
 
 ## Acknowledgements
----
+
 This repository contains code written by Sean Barrett (`stb_image` code
 in the Gaussian blur sample) and Charles Salvia (the stack allocator
 used in the smart pointer sample). Please see the files for their
 respective licences.
 
 ## Contributions
----
+
 This SDK is licensed under the Apache 2.0 license. Patches are very
 welcome! If you have an idea for a new sample, different build system
 integration or even a fix for something that is broken, please get in
 contact.
+
+[ComputeCpp™]: https://www.codeplay.com/public/uploaded/public/computecpp_logo.png
+[getting started guide]: https://developer.codeplay.com/computecppce/latest/getting-started-guide
+[Integration guide]: https://developer.codeplay.com/computecppce/latest/integration-guide
+[FAQ page]: https://developer.codeplay.com/computecppce/latest/faq
+[Codeplay Software Ltd.]: https://www.codeplay.com
+[ComputeCpp website]: https://computecpp.codeplay.com

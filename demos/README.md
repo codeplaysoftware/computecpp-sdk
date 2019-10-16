@@ -11,7 +11,8 @@ The demos use the following libraries:
 These have to be built manually. First, please install the dependencies outlined
 [here](https://libcinder.org/docs/branch/master/guides/linux-notes/ubuntu.html),
 as well as libboost-system-dev and libboost-filesystem-dev on Ubuntu or their
-equivalents on other distributions. Then, clone two repositories into a folder of your choosing:
+equivalents on other distributions. Then, clone two repositories into a folder
+of your choosing:
 ```bash
 git clone --recursive https://github.com/cinder/Cinder
 git clone --recursive https://github.com/simongeilfus/Cinder-ImGui

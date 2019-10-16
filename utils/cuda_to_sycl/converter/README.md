@@ -13,7 +13,7 @@ modifications for simple kernel use cases.
 2. For the host code, the CUDA API is manually replaced with the equivalent SYCL C++ code. 
 
 ## CUDA device kernel
----
+
 For example:
 ```cpp
 __global__ void vecAdd(double *a, double *b, double *c, int n) {
@@ -170,7 +170,7 @@ struct SharedMemory<double>
 ```
 
 ## Building and executing the examples:
----
+
 ### Build
 ```bash
 COMPUTECPP_DIR=/path/to/computecpp make

@@ -55,7 +55,7 @@ Note that multiple PointerMapper objects can be instantiated
 simultaneously.
 
 ## Usage
----
+
 Include the `virtual_ptr` header file in your program. Replace your
 device `malloc` and `free` operations with `codeplay::SYCLmalloc`
 and `codeplay::SYCLfree`. These functions are not thread-safe, even
@@ -72,16 +72,8 @@ See the tests for basic usage examples. Note that the pointer cannot be
 dereferenced on the host, but host accessors can be constructed once the
 buffer is retrieved.
 
-## Experimental ComputeCpp Integration
----
-
-ComputeCpp (since version 0.2.1) supports integration with the PointerMapper.
-This is an experimental feature at the moment, and not intended for
-general usage. To enable testing of the experimental interface support,
-pass `COMPUTECPP_INTERFACE=ON` to the CMake configuration line.
-
 ## Building tests
----
+
 ```bash
 mkdir build && cd build # in SDK root
 cmake .. -DComputeCpp_DIR=/path/to/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=ON

@@ -12,7 +12,7 @@ in SYCL code to retrieve the buffer it refers to, plus an offset into
 it.
 
 ## Usage
----
+
 Include the `legacy_pointer.hpp` file in your program, and replace your
 device malloc/free operations with `codeplay::legacy::malloc/free`
 
@@ -23,7 +23,7 @@ buffer id from the PointerMapper class, and then the method
 buffer.
 
 ## Building tests
----
+
 ```bash
 mkdir build && cd build # in SDK root
 cmake .. -DComputeCpp_DIR=/path/to/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=ON
