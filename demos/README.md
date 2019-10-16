@@ -39,7 +39,8 @@ git checkout df8a9c4
 
 ## Building
 ---
-After building Cinder, you can build the demos by running these commands in the `demos` folder of the SDK:
+After building Cinder, you can build the demos by running these commands
+in the `demos` folder of the SDK:
 ```bash
 mkdir build
 cd build
