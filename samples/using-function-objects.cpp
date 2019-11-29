@@ -59,7 +59,7 @@ class my_function_object {
    * requirements of the parallel_for API, i.e. with a single item parameter,
    * that defines the kernel. In this case the kernel simply assigns the random
    * number to the accessor. */
-  void operator()(item<1> item) { m_ptr[item.get_id()] = m_randumNum; }
+  void operator()(item<1> item) { m_ptr[item] = m_randumNum; }
 
   /* A member function to retrieve the random number. Function objects are still
    * standard C++ classes and can be used as normal on the host. */

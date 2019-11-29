@@ -174,14 +174,14 @@ int main(int argc, char* argv[]) {
         for (int x = -offset; x < offset; x++) {
           for (int y = -offset; y < offset; y++) {
             auto inputCoords =
-                int2(itemID.get_global_id(0) + x, itemID.get_global_id(1) + y);
+                int2(itemID.get_global_id(1) + x, itemID.get_global_id(0) + y);
             newPixel += inPtr.read(inputCoords, smpl) *
-                        globalGaussian[x + offset][y + offset];
+                        globalGaussian[y + offset][x + offset];
           }
         }
 
         auto outputCoords =
-            int2(itemID.get_global_id(0), itemID.get_global_id(1));
+            int2(itemID.get_global_id(1), itemID.get_global_id(0));
         newPixel.w() = 1.f;
         outPtr.write(outputCoords, newPixel);
       });
