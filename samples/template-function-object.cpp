@@ -60,7 +60,7 @@ class vector_add_kernel {
    * item rather than an nd_item. */
   void operator()(item<1> item) {
     /* This is a standard vector add, as seen in other samples. */
-    m_ptrC[item] = m_ptrA[item] + m_ptrB[item];
+    m_ptrC[item.get_id()] = m_ptrA[item.get_id()] + m_ptrB[item.get_id()];
   }
 
  private:
