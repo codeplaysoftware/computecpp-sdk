@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 
   /* This range represents the full amount of work to be done across the
    * image. We dispatch one thread per pixel. */
-  range<2> imgRange(inputWidth, inputHeight);
+  range<2> imgRange(inputHeight, inputWidth);
   /* This is the range representing the size of the blur. */
   range<2> gaussianRange(6 * stddev, 6 * stddev);
   queue myQueue([](cl::sycl::exception_list l) {
