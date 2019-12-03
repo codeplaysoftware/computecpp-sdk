@@ -53,10 +53,10 @@ int main() {
     auto acc = buf_int.get_access<cl::sycl::access::mode::read_write>(cgh);
     /* This kernel will multiply IEEE-754 32-bit floats by two, by manipulating
      * the exponent directly */
-    cgh.parallel_for<mult>(r, [=](cl::sycl::item<2> i) {
+    cgh.parallel_for<mult>(r, [=](cl::sycl::item<1> i) {
       constexpr auto mask = 0x7F800000u;
       constexpr auto mantissa_shift = 23u;
-      auto& elem = acc[i];
+      auto& elem = acc[i.get_id()];
       auto exponent = (elem & mask) >> mantissa_shift;
       exponent++;
       elem &= ~mask;
