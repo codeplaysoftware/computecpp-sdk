@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
 
   /* This range represents the full amount of work to be done across the
    * image. We dispatch one thread per pixel. */
-  range<2> imgRange(inputWidth, inputHeight);
+  range<2> imgRange(inputHeight, inputWidth);
   /* This is the range representing the size of the blur. */
   range<2> gaussianRange(6 * stddev, 6 * stddev);
   queue myQueue([](cl::sycl::exception_list l) {
@@ -174,14 +174,14 @@ int main(int argc, char* argv[]) {
         for (int x = -offset; x < offset; x++) {
           for (int y = -offset; y < offset; y++) {
             auto inputCoords =
-                int2(itemID.get_global_id(0) + x, itemID.get_global_id(1) + y);
+                int2(itemID.get_global_id(1) + x, itemID.get_global_id(0) + y);
             newPixel += inPtr.read(inputCoords, smpl) *
-                        globalGaussian[x + offset][y + offset];
+                        globalGaussian[y + offset][x + offset];
           }
         }
 
         auto outputCoords =
-            int2(itemID.get_global_id(0), itemID.get_global_id(1));
+            int2(itemID.get_global_id(1), itemID.get_global_id(0));
         newPixel.w() = 1.f;
         outPtr.write(outputCoords, newPixel);
       });

@@ -85,7 +85,7 @@ int main() {
       cgh.parallel_for<mod_image>(range<2>(16, 16), [=](item<2> item) {
         /* SYCL vectors are used to specify the location of the image to
          * access. */
-        auto coords = int2(item[0], item[1]);
+        auto coords = int2(item[1], item[0]);
 
         /* In SYCL images are read using a subscript operator to provide the
          * coordinates, with an optional function call operator preceding it

@@ -169,12 +169,12 @@ bool local_mxm(cl::sycl::queue& q, T* MA, T* MB, T* MC, int matSize) {
                       range<2>(blockSize, blockSize)},
           [=](nd_item<2> it) {
             // Current block
-            int blockX = it.get_group(0);
-            int blockY = it.get_group(1);
+            int blockX = it.get_group(1);
+            int blockY = it.get_group(0);
 
             // Current local item
-            int localX = it.get_local_id(0);
-            int localY = it.get_local_id(1);
+            int localX = it.get_local_id(1);
+            int localY = it.get_local_id(0);
 
             // Start in the A matrix
             int a_start = matSize * blockSize * blockY;
@@ -204,8 +204,8 @@ bool local_mxm(cl::sycl::queue& q, T* MA, T* MB, T* MC, int matSize) {
               // memory before continuing
               it.barrier(access::fence_space::local_space);
             }
-            auto elemIndex = it.get_global_id(1) * it.get_global_range()[0] +
-                             it.get_global_id(0);
+            auto elemIndex = it.get_global_id(0) * it.get_global_range()[1] +
+                             it.get_global_id(1);
             // Each thread updates its position
             pC[elemIndex] = tmp;
           });
