@@ -10,8 +10,8 @@ This is the README for the ComputeCpp SDK, a collection of sample code,
 utilities and tools for Codeplay’s ComputeCpp, an implementation of the
 SYCL programming standard. You can find more information at:
 
-* http://computecpp.codeplay.com
-* http://sycl.tech
+* The Codeplay developer website http://developer.codeplay.com
+* The SYCL community website http://sycl.tech
 
 ## Contents
 
@@ -43,6 +43,27 @@ SYCL programming standard. You can find more information at:
 * util/
   * Example utility code that we expect will be useful for other
     projects as a starting point.
+
+## Supported Platforms
+
+The master branch of computecpp-sdk is regularly tested with the "Supported" 
+hardware listed on [the ComputeCpp Supported Platforms page]. 
+
+## Pre-requisites
+
+* The samples should work with any SYCL 1.2.1 implementation, though
+  have only been tested with ComputeCpp.
+* OpenCL 1.2-capable hardware and drivers with SPIR 1.2/SPIR-V support
+* C++11-compliant compiler and libstdc++ on GNU/Linux (GCC 4.9+, Clang 3.6+)
+* Microsoft Visual C++ 2015/2017 on Windows
+* CMake 3.4.3 and newer
+
+## Getting Started
+
+On the Codeplay website there is a [step-by-step guide] to building and running 
+the ComputeCpp SDK samples. There is also a [guide to SYCL] that serves as an
+introduction to SYCL development. Additionally, there is an
+[Integration guide] should you wish to add ComputeCpp to existing projects.
 
 ## Setup
 
@@ -78,28 +99,11 @@ are using to be set in the environment. They cannot be specificed in the
 CMake cache. The toolchains will identify which variables have not been
 set when used.
 
-On the Codeplay website there is a [getting started guide] that serves as an
-introduction to SYCL and ComputeCpp. Additionally, there is an
-[Integration guide] should you wish to add ComputeCpp to existing projects.
-
-## Requirements
-
-* The samples should work with any SYCL 1.2.1 implementation, though
-  have only been tested with the ComputeCpp CE Public Beta
-* OpenCL 1.2-capable hardware and drivers with SPIR 1.2/SPIR-V support
-* C++11-compliant compiler and libstdc++ on GNU/Linux (GCC 4.9+, Clang 3.6+)
-* Microsoft Visual C++ 2015 on Windows
-* CMake 3.4.3 and newer
-
 ## Troubleshooting
 
 The sample code should compile without error on our supported platforms.
-If you run into trouble, or think you have found a bug, we have a JIRA
-Service Desk available through the [ComputeCpp website].
-
-## Frequently Asked Questions
-
-We have a [FAQ page] available on our website.
+If you run into trouble, or think you have found a bug, we have a support
+forum available through the [ComputeCpp website].
 
 ## Maintainers
 
@@ -122,8 +126,10 @@ contact.
 
 [ComputeCpp™]: https://www.codeplay.com/public/uploaded/public/computecpp_logo.png
 [Build Status]: https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master
-[getting started guide]: https://developer.codeplay.com/computecppce/latest/getting-started-guide
+[step-by-step guide]: https://developer.codeplay.com/computecppce/latest/getting-started-guide
 [Integration guide]: https://developer.codeplay.com/computecppce/latest/integration-guide
 [FAQ page]: https://developer.codeplay.com/computecppce/latest/faq
 [Codeplay Software Ltd.]: https://www.codeplay.com
-[ComputeCpp website]: https://computecpp.codeplay.com
+[ComputeCpp website]: https://developer.codeplay.com
+[guide to SYCL]: https://developer.codeplay.com/products/computecpp/ce/guides/sycl-guide
+[the ComputeCpp Supported Platforms page]: https://developer.codeplay.com/products/computecpp/ce/guides/platform-support
