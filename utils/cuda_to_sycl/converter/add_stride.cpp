@@ -63,8 +63,7 @@ struct ___CudaConverterFunctor___add
   __global__ void add(int n, float* x, float* y) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int stride = (blockDim.x * gridDim.x);
-    for (int i = index; i < n; i += stride)
-      y[i] = x[i] + y[i];
+    for (int i = index; i < n; i += stride) y[i] = x[i] + y[i];
   }
 };
 
@@ -83,8 +82,8 @@ int main(int argc, char* argv[]) {
   size_t bytes = n * sizeof(float);
 
   // Allocate memory for each vector on host
-  h_a = (float*) malloc(bytes);
-  h_b = (float*) malloc(bytes);
+  h_a = (float*)malloc(bytes);
+  h_b = (float*)malloc(bytes);
 
   // Added by the conversion tool
   cl::sycl::queue deviceQueue((cl::sycl::gpu_selector()));
@@ -134,8 +133,7 @@ int main(int argc, char* argv[]) {
   // Sum up vector c and print result divided by n, this should equal 1 within
   // error
   float maxError = 0.0f;
-  for (int i = 0; i < n; i++)
-    maxError = fmax(maxError, fabs(h_b[i] - 3.0f));
+  for (int i = 0; i < n; i++) maxError = fmax(maxError, fabs(h_b[i] - 3.0f));
   std::cout << "Max error: " << maxError << std::endl;
 
   // Release device memory

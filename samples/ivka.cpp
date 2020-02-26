@@ -39,16 +39,14 @@ struct Bar : Foo {
 };
 
 using namespace cl::sycl;
-using acc_mode = cl::sycl::access::mode;
-using acc_target = cl::sycl::access::target;
+using mode = cl::sycl::access::mode;
+using target = cl::sycl::access::target;
 
 static_assert(is_valid_kernel_arg<
-    accessor<int, 1, acc_mode::read, acc_target::global_buffer>>::value, "");
+    accessor<int, 1, mode::read, target::global_buffer>>::value, "");
 static_assert(is_valid_kernel_arg<double>::value, "");
 static_assert(is_valid_kernel_arg<Foo>::value, "");
 static_assert(!is_valid_kernel_arg<Bar>::value, "");
 static_assert(!is_valid_kernel_arg<cl::sycl::queue>::value, "");
 
-int main() {
-  return 0;
-}
+int main() { return 0; }

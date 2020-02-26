@@ -60,7 +60,7 @@ int main() {
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
         cgh.parallel_for<kernel0>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] =
-              (int) (itemID.get_global_linear_id());
+              itemID.get_global_linear_id();
         });
       });
       {
@@ -140,7 +140,7 @@ int main() {
         auto ptr = buf.get_access<access::mode::read_write>(cgh);
         cgh.parallel_for<kernel2>(myRange, [=](nd_item<2> itemID) {
           ptr[itemID.get_global_linear_id()] =
-              (int) (itemID.get_global_linear_id());
+              itemID.get_global_linear_id();
         });
       });
 

@@ -237,16 +237,12 @@ inline void* malloc(size_t size) {
  * Given a fake-pointer created with the legacy-pointer malloc,
  * destroys the buffer and remove it from the list.
  */
-inline void free(void* ptr) {
-  getPointerMapper().remove_pointer(ptr);
-}
+inline void free(void* ptr) { getPointerMapper().remove_pointer(ptr); }
 
 /**
  *clear the pointer list
  */
-inline void clear() {
-  getPointerMapper().clear();
-}
+inline void clear() { getPointerMapper().clear(); }
 
 }  // namespace legacy
 }  // namespace codeplay

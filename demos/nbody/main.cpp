@@ -164,13 +164,13 @@ class NBodyApp
                   vColor = mix(speedColors[max(0, speed)],
                                speedColors[min(8, speed)], speed - len);
                 }))
-            .fragment(CI_GLSL(330, uniform sampler2D star_tex; in vec3 vColor;
-                              out vec4 oColor; void main() {
-                                vec2 uv =
-                                    vec2(gl_PointCoord.x, gl_PointCoord.y);
-                                vec4 tex = texture2D(star_tex, uv);
-                                oColor = vec4(vColor, tex.a);
-                              })));
+            .fragment(CI_GLSL(
+                330, uniform sampler2D star_tex; in vec3 vColor;
+                out vec4 oColor; void main() {
+                  vec2 uv = vec2(gl_PointCoord.x, gl_PointCoord.y);
+                  vec4 tex = texture2D(star_tex, uv);
+                  oColor = vec4(vColor, tex.a);
+                })));
 
     // Make the texture uniform use slot 0, which we bound the texture to
     m_shader->uniform("star_tex", 0);

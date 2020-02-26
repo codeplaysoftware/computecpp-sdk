@@ -93,9 +93,9 @@ int main(int argc, char* argv[]) {
   size_t bytes = n * sizeof(double);
 
   // Allocate memory for each vector on host
-  h_a = (double*) malloc(bytes);
-  h_b = (double*) malloc(bytes);
-  h_c = (double*) malloc(bytes);
+  h_a = (double*)malloc(bytes);
+  h_b = (double*)malloc(bytes);
+  h_c = (double*)malloc(bytes);
 
   // Added by the conversion tool
   cl::sycl::queue deviceQueue((cl::sycl::gpu_selector()));
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
   blockSize = dim3(256, 1, 1);
 
   // Number of thread blocks in grid
-  gridSize = dim3((int) ceil((float) n / blockSize.x), 1, 1);
+  gridSize = dim3((int)ceil((float)n / blockSize.x), 1, 1);
   // Shared memory size in byte for SYCL
   // Original :  shared memory size in byte
   int sharedmem = blockSize.x * sizeof(int);
@@ -156,8 +156,7 @@ int main(int argc, char* argv[]) {
   // Sum up vector c and print result divided by n, this should equal 1 within
   // error
   double sum = 0;
-  for (i = 0; i < n; i++)
-    sum += h_c[i];
+  for (i = 0; i < n; i++) sum += h_c[i];
   printf("final result: %f\n", sum / n);
 
   // Release device memory

@@ -106,9 +106,7 @@ inline int prevPowerOfTwo(int x) {
  * If there are bits sets to one after AND with the
  * previous number, then it is not a power of two.
  */
-inline bool isPowerOfTwo(int x) {
-  return (x & (x - 1)) == 0;
-}
+inline bool isPowerOfTwo(int x) { return (x & (x - 1)) == 0; }
 
 /* Function template that performs the matrix * matrix operation. (It is
  * a template because only some OpenCL devices support double-precision
