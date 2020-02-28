@@ -73,7 +73,7 @@ int main() {
       /* Samplers are used to specify the way in which the coordinates map to
        * a particular pixel in the image. Here, we specify that the sampler
        * will not use normalised co-ordinates, that addresses outside the
-       * image bounds should clamp to the edge of the image and that no
+       * image bounds should clamp to the edge of the image and that
        * floating-point co-ordinates should take the nearest pixel's data,
        * rather that applying (for example) a linear filter.
        * SYCL's images and samplers map very well to the underlying OpenCL
@@ -87,9 +87,8 @@ int main() {
          * access. */
         auto coords = int2(item[1], item[0]);
 
-        /* In SYCL images are read using a subscript operator to provide the
-         * coordinates, with an optional function call operator preceding it
-         * to provide a sampler. */
+        /* In SYCL images are read using coordinates and a sampler
+         * which can interpolate image data between pixels. */
         float4 pixel = inPtr.read(coords, smpl);
 
         pixel *= 10.0f;
