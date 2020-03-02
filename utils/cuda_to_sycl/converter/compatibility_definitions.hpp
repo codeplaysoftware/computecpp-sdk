@@ -82,7 +82,7 @@ struct copy_t<T1, T2, cl::sycl::codeplay::Kind::HostToDevice> {
                                               T2* dst, bool async) {
     auto event = dQ.submit([&](cl::sycl::handler& h) {
       auto acc_ = get_global_pointer_mapper().get_access(dst, h);
-      h.copy((uint8_t*) src, acc_);
+      h.copy((uint8_t*)src, acc_);
     });
     if (!async) {
       event.wait();
@@ -97,7 +97,7 @@ struct copy_t<T1, T2, cl::sycl::codeplay::Kind::DeviceToHost> {
                                               T2* dst, bool async) {
     auto event = dQ.submit([&](cl::sycl::handler& h) {
       auto acc_ = get_global_pointer_mapper().get_access(src, h);
-      h.copy(acc_, (uint8_t*) dst);
+      h.copy(acc_, (uint8_t*)dst);
     });
     if (!async) {
       event.wait();

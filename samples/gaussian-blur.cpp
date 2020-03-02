@@ -132,14 +132,13 @@ int main(int argc, char* argv[]) {
     myQueue.submit([&](cl::sycl::handler& cgh) {
       auto globalGaussian =
           gaussian.get_access<access::mode::discard_write>(cgh);
-      cgh.parallel_for<fillGaussian>(
-          gaussianRange, [=](cl::sycl::item<2> i) {
-            auto x = i[0] - 3 * stddev, y = i[1] - 3 * stddev;
-            auto elem =
-                cl::sycl::exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
-                (2 * pi * stddev * stddev);
-            globalGaussian[i] = elem;
-          });
+      cgh.parallel_for<fillGaussian>(gaussianRange, [=](cl::sycl::item<2> i) {
+        auto x = i[0] - 3 * stddev, y = i[1] - 3 * stddev;
+        auto elem =
+            cl::sycl::exp(-1.f * (x * x + y * y) / (2 * stddev * stddev)) /
+            (2 * pi * stddev * stddev);
+        globalGaussian[i] = elem;
+      });
     });
 
     /* Images need a void * pointing to the data, and enums describing the

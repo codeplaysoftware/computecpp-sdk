@@ -28,6 +28,4 @@
 #include "sim.hpp"
 
 // This is needed to have a translation unit containing the SYCL kernel
-void GameOfLifeSim::step() {
-  this->internal_step();
-}
+void GameOfLifeSim::step() { this->internal_step(); }
