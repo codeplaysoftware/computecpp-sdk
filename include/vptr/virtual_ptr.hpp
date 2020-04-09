@@ -39,7 +39,7 @@
 #include <queue>
 #include <set>
 #include <stdexcept>
-#include <unordered_map>
+#include <map>
 
 namespace cl {
 namespace sycl {
