@@ -45,7 +45,8 @@ class custom_selector : public device_selector {
    * a device selection. */
   int operator()(const device& device) const override {
     /* We only give a valid score to devices that support SPIR. */
-    if (device.has_extension(cl::sycl::string_class("cl_khr_spir"))) {
+    if (device.has_extension(cl::sycl::string_class("cl_khr_spir")) ||
+        device.has_extension(cl::sycl::string_class("cl_khr_il_program"))) {
       if (device.get_info<info::device::device_type>() ==
           info::device_type::cpu) {
         return 50;
