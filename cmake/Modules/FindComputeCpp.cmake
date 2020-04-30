@@ -74,13 +74,13 @@ find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
   NO_SYSTEM_ENVIRONMENT_PATH)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY
-  NAMES ComputeCpp ComputeCpp_vs2015
+  NAMES ComputeCpp
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
-  NAMES ComputeCpp ComputeCpp_vs2015_d
+  NAMES ComputeCpp_d ComputeCpp
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
@@ -153,6 +153,10 @@ endif()
 
 list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
+
+if(MSVC)
+  include(ComputeCppCompilerChecks)
+endif()
 
 if(NOT TARGET OpenCL::OpenCL)
   add_library(OpenCL::OpenCL UNKNOWN IMPORTED)
@@ -398,6 +402,8 @@ function(add_sycl_to_target)
     "${multi_value_args}"
     ${ARGN}
   )
+
+  set_target_properties(${SDK_ADD_SYCL_TARGET} PROPERTIES LINKER_LANGUAGE CXX)
 
   # If the CXX compiler is set to compute++ enable the driver.
   get_filename_component(cmakeCxxCompilerFileName "${CMAKE_CXX_COMPILER}" NAME)
