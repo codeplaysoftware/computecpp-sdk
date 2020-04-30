@@ -1,6 +1,6 @@
 #!/bin/bash
 
 set -ev
-wget --no-check-certificate https://computecpp.codeplay.com/downloads/computecpp-ce/2.0.0/x86_64-linux-gnu.tar.gz
+wget --no-check-certificate https://computecpp.codeplay.com/downloads/computecpp-ce/1.3.0/ubuntu-16.04-64bit.tar.gz
 mkdir -p /tmp/computecpp
-tar -xzf x86_64-linux-gnu.tar.gz -C /tmp/computecpp --strip-components=1
+tar -xzf ubuntu-16.04-64bit.tar.gz -C /tmp/computecpp --strip-components=1
