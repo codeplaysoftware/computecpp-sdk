@@ -42,9 +42,9 @@ namespace sycl = cl::sycl;
 // Monte-Carlo Pi SYCL C++ functor
 class monte_carlo_pi_kernel {
   template <typename dataT>
-  using read_const_accessor =
+  using read_global_accessor =
       sycl::accessor<dataT, 1, sycl::access::mode::read,
-                     sycl::access::target::constant_buffer>;
+                     sycl::access::target::global_buffer>;
   template <typename dataT>
   using write_global_accessor =
       sycl::accessor<dataT, 1, sycl::access::mode::write,
@@ -56,7 +56,7 @@ class monte_carlo_pi_kernel {
 
  public:
   monte_carlo_pi_kernel(
-      read_const_accessor<sycl::cl_float2> points_ptr,
+      read_global_accessor<sycl::cl_float2> points_ptr,
       write_global_accessor<sycl::cl_int> results_ptr,
       read_write_local_accessor<sycl::cl_int> local_results_ptr)
       : m_points_ptr(points_ptr),
@@ -96,7 +96,7 @@ class monte_carlo_pi_kernel {
   }
 
  private:
-  read_const_accessor<sycl::cl_float2> m_points_ptr;
+  read_global_accessor<sycl::cl_float2> m_points_ptr;
   write_global_accessor<sycl::cl_int> m_results_ptr;
   read_write_local_accessor<sycl::cl_int> m_local_results_ptr;
 };
@@ -211,7 +211,7 @@ int main() {
       // Get access to the data (points and results) on the device
       auto points_ptr =
           points_buf.get_access<sycl::access::mode::read,
-                                sycl::access::target::constant_buffer>(cgh);
+                                sycl::access::target::global_buffer>(cgh);
       auto results_ptr = results_buf.get_access<sycl::access::mode::write>(cgh);
       // Allocate local memory on the device (to compute results)
       sycl::accessor<sycl::cl_int, 1, sycl::access::mode::read_write,
