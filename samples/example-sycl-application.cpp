@@ -44,8 +44,8 @@ class matrix_add;
  * result in the third buffer. It then verifies the result of the kernel
  * on the host by using a host accessor to gain access to the data. */
 int main() {
-  /* Destroying SYCL objects like queues and buffers blocks until all work
-   * associated with those objects is completed. */
+  /* Destroying SYCL buffers blocks until all work associated with those
+   * objects is completed. */
   {
     queue myQueue;
 
@@ -112,8 +112,6 @@ int main() {
         }
       }
     }
-    /* End scope of myQueue, this waits for any remaining operations on the
-     * queue to complete. */
   }
 
   std::cout << "Good computation!" << std::endl;
