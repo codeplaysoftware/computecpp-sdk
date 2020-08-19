@@ -28,6 +28,7 @@
 
 #include <CL/sycl.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 using namespace cl::sycl;
