@@ -44,6 +44,8 @@ namespace sycl = cl::sycl;
 template <typename num_t>
 using vec3 = sycl::vec<num_t, 3>;
 
+class MyKernel;
+
 // Template to generate unique kernel name types
 template <typename T, size_t Z>
 class kernel {};
@@ -95,7 +97,7 @@ enum class integrator_t {
 };
 
 template <typename num_t>
-class GravSim {
+class GravSim {  
   sycl::queue m_q;
 
   // Buffers storing body data: (velocity, position)
@@ -131,12 +133,12 @@ class GravSim {
   integrator_t m_integrator;
 
   // Base constructor, does not initialize simulation values
-  GravSim(size_t n_bodies)
-      : m_q(sycl::default_selector{}, except_handler),
+  GravSim(size_t n_bodies) : 
+        m_q(sycl::default_selector{}, except_handler),
         m_bufs(n_bodies),
         m_n_bodies(n_bodies),
         m_time(0),
-        m_force(force_t::GRAVITY) {}
+        m_force(force_t::GRAVITY) {}  
 
  public:
   // Initialize the simulation with a cylinder body distribution
@@ -294,16 +296,24 @@ class GravSim {
                   return G * acc;
                 };
 
+                vec3<num_t> wvelTmp;
+                vec3<num_t> wposTmp;
+
                 // Use the chosen integrator to find new values of position and
                 // velocity
                 if (integrator == integrator_t::EULER) {
-                  std::tie(wvel[id], wpos[id], std::ignore) =
+                  std::tie(wvelTmp, wposTmp, std::ignore) =
                       integrate_step_euler(grav, STEP_SIZE, vel[id], pos[id],
                                            t);
+
                 } else if (integrator == integrator_t::RK4) {
-                  std::tie(wvel[id], wpos[id], std::ignore) =
+                  std::tie(wvelTmp, wposTmp, std::ignore) =
                       integrate_step_rk4(grav, STEP_SIZE, vel[id], pos[id], t);
+
                 }
+
+                wvel[id] = wvelTmp;
+                wpos[id] = wposTmp;
               });
         } break;
         case force_t::LENNARD_JONES: {
@@ -339,16 +349,22 @@ class GravSim {
                   return A * acc;
                 };
 
+                vec3<num_t> wvelTmp;
+                vec3<num_t> wposTmp;
+
                 // Use the chosen integrator to find new values of position and
                 // velocity
                 if (integrator == integrator_t::EULER) {
-                  std::tie(wvel[id], wpos[id], std::ignore) =
+                  std::tie(wvelTmp, wposTmp, std::ignore) =
                       integrate_step_euler(force, STEP_SIZE, vel[id], pos[id],
                                            t);
                 } else if (integrator == integrator_t::RK4) {
-                  std::tie(wvel[id], wpos[id], std::ignore) =
+                  std::tie(wvelTmp, wposTmp, std::ignore) =
                       integrate_step_rk4(force, STEP_SIZE, vel[id], pos[id], t);
                 }
+
+                 wvel[id] = wvelTmp;
+                 wpos[id] = wposTmp;
               });
         } break;
         case force_t::COULOMB: {
@@ -384,15 +400,21 @@ class GravSim {
                   return my_charge * acc;
                 };
 
+                vec3<num_t> wvelTmp;
+                vec3<num_t> wposTmp;
+
                 // Use the chosen integrator to find new values of position and
                 // velocity
                 if (integrator == integrator_t::EULER) {
-                  std::tie(wvel[id], wpos[id], std::ignore) =
+                  std::tie(wvelTmp, wposTmp, std::ignore) =
                       integrate_step_euler(cmb, STEP_SIZE, vel[id], pos[id], t);
                 } else if (integrator == integrator_t::RK4) {
-                  std::tie(wvel[id], wpos[id], std::ignore) =
+                  std::tie(wvelTmp, wposTmp, std::ignore) =
                       integrate_step_rk4(cmb, STEP_SIZE, vel[id], pos[id], t);
                 }
+
+                wvel[id] = wvelTmp;
+                wpos[id] = wposTmp;
               });
 
         } break;

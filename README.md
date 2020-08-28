@@ -34,6 +34,9 @@ SYCL programming standard. You can find more information at:
   * A collection of sample SYCL code, tested on ComputeCpp, provided
     as a learning resource and starting point for new SYCL software.
     The samples are built with CMake.
+* demos/
+  * A collection of graphical applications that use SYCL to accelerate
+    calculations.
 * tests/
   * Tests for the utilities in the SDK.
 * tools/
@@ -124,7 +127,7 @@ welcome! If you have an idea for a new sample, different build system
 integration or even a fix for something that is broken, please get in
 contact.
 
-[ComputeCpp™]: https://www.codeplay.com/public/uploaded/public/computecpp_logo.png
+[ComputeCpp™]: https://www.codeplay.com/assets/images/codeplay-logo-black.svg
 [Build Status]: https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master
 [step-by-step guide]: https://developer.codeplay.com/computecppce/latest/getting-started-guide
 [Integration guide]: https://developer.codeplay.com/computecppce/latest/integration-guide

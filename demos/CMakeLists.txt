@@ -1,33 +1,103 @@
-project (nbody)
+cmake_policy(SET CMP0091 NEW)
 
-cmake_minimum_required(VERSION 3.2.2)
+project(ComputeCpp-SDK-Demos)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake/Modules")
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/../cmake/Modules")
 
 find_package(OpenCL REQUIRED)
 find_package(ComputeCpp REQUIRED)
 
-include_directories(SYSTEM "${ComputeCpp_INCLUDE_DIRS}")
-include_directories(SYSTEM "${OpenCL_INCLUDE_DIR}")
-include_directories("${CMAKE_SOURCE_DIR}/include")
+include(ExternalProject)
 
-include("${CINDER_PATH}/proj/cmake/modules/cinderMakeApp.cmake")
-include_directories(SYSTEM "${CINDER_PATH}/include")
+ExternalProject_Add(
+    cinder_project
+    PREFIX          Cinder
+    GIT_REPOSITORY  https://github.com/cinder/Cinder.git
+    GIT_TAG         6eb7208682e92eadb168d59b310fe2637e934075
+    CMAKE_ARGS      -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+                    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                    -DOpenGL_GL_PREFERENCE=GLVND
+                    -DCINDER_DISABLE_AUDIO=ON
+                    -DCINDER_DISABLE_VIDEO=ON
+    INSTALL_COMMAND ""
+)
+ExternalProject_Get_property(cinder_project SOURCE_DIR)
+set(CINDER_PATH "${SOURCE_DIR}")
 
-# Setup ImGui for Cinder
-include_directories("${CIGUI_PATH}/include")
-include_directories("${CIGUI_PATH}/lib/imgui")
+# Creates a utility target used to trigger the download of the cinder source code
+add_custom_target(cinder DEPENDS cinder_project)
 
-set(CIGUI_SOURCES
-    "${CIGUI_PATH}/src/CinderImGui.cpp"
-    "${CIGUI_PATH}/lib/imgui/imgui.cpp"
-    "${CIGUI_PATH}/lib/imgui/imgui_draw.cpp"
-    "${CIGUI_PATH}/lib/imgui/imgui_demo.cpp")
+set(DEMOS_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_library(cinder_imgui "${CIGUI_SOURCES}")
-target_link_libraries(cinder_imgui cinder)
+#############################
+#   link_demo_dependencies
+#############################
+#
+#  Utility function to link a demo to the required dependencies.
+#  Since we add Cinder using ExternalProject_Add, the source code
+#  for the project will only be available at build time. This requires
+#  manually linking with Cinder as the CMake scripts are not going to
+#  be available at configure time.
+#
+#  TARGET : Name of the target.
+#
+function(link_demo_dependencies)
+  set(options)
+  set(one_value_args
+    TARGET
+  )
+  set(multi_value_args)
+  cmake_parse_arguments(LINK_DEMO
+    "${options}"
+    "${one_value_args}"
+    "${multi_value_args}"
+    ${ARGN}
+  )
+
+  target_include_directories(${LINK_DEMO_TARGET} PRIVATE "${CINDER_PATH}/include"
+                                                         "${DEMOS_ROOT_DIR}/include")
+
+  if (WIN32)
+    target_link_directories(${LINK_DEMO_TARGET} PRIVATE ${CINDER_PATH}/lib/msw/x64/${CMAKE_BUILD_TYPE}/v${MSVC_TOOLSET_VERSION})
+    target_link_libraries(${LINK_DEMO_TARGET} PRIVATE cinder.lib)    
+
+    if (${CMAKE_BUILD_TYPE} MATCHES Debug)
+      message(FATAL_ERROR "Building the demos in debug is not yet supported")
+    else()
+      # Used to copy the DLL to the demos folder so they can be executed directly
+      set(COMPUTECPP_DLL "${ComputeCpp_DIR}/lib/ComputeCpp.dll")
+    endif()
+    add_custom_command(TARGET ${LINK_DEMO_TARGET} POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy ${COMPUTECPP_DLL} ${CMAKE_CURRENT_BINARY_DIR})
+
+    # Cinder is built as a static library on Windows, therefore we need to select the correct version
+    # of the MSVC runtime libraries or linking will fail
+    set_target_properties(${LINK_DEMO_TARGET} PROPERTIES
+                            CXX_STANDARD 17
+                            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+  else()
+    target_link_directories(${LINK_DEMO_TARGET} PRIVATE ${CINDER_PATH}/lib/linux/x86_64/ogl/${CMAKE_BUILD_TYPE})
+
+    # On Linux we need to manually link against cinder's dependencies to be able to finish the executable
+    find_package(OpenGL REQUIRED)
+    find_package(X11 REQUIRED)
+    find_package(Threads REQUIRED)
+    find_package(CURL REQUIRED)
+    find_package(Fontconfig REQUIRED)
+    target_link_libraries(${LINK_DEMO_TARGET} PRIVATE libcinder.a 
+                                                      -ldl 
+                                                      ${X11_LIBRARIES}
+                                                      Xcursor Xinerama Xrandr Xi
+                                                      Threads::Threads 
+                                                      OpenGL::OpenGL 
+                                                      CURL::libcurl 
+                                                      Fontconfig::Fontconfig)
+  endif()
+
+  # Finally, adds cinder as a dependency of the target
+  add_dependencies(${LINK_DEMO_TARGET} cinder)
+endfunction(link_demo_dependencies)
 
 add_subdirectory(game_of_life)
 add_subdirectory(mandelbrot)

@@ -28,6 +28,7 @@
 #pragma once
 
 #include <iostream>
+#include <random>
 
 #include <CL/sycl.hpp>
 namespace sycl = cl::sycl;
@@ -83,14 +84,23 @@ class GameOfLifeSim {
             }
           }
         }) {
-    // Initialize game grid to empty
+
+    // Initialize game grid in a way that 1/4 of the cells will be live and rest
+    // dead
+
     auto acells =
         m_game.read().cells.get_access<sycl::access::mode::discard_write>();
     auto aimg =
         m_game.read().img.get_access<sycl::access::mode::discard_write>();
+
+    std::random_device rd;
+    std::default_random_engine re{ rd() };
+    std::bernoulli_distribution dist{ 0.75 };
+
     for (size_t y = 0; y < m_height; y++) {
       for (size_t x = 0; x < m_width; x++) {
-        acells[sycl::id<2>(x, y)] = CellState::DEAD;
+        acells[sycl::id<2>(x, y)] =
+            (dist(rd) == false) ? CellState::DEAD : CellState::LIVE;
         aimg[sycl::id<2>(y, x)] = sycl::cl_uchar4(0, 0, 0, 0);
       }
     }

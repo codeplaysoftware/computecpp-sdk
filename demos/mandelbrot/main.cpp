@@ -113,9 +113,9 @@ class MandelbrotApp
     // Zoom in or out on the plane
     auto inc = event.getWheelIncrement();
     if (inc > 0) {
-      m_range *= .5f * inc;
+      m_range *= 0.5f * inc;
     } else {
-      m_range /= -.5f * inc;
+      m_range /= -0.5f * inc;
     }
   }
 

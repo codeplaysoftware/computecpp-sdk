@@ -1,15 +1,7 @@
-project(GameOfLifeApp)
+add_executable(GameOfLife WIN32 main.cpp
+                                sim.cpp)
 
-set(SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp")
+link_demo_dependencies(TARGET GameOfLife)
 
-ci_make_app(
-  APP_NAME "GameOfLife"
-  SOURCES "${SOURCES}"
-  LIBRARIES "${OpenCL_LIBRARIES}"
-  CINDER_PATH "${CINDER_PATH}")
-
-add_sycl_to_target(
-    TARGET "GameOfLife"
-    SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp")
+add_sycl_to_target(TARGET GameOfLife
+                   SOURCES sim.cpp)
