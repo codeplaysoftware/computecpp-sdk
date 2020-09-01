@@ -1,3 +1,4 @@
+# Policy required to enable MSVC_RUNTIME_LIBRARY property 
 cmake_policy(SET CMP0091 NEW)
 
 project(ComputeCpp-SDK-Demos)
