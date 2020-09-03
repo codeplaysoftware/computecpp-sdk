@@ -127,7 +127,7 @@ welcome! If you have an idea for a new sample, different build system
 integration or even a fix for something that is broken, please get in
 contact.
 
-[ComputeCpp™]: https://www.codeplay.com/assets/images/codeplay-logo-black.svg
+[ComputeCpp™]: https://www.codeplay.com/public/uploaded/public/computecpp_logo.png
 [Build Status]: https://travis-ci.org/codeplaysoftware/computecpp-sdk.svg?branch=master
 [step-by-step guide]: https://developer.codeplay.com/computecppce/latest/getting-started-guide
 [Integration guide]: https://developer.codeplay.com/computecppce/latest/integration-guide
