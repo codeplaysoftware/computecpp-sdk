@@ -1,13 +1,8 @@
-# Policy required to enable MSVC_RUNTIME_LIBRARY property 
+# Policy required to enable MSVC_RUNTIME_LIBRARY property
 cmake_policy(SET CMP0091 NEW)
 
-project(ComputeCpp-SDK-Demos)
-
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/../cmake/Modules")
-
-find_package(OpenCL REQUIRED)
-find_package(ComputeCpp REQUIRED)
+# set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/../cmake/Modules")
 
 include(ExternalProject)
 
@@ -61,7 +56,7 @@ function(link_demo_dependencies)
 
   if (WIN32)
     target_link_directories(${LINK_DEMO_TARGET} PRIVATE ${CINDER_PATH}/lib/msw/x64/${CMAKE_BUILD_TYPE}/v${MSVC_TOOLSET_VERSION})
-    target_link_libraries(${LINK_DEMO_TARGET} PRIVATE cinder.lib)    
+    target_link_libraries(${LINK_DEMO_TARGET} PRIVATE cinder.lib)
 
     if (${CMAKE_BUILD_TYPE} MATCHES Debug)
       message(FATAL_ERROR "Building the demos in debug is not yet supported")
@@ -86,13 +81,13 @@ function(link_demo_dependencies)
     find_package(Threads REQUIRED)
     find_package(CURL REQUIRED)
     find_package(Fontconfig REQUIRED)
-    target_link_libraries(${LINK_DEMO_TARGET} PRIVATE libcinder.a 
-                                                      -ldl 
+    target_link_libraries(${LINK_DEMO_TARGET} PRIVATE libcinder.a
+                                                      -ldl
                                                       ${X11_LIBRARIES}
                                                       Xcursor Xinerama Xrandr Xi
-                                                      Threads::Threads 
-                                                      OpenGL::OpenGL 
-                                                      CURL::libcurl 
+                                                      Threads::Threads
+                                                      OpenGL::OpenGL
+                                                      CURL::libcurl
                                                       Fontconfig::Fontconfig)
   endif()
 
