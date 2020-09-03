@@ -97,7 +97,7 @@ enum class integrator_t {
 };
 
 template <typename num_t>
-class GravSim {  
+class GravSim {
   sycl::queue m_q;
 
   // Buffers storing body data: (velocity, position)
@@ -133,12 +133,12 @@ class GravSim {
   integrator_t m_integrator;
 
   // Base constructor, does not initialize simulation values
-  GravSim(size_t n_bodies) : 
+  GravSim(size_t n_bodies) :
         m_q(sycl::default_selector{}, except_handler),
         m_bufs(n_bodies),
         m_n_bodies(n_bodies),
         m_time(0),
-        m_force(force_t::GRAVITY) {}  
+        m_force(force_t::GRAVITY) {}
 
  public:
   // Initialize the simulation with a cylinder body distribution

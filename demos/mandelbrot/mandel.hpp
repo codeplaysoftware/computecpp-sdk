@@ -89,15 +89,15 @@ class MandelbrotCalculator {
 
  private:
   void internal_calc() {
-    static constexpr size_t MAX_ITERS = 500;
-    // Anything above this number is assumed divergent. To do less
-    // computation, this is the _square_ of the maximum absolute value
-    // of a non-divergent number
-    static constexpr num_t DIVERGENCE_LIMIT = num_t(256);
-
     m_q.submit([&](sycl::handler& cgh) {
       auto img_acc = m_img.get_access<sycl::access::mode::discard_write>(cgh);
-      
+
+      static constexpr size_t MAX_ITERS = 500;
+      // Anything above this number is assumed divergent. To do less
+      // computation, this is the _square_ of the maximum absolute value
+      // of a non-divergent number
+      static constexpr num_t DIVERGENCE_LIMIT = num_t(256);
+
       // Calculates how many iterations does it take to diverge? MAX_ITERS if in
       // Mandelbrot set
       const auto how_mandel = [](num_t re, num_t im) -> num_t {

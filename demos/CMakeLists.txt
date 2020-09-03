@@ -2,7 +2,6 @@
 cmake_policy(SET CMP0091 NEW)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
-# set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_SOURCE_DIR}/../cmake/Modules")
 
 include(ExternalProject)
 

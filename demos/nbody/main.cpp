@@ -76,7 +76,7 @@ class NBodyApp
     float max_radius = 25;
   } m_ui_distrib_sphere_params;
 
-  int32_t m_ui_n_bodies = 8192;
+  int32_t m_ui_n_bodies = 1024;
 
   const int32_t m_num_updates_per_frame = 1;
   int32_t m_num_updates = 0;
