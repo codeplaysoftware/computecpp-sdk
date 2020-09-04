@@ -1,4 +1,4 @@
-add_executable(NBody WIN32 main.cpp 
+add_executable(NBody WIN32 main.cpp
                            sim.cpp)
 
 link_demo_dependencies(TARGET NBody)
