@@ -42,16 +42,11 @@ struct is_accessor {
   static constexpr auto value = false;
 };
 
-/* More specialised: must match accessor template args exactly, and then
- * uses std::is_same to make sure that the thing passed in is the same
- * type as an accessor with the same template args. */
-template <template <typename, int, cl::sycl::access::mode,
-                    cl::sycl::access::target, cl::sycl::access::placeholder>
-          class T, typename U, int d, cl::sycl::access::mode m,
+/* More specialised: must match accessor template. */
+template <typename U, int d, cl::sycl::access::mode m,
           cl::sycl::access::target t, cl::sycl::access::placeholder p>
-struct is_accessor<T<U, d, m, t, p>> {
-  static constexpr auto value =
-      std::is_same<T<U, d, m, t, p>, cl::sycl::accessor<U, d, m, t, p>>::value;
+struct is_accessor<cl::sycl::accessor<U, d, m, t, p>> {
+  static constexpr auto value = true;
 };
 
 /* Least specialised, chosen for most typenames. Matches the spec definition
