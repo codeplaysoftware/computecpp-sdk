@@ -41,6 +41,8 @@ set(COMPUTECPP_BITCODE "spir64" CACHE STRING
   "Bitcode type to use as SYCL target in compute++")
 mark_as_advanced(COMPUTECPP_BITCODE)
 
+set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
+
 find_package(OpenCL REQUIRED)
 
 # Find ComputeCpp package
@@ -152,6 +154,7 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
+list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -DSYCL_LANGUAGE_VERSION=${SYCL_LANGUAGE_VERSION})
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 include(ComputeCppCompilerChecks)
@@ -451,4 +454,6 @@ function(add_sycl_to_target)
     APPEND PROPERTY LINK_LIBRARIES ComputeCpp::ComputeCpp)
   set_property(TARGET ${SDK_ADD_SYCL_TARGET}
     APPEND PROPERTY INTERFACE_LINK_LIBRARIES ComputeCpp::ComputeCpp)
+  target_compile_definitions(${SDK_ADD_SYCL_TARGET} INTERFACE
+    SYCL_LANGUAGE_VERSION=${SYCL_LANGUAGE_VERSION})
 endfunction(add_sycl_to_target)
