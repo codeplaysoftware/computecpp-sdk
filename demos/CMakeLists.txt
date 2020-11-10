@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.12)
 
 include(FetchContent)
 
+set(FETCHCONTENT_QUIET OFF CACHE STRING "Enable verbose Fetch Content" FORCE)
+
 FetchContent_Declare(
     CinderProject
     GIT_REPOSITORY https://github.com/cinder/Cinder.git
