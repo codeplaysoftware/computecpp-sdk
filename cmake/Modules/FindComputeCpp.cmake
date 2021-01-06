@@ -38,7 +38,7 @@ separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
 set(COMPUTECPP_BITCODE "spir64" CACHE STRING
-  "Bitcode type to use as SYCL target in compute++")
+  "Bitcode types to use as SYCL targets in compute++.")
 mark_as_advanced(COMPUTECPP_BITCODE)
 
 set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
@@ -153,8 +153,12 @@ if(CMAKE_CROSSCOMPILING)
   list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -target ${COMPUTECPP_TARGET_TRIPLE})
 endif()
 
-list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${COMPUTECPP_BITCODE})
 list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -DSYCL_LANGUAGE_VERSION=${SYCL_LANGUAGE_VERSION})
+
+foreach (bitcode IN ITEMS ${COMPUTECPP_BITCODE})
+  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${bitcode})
+endforeach()
+
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
 
 include(ComputeCppCompilerChecks)
@@ -238,7 +242,8 @@ function(__build_ir)
   # using the same source file will be generated with a different rule.
   set(baseSyclName ${CMAKE_CURRENT_BINARY_DIR}/${SDK_BUILD_IR_TARGET}_${sourceFileName})
   set(outputSyclFile ${baseSyclName}.sycl)
-  set(outputDeviceFile ${baseSyclName}.${IR_MAP_${COMPUTECPP_BITCODE}})
+  get_sycl_target_extension(targetExtension)
+  set(outputDeviceFile ${baseSyclName}.${targetExtension})
   set(depFileName ${baseSyclName}.sycl.d)
 
   set(include_directories "$<TARGET_PROPERTY:${SDK_BUILD_IR_TARGET},INCLUDE_DIRECTORIES>")

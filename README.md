@@ -91,6 +91,10 @@ Lastly, the SDK will build targeting `spir64` IR by default. This will
 work on most devices, but won’t work on NVIDIA (for example). To that
 end, you can specify `-DCOMPUTECPP_BITCODE=target`, which can be any of
 `spir[64]`, `spirv[64]` or `ptx64`.
+It is possible to specify multiple targets to `COMPUTECPP_BITCODE`,
+as a CMake list.
+Note that only the Professional Edition of ComputeCpp
+supports building multiple device targets.
 
 If you would like to crosscompile the SDK targeting some other platform,
 there are toolchain files available in the cmake/toolchains directory.
