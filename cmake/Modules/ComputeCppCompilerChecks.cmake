@@ -26,7 +26,7 @@ if(MSVC)
     COMMAND ${_stl_test_command}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-    ERROR_QUIET
+    ERROR_VARIABLE ComputeCpp_STL_CHECK_ERROR_OUTPUT
     OUTPUT_QUIET)
   if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
     # Try disabling compiler version checks
@@ -35,7 +35,7 @@ if(MSVC)
               -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
       RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-      ERROR_QUIET
+      ERROR_VARIABLE ComputeCpp_STL_CHECK_ERROR_OUTPUT
       OUTPUT_QUIET)
     if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
       # Try again with __CUDACC__ and _HAS_CONDITIONAL_EXPLICIT=0. This relaxes the restritions in the MSVC headers
@@ -46,11 +46,12 @@ if(MSVC)
                 -D__CUDACC__
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         RESULT_VARIABLE ComputeCpp_STL_CHECK_RESULT
-        ERROR_QUIET
+        ERROR_VARIABLE ComputeCpp_STL_CHECK_ERROR_OUTPUT
         OUTPUT_QUIET)
         if(NOT ${ComputeCpp_STL_CHECK_RESULT} EQUAL 0)
           message(FATAL_ERROR "compute++ cannot consume hosted STL headers. This means that compute++ can't \
-                               compile a simple program in this platform and will fail when used in this system.")
+                               compile a simple program in this platform and will fail when used in this system. \
+                               \n ${ComputeCpp_STL_CHECK_ERROR_OUTPUT}")
         else()
           list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -D_ALLOW_COMPILER_AND_STL_VERSION_MISMATCH
                                                        -D_HAS_CONDITIONAL_EXPLICIT=0
