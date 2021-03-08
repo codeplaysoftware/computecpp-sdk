@@ -1,0 +1,55 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+# This step checks whether we should skip the job
+# This prevents running duplicate jobs on merge and should
+# cancel outdated builds on pull requests.
+  skip-check:
+    continue-on-error: true
+    runs-on: ubuntu-16.04
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          concurrent_skipping: 'never'
+          skip_after_successful_duplicate: 'true'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+# Main job, builds the SDK and runs the tests for both multiple compilers
+  build-and-test:
+    needs: skip-check
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-16.04
+    strategy:
+      matrix:
+        include:
+          - compiler_package: "clang-6.0"
+            cc_compiler: "clang-6.0"
+            cxx_compiler: "clang++-6.0"
+          - compiler_package: "gcc g++"
+            cc_compiler: "gcc"
+            cxx_compiler: "g++"
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install prerequisites
+        run: |
+          sudo apt update
+          sudo apt install ${{matrix.compiler_package}} ocl-icd-opencl-dev opencl-headers ninja-build
+          bash .github/build_computecpp.sh
+      - name: Build SDK
+        run: |
+          mkdir build && cd build
+          cmake -GNinja ../ -DCMAKE_C_COMPILER=${{matrix.cc_compiler}} -DCMAKE_CXX_COMPILER=${{matrix.cxx_compiler}} -DComputeCpp_DIR=/tmp/computecpp -DCOMPUTECPP_SDK_BUILD_TESTS=1
+          ninja
+      - name: Run Tests
+        run: |
+          cd build
+          COMPUTECPP_TARGET="host" ctest -V
