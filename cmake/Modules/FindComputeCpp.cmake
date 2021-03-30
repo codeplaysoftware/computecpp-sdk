@@ -328,6 +328,10 @@ function(__build_ir)
     add_custom_target(${headerTargetName} DEPENDS ${outputDeviceFile} ${outputSyclFile})
     add_dependencies(${SDK_BUILD_IR_TARGET} ${headerTargetName})
   endif()
+  
+  if(COMPUTECPP_SDK_INCLUDE_AFTER)
+    set_property(TARGET ${SDK_ADD_SYCL_TARGET} PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
+  endif()
 
   # This property can be set on a per-target basis to indicate that the
   # integration header should appear after the main source listing
