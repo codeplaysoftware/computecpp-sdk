@@ -43,6 +43,8 @@ mark_as_advanced(COMPUTECPP_BITCODE)
 
 set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
 
+option(COMPUTECPP_INCLUDE_AFTER "Force integration header to be included after main" OFF)
+
 find_package(OpenCL REQUIRED)
 
 # Find ComputeCpp package
@@ -325,10 +327,6 @@ function(__build_ir)
     add_custom_target(${headerTargetName} DEPENDS ${outputDeviceFile} ${outputSyclFile})
     add_dependencies(${SDK_BUILD_IR_TARGET} ${headerTargetName})
   endif()
-  
-  if(COMPUTECPP_SDK_INCLUDE_AFTER)
-    set_property(TARGET ${SDK_ADD_SYCL_TARGET} PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
-  endif()
 
   # This property can be set on a per-target basis to indicate that the
   # integration header should appear after the main source listing
@@ -411,6 +409,11 @@ function(add_sycl_to_target)
   )
 
   set_target_properties(${SDK_ADD_SYCL_TARGET} PROPERTIES LINKER_LANGUAGE CXX)
+
+  if(COMPUTECPP_INCLUDE_AFTER)
+    # Ensure all SYCL targets include the integration header after main
+    set_property(TARGET ${SDK_ADD_SYCL_TARGET} PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
+  endif()
 
   # If the CXX compiler is set to compute++ enable the driver.
   get_filename_component(cmakeCxxCompilerFileName "${CMAKE_CXX_COMPILER}" NAME)
