@@ -47,22 +47,19 @@ find_package(OpenCL REQUIRED)
 
 # Find ComputeCpp package
 
-if(DEFINED ComputeCpp_DIR)
-  set(computecpp_find_hint ${ComputeCpp_DIR})
-elseif(DEFINED ENV{COMPUTECPP_DIR})
-  set(computecpp_find_hint $ENV{COMPUTECPP_DIR})
-endif()
+set(ComputeCpp_DIR "$ENV{COMPUTECPP_DIR}"
+  CACHE PATH "Path to ComputeCpp root folder")
+# ComputeCpp_HOST_DIR is used to find executables that are run on the host
+set(ComputeCpp_HOST_DIR "$ENV{ComputeCpp_HOST_DIR}"
+  CACHE PATH "Path to host ComputeCpp root folder whe cross-compiling")
 
-# Used for running executables on the host
-set(computecpp_host_find_hint ${computecpp_find_hint})
+set(computecpp_find_hint "${ComputeCpp_DIR}")
 
-if(CMAKE_CROSSCOMPILING)
-  # ComputeCpp_HOST_DIR is used to find executables that are run on the host
-  if(DEFINED ComputeCpp_HOST_DIR)
-    set(computecpp_host_find_hint ${ComputeCpp_HOST_DIR})
-  elseif(DEFINED ENV{COMPUTECPP_HOST_DIR})
-    set(computecpp_host_find_hint $ENV{COMPUTECPP_HOST_DIR})
-  endif()
+if(CMAKE_CROSSCOMPILING AND ComputeCpp_HOST_DIR)
+  # Used for running executables on the host
+  set(computecpp_host_find_hint "${ComputeCpp_HOST_DIR}")
+else()
+  set(computecpp_host_find_hint ${computecpp_find_hint})
 endif()
 
 find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
