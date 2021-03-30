@@ -6,8 +6,11 @@
 *.ycm_extra_conf.pyc
 .color_coded
 
-# build folder
+# build and IDE folders
 build/
+.vscode
+.vs
+CMakeSettings.json
 
 # Compiled files
 *.o
@@ -28,3 +31,6 @@ build/
 html/
 *.html
 *.pdf
+
+# Generated files
+samples/Lenna-blurred.png
