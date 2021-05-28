@@ -399,6 +399,10 @@ function(add_sycl_to_target)
   set(one_value_args
     TARGET
   )
+  if (NOT SOURCES)
+    message(WARNING "No source files provided to add_sycl_to_target. "
+                    "SYCL integration headers may not be generated.")
+  endif()
   set(multi_value_args
     SOURCES
   )
