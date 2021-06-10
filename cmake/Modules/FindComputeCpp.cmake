@@ -408,7 +408,10 @@ function(add_sycl_to_target)
     "${multi_value_args}"
     ${ARGN}
   )
-
+  if ("${SDK_ADD_SYCL_SOURCES}" STREQUAL "")
+    message(WARNING "No source files provided to add_sycl_to_target. "
+                    "SYCL integration headers may not be generated.")
+  endif()
   set_target_properties(${SDK_ADD_SYCL_TARGET} PROPERTIES LINKER_LANGUAGE CXX)
 
   # If the CXX compiler is set to compute++ enable the driver.
