@@ -34,7 +34,7 @@
 #include <cinder/app/RendererGl.h>
 #include <cinder/gl/gl.h>
 
-#include <CinderImGui.h>
+#include <cinder/CinderImGui.h>
 
 #include <CL/sycl.hpp>
 
@@ -66,9 +66,9 @@ class NBodyApp
     float max_radius = 25;
     float min_angle_pis = 0;
     float max_angle_pis = 2;
-    float min_height = -5;
-    float max_height = 5;
-    float lg_speed = 0;
+    float min_height = -50;
+    float max_height = 50;
+    float lg_speed = 0.4;
   } m_ui_distrib_cylinder_params;
 
   struct {
@@ -76,7 +76,10 @@ class NBodyApp
     float max_radius = 25;
   } m_ui_distrib_sphere_params;
 
-  int32_t m_ui_n_bodies = 128;
+  int32_t m_ui_n_bodies = 1024;
+
+  const int32_t m_num_updates_per_frame = 1;
+  int32_t m_num_updates = 0;
 
   // Whether 'initialize' was clicked
   bool m_ui_initialize = false;
@@ -97,7 +100,7 @@ class NBodyApp
 
   // Force parameters
   struct {
-    float lg_G = -3;
+    float lg_G = -1.4;
     float lg_damping = -3;
   } m_ui_force_gravity_params;
 
@@ -176,7 +179,7 @@ class NBodyApp
     m_shader->uniform("star_tex", 0);
 
     m_ui_force_coulomb_file.fill(0);
-    ui::initialize();
+    ImGui::Initialize();
 
     // Start with a perspective camera looking at the center
     m_cam.lookAt(ci::vec3(200), ci::vec3(0));
@@ -184,6 +187,10 @@ class NBodyApp
     m_cam_ui = ci::CameraUi(&m_cam, getWindow());
 
     init_gl_bufs();
+
+    // Start the simulation with the application
+    m_ui_initialize = true;
+    m_ui_paused = false;
   }
 
   // Initializes the GL buffer for star position data with the current number of
@@ -307,12 +314,16 @@ class NBodyApp
 
         std::cout << "Time taken for step: " << sdiff << "s" << std::endl;
       } else {
-        m_sim.step();
+        for (int32_t step = 0; step < m_num_updates_per_frame; ++step) {
+          m_sim.step();
+        }
       }
 
       // Make sure not to step until clicked again
       m_ui_step = false;
     }
+
+    m_num_updates++;
   }
 
   void draw() override {
@@ -360,56 +371,56 @@ class NBodyApp
 #endif
 
     // Draw the UI
-    ui::Begin("Simulation Settings");
+    ImGui::Begin("Simulation Settings");
 
     std::array<const char*, 3> forces = {
         {"Gravity", "Lennard-Jones", "Coulomb"}};
-    ui::ListBox("Type of force", &m_ui_force_id, forces.data(), forces.size(),
-                forces.size());
+    ImGui::ListBox("Type of force", &m_ui_force_id, forces.data(),
+                   forces.size(), forces.size());
 
     std::array<const char*, 2> integrators = {
         {"Euler [fast, inaccurate]", "RK4 [slow, accurate]"}};
-    ui::ListBox("Integrator", &m_ui_integrator_id, integrators.data(),
-                integrators.size(), integrators.size());
+    ImGui::ListBox("Integrator", &m_ui_integrator_id, integrators.data(),
+                   integrators.size(), integrators.size());
 
     switch (m_ui_force_id) {
       case UI_FORCE_GRAVITY: {
-        if (ui::TreeNode("Gravity settings")) {
-          ui::SliderFloat("G constant [lg]", &m_ui_force_gravity_params.lg_G,
-                          -8, 2);
+        if (ImGui::TreeNode("Gravity settings")) {
+          ImGui::SliderFloat("G constant [lg]", &m_ui_force_gravity_params.lg_G,
+                             -8, 2);
 
-          ui::SliderFloat("Damping factor [lg]",
-                          &m_ui_force_gravity_params.lg_damping, -14, 0);
+          ImGui::SliderFloat("Damping factor [lg]",
+                             &m_ui_force_gravity_params.lg_damping, -14, 0);
 
-          ui::TreePop();
+          ImGui::TreePop();
         }
       } break;
 
       case UI_FORCE_LJ: {
-        if (ui::TreeNode("Lennard-Jones settings")) {
-          ui::SliderFloat("Potential well depth", &m_ui_force_lj_params.eps,
-                          0.1, 10);
+        if (ImGui::TreeNode("Lennard-Jones settings")) {
+          ImGui::SliderFloat("Potential well depth", &m_ui_force_lj_params.eps,
+                             0.1, 10);
 
-          ui::SliderFloat("Zero potential radius [lg]",
-                          &m_ui_force_lj_params.lg_sigma, -8, -2);
+          ImGui::SliderFloat("Zero potential radius [lg]",
+                             &m_ui_force_lj_params.lg_sigma, -8, -2);
 
-          ui::TreePop();
+          ImGui::TreePop();
         }
       } break;
 
       case UI_FORCE_COULOMB: {
-        if (ui::TreeNode("Coulomb settings")) {
-          ui::Text(
+        if (ImGui::TreeNode("Coulomb settings")) {
+          ImGui::Text(
               "Data format:\nLine 1: particle count (N)\nLines 2-(N+1): "
               "<charge> <x> <y> <z>");
-          ui::InputText("Data input file", m_ui_force_coulomb_file.data(),
-                        m_ui_force_coulomb_file.size());
+          ImGui::InputText("Data input file", m_ui_force_coulomb_file.data(),
+                           m_ui_force_coulomb_file.size());
 
-          if (ui::Button("Initialize from file")) {
+          if (ImGui::Button("Initialize from file")) {
             m_ui_initialize = true;
           }
 
-          ui::TreePop();
+          ImGui::TreePop();
         }
 
       } break;
@@ -418,51 +429,51 @@ class NBodyApp
         throw std::runtime_error("unreachable");
     }
 
-    if (ui::TreeNode("Initialization")) {
+    if (ImGui::TreeNode("Initialization")) {
       std::array<const char*, 2> distribs = {{"Cylinder", "Sphere"}};
-      ui::ListBox("Distribution", &m_ui_distrib_id, distribs.data(),
-                  distribs.size(), distribs.size());
+      ImGui::ListBox("Distribution", &m_ui_distrib_id, distribs.data(),
+                     distribs.size(), distribs.size());
 
-      ui::SliderInt("Number of bodies", &m_ui_n_bodies, 128, 16384);
+      ImGui::SliderInt("Number of bodies", &m_ui_n_bodies, 128, 16384);
 
       switch (m_ui_distrib_id) {
         case UI_DISTRIB_CYLINDER: {
-          if (ui::TreeNode("Cylinder distribution settings")) {
-            ui::DragFloatRange2(
+          if (ImGui::TreeNode("Cylinder distribution settings")) {
+            ImGui::DragFloatRange2(
                 "Radius", &m_ui_distrib_cylinder_params.min_radius,
                 &m_ui_distrib_cylinder_params.max_radius, 0.1f, 0.0f, 100.0f);
 
-            ui::DragFloatRange2(
+            ImGui::DragFloatRange2(
                 "Angle [pi]", &m_ui_distrib_cylinder_params.min_angle_pis,
                 &m_ui_distrib_cylinder_params.max_angle_pis, 0.01f, 0.0f, 2.0f);
 
-            ui::DragFloatRange2("Height",
-                                &m_ui_distrib_cylinder_params.min_height,
-                                &m_ui_distrib_cylinder_params.max_height, 0.1f,
-                                -100.0f, 100.0f);
+            ImGui::DragFloatRange2("Height",
+                                   &m_ui_distrib_cylinder_params.min_height,
+                                   &m_ui_distrib_cylinder_params.max_height,
+                                   0.1f, -100.0f, 100.0f);
 
-            ui::SliderFloat("Speed [lg]",
-                            &m_ui_distrib_cylinder_params.lg_speed, -3, 1);
+            ImGui::SliderFloat("Speed [lg]",
+                               &m_ui_distrib_cylinder_params.lg_speed, -3, 1);
 
-            if (ui::Button("Initialize from distribution")) {
+            if (ImGui::Button("Initialize from distribution")) {
               m_ui_initialize = true;
             }
 
-            ui::TreePop();
+            ImGui::TreePop();
           }
         } break;
 
         case UI_DISTRIB_SPHERE: {
-          if (ui::TreeNode("Sphere distribution settings")) {
-            ui::DragFloatRange2(
+          if (ImGui::TreeNode("Sphere distribution settings")) {
+            ImGui::DragFloatRange2(
                 "Radius", &m_ui_distrib_sphere_params.min_radius,
                 &m_ui_distrib_sphere_params.max_radius, 0.1f, 0.0f, 100.0f);
 
-            if (ui::Button("Initialize from distribution")) {
+            if (ImGui::Button("Initialize from distribution")) {
               m_ui_initialize = true;
             }
 
-            ui::TreePop();
+            ImGui::TreePop();
           }
         } break;
 
@@ -470,23 +481,23 @@ class NBodyApp
           throw std::runtime_error("unreachable");
       }
 
-      ui::TreePop();
+      ImGui::TreePop();
     }
 
     if (m_ui_paused) {
-      if (ui::Button("Start")) {
+      if (ImGui::Button("Start")) {
         m_ui_paused = false;
       }
-      if (ui::Button("Step")) {
+      if (ImGui::Button("Step")) {
         m_ui_step = true;
       }
     } else {
-      if (ui::Button("Pause")) {
+      if (ImGui::Button("Pause")) {
         m_ui_paused = true;
       }
     }
 
-    ui::End();
+    ImGui::End();
   }
 };
 

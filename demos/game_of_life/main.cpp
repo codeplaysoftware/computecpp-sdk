@@ -106,8 +106,8 @@ class GameOfLifeApp
 
     if (!m_paused) {
       m_sim.step();
-      // 30 FPS
-      std::this_thread::sleep_for(std::chrono::milliseconds(33));
+      // 60 FPS
+      std::this_thread::sleep_for(std::chrono::milliseconds(16));
     }
   }
 
@@ -131,13 +131,21 @@ class GameOfLifeApp
 
   void handleMouse(size_t mouse_x, size_t mouse_y) {
     // Obtain coordinates within the simulation dimensions
-    size_t x = float(mouse_x) / float(getWindow()->getWidth()) * float(m_width);
-    size_t y =
-        float(mouse_y) / float(getWindow()->getHeight()) * float(m_height);
+    size_t x = static_cast<float>(mouse_x) /
+               static_cast<float>(getWindow()->getWidth()) *
+               static_cast<float>(m_width);
+    size_t y = static_cast<float>(mouse_y) /
+               static_cast<float>(getWindow()->getHeight()) *
+               static_cast<float>(m_height);
     // Invert Y
     y = m_height - y;
-    // Set cell at mouse position to alive
-    m_sim.add_click(x, y, CellState::LIVE);
+    if (x < m_width && y < m_height) {
+      // Set cell at mouse position to alive
+      m_sim.add_click(x, y + 1, CellState::LIVE);
+      m_sim.add_click(x + 1, y, CellState::LIVE);
+      m_sim.add_click(x, y - 1, CellState::LIVE);
+      m_sim.add_click(x - 1, y - 1, CellState::LIVE);      
+    }    
   }
 
   void mouseDown(ci::app::MouseEvent event) override {

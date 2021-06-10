@@ -1,16 +1,11 @@
-project(NBodyApp)
+add_executable(NBody WIN32 main.cpp
+                           sim.cpp)
 
-set(SOURCES
-  "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp"
-  "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp")
+link_demo_dependencies(TARGET NBody)
 
-ci_make_app(
-  APP_NAME "NBody"
-  SOURCES "${SOURCES}"
-  LIBRARIES "${OpenCL_LIBRARIES}"
-  LIBRARIES cinder_imgui
-  CINDER_PATH "${CINDER_PATH}")
+# Copy the assets folder to the binary folder so the program can load it.
+add_custom_command(TARGET NBody POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets)
 
-add_sycl_to_target(
-  TARGET "NBody"
-  SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/sim.cpp")
+add_sycl_to_target(TARGET  NBody
+                   SOURCES sim.cpp)

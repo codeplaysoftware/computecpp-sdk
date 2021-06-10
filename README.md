@@ -33,6 +33,9 @@ SYCL programming standard. You can find more information at:
   * A collection of sample SYCL code, tested on ComputeCpp, provided
     as a learning resource and starting point for new SYCL software.
     The samples are built with CMake.
+* demos/
+  * A collection of graphical applications that use SYCL to accelerate
+    calculations.
 * tests/
   * Tests for the utilities in the SDK.
 * tools/
