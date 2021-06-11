@@ -25,6 +25,13 @@ method, and the initial distribution of bodies. The simulation can be
 initialized from there. The simulation can be viewed from different positions
 by dragging the mouse and using the mouse wheel to control the camera.
 
+### Fluid Simulation
+This demo visualizes fluid behavior in a closed container. Each cell in the
+cellular automata represents a fluid particle existing in a velocity field.
+Drag mouse around the screen to create fluid particles with velocities in
+direction of mouse travel. Fluid fades slowly over time so as not to fill
+the container.
+
 ### Building the demos
 To build the demos, call CMake with `-DCOMPUTECPP_SDK_BUILD_DEMOS=ON`
 
