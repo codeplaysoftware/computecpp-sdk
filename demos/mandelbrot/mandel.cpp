@@ -31,8 +31,3 @@ template <>
 void MandelbrotCalculator<float>::calc() {
   this->internal_calc();
 }
-
-template <>
-void MandelbrotCalculator<double>::calc() {
-  this->internal_calc();
-}
