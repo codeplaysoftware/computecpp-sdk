@@ -51,21 +51,21 @@ class MandelbrotApp
 #endif
 {
   // Use doubles for more zoom
-  MandelbrotCalculator<float> m_calc;
+  MandelbrotCalculator m_calc;
 
   // Texture for displaying the set
   ci::gl::Texture2dRef m_tex;
 
   // Coordinates of the center point
-  float m_ctr_x = 0;
-  float m_ctr_y = 0;
+  double m_ctr_x = 0;
+  double m_ctr_y = 0;
 
   // The viewable range on Y axis
-  float m_range = 1;
+  double m_range = 1;
 
   // Mouse coordinates from previous click
-  float m_prev_mx = 0;
-  float m_prev_my = 0;
+  double m_prev_mx = 0;
+  double m_prev_my = 0;
 
  public:
   MandelbrotApp() : m_calc(WIDTH, HEIGHT) {}
@@ -80,17 +80,21 @@ class MandelbrotApp
   void update() override {
     // Transform coordinates from the ones used here - center point
     // and range - to the ones used in MandelbrotCalculator - min and max X, Y.
-    float range_x = m_range * float(WIDTH) / float(HEIGHT);
+    double range_x = m_range * double(WIDTH) / double(HEIGHT);
     auto half_x = range_x / 2.0f;
-    float min_x = m_ctr_x - half_x;
-    float max_x = m_ctr_x + half_x;
+    double min_x = m_ctr_x - half_x;
+    double max_x = m_ctr_x + half_x;
     auto half_y = m_range / 2.0f;
-    float min_y = m_ctr_y - half_y;
-    float max_y = m_ctr_y + half_y;
+    double min_y = m_ctr_y - half_y;
+    double max_y = m_ctr_y + half_y;
 
     // Set new coordinates and recalculate the fractal
     m_calc.set_bounds(min_x, max_x, min_y, max_y);
-    m_calc.calc();
+    if (m_calc.supports_doubles()) {
+        m_calc.calc<double>();
+    } else {
+        m_calc.calc<float>();
+    }
   }
 
   void draw() override {
@@ -121,8 +125,8 @@ class MandelbrotApp
 
   void mouseDrag(ci::app::MouseEvent event) override {
     // Calculate normalized coordinates
-    auto x = event.getX() / float(WIDTH);
-    auto y = event.getY() / float(HEIGHT);
+    auto x = event.getX() / double(WIDTH);
+    auto y = event.getY() / double(HEIGHT);
 
     // Find the difference from last click
     auto dx = m_prev_mx - x;
@@ -132,12 +136,12 @@ class MandelbrotApp
     // If the difference is big enough, drag the center point
     // and with it the viewable part of the plane. The epsilon
     // is necessary to avoid noisy jumps
-    constexpr float EPS = .1f;
+    constexpr double EPS = .1;
     if (dx < EPS && dx > -EPS) {
       m_ctr_x += dx * m_range;
     }
     if (dy < EPS && dy > -EPS) {
-      m_ctr_y += dy * m_range * float(WIDTH) / float(HEIGHT);
+      m_ctr_y += dy * m_range * double(WIDTH) / double(HEIGHT);
     }
 
     m_prev_mx = x;
