@@ -18,8 +18,6 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  mandel.hpp
- *
  *  Description:
  *    SYCL kernel for Mandelbrot demo.
  *
@@ -49,7 +47,7 @@ class MandelbrotCalculator {
   double m_miny = -1;
   double m_maxy = 1;
 
-  bool m_supports_doubles{ true };
+  bool m_supports_doubles{true};
 
  public:
   MandelbrotCalculator(size_t width, size_t height)
@@ -69,9 +67,11 @@ class MandelbrotCalculator {
         // These are flipped since OpenGL expects column-major order for
         // textures
         m_img(sycl::range<2>(height, width)),
-        // If the vector returned by get_info<double_fp_config> is length 0 
+        // If the vector returned by get_info<double_fp_config> is length 0
         // doubles are not supported by the SYCL device.
-        m_supports_doubles(m_q.get_device().get_info<sycl::info::device::double_fp_config>().size() != 0) {}
+        m_supports_doubles(m_q.get_device()
+                               .get_info<sycl::info::device::double_fp_config>()
+                               .size() != 0) {}
 
   // Set the boundaries of the viewable region. X is Re, Y is Im.
   void set_bounds(double min_x, double max_x, double min_y, double max_y) {
@@ -81,9 +81,7 @@ class MandelbrotCalculator {
     m_maxy = max_y;
   }
 
-  bool supports_doubles() const {
-      return m_supports_doubles;
-  }
+  bool supports_doubles() const { return m_supports_doubles; }
 
   template <typename num_t>
   void calc();

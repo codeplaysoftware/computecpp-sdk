@@ -18,8 +18,6 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  main.cpp
- *
  *  Description:
  *    Application description for Mandelbrot demo.
  *
@@ -91,9 +89,9 @@ class MandelbrotApp
     // Set new coordinates and recalculate the fractal
     m_calc.set_bounds(min_x, max_x, min_y, max_y);
     if (m_calc.supports_doubles()) {
-        m_calc.calc<double>();
+      m_calc.calc<double>();
     } else {
-        m_calc.calc<float>();
+      m_calc.calc<float>();
     }
   }
 
