@@ -18,8 +18,6 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  mandel.cpp
- *
  *  Description:
  *    Translation unit for the Mandelbrot SYCL kernel.
  *
@@ -28,11 +26,6 @@
 #include "mandel.hpp"
 
 template <>
-void MandelbrotCalculator<float>::calc() {
-  this->internal_calc();
-}
-
-template <>
-void MandelbrotCalculator<double>::calc() {
-  this->internal_calc();
+void MandelbrotCalculator::calc<double>() {
+  this->internal_calc<double>();
 }

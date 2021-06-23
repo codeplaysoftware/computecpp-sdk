@@ -18,8 +18,6 @@
  *
  *  Codeplay's ComputeCpp SDK
  *
- *  main.cpp
- *
  *  Description:
  *    Application description for Mandelbrot demo.
  *
@@ -51,7 +49,7 @@ class MandelbrotApp
 #endif
 {
   // Use doubles for more zoom
-  MandelbrotCalculator<double> m_calc;
+  MandelbrotCalculator m_calc;
 
   // Texture for displaying the set
   ci::gl::Texture2dRef m_tex;
@@ -90,7 +88,11 @@ class MandelbrotApp
 
     // Set new coordinates and recalculate the fractal
     m_calc.set_bounds(min_x, max_x, min_y, max_y);
-    m_calc.calc();
+    if (m_calc.supports_doubles()) {
+      m_calc.calc<double>();
+    } else {
+      m_calc.calc<float>();
+    }
   }
 
   void draw() override {
@@ -132,7 +134,7 @@ class MandelbrotApp
     // If the difference is big enough, drag the center point
     // and with it the viewable part of the plane. The epsilon
     // is necessary to avoid noisy jumps
-    constexpr double EPS = .1f;
+    constexpr double EPS = .1;
     if (dx < EPS && dx > -EPS) {
       m_ctr_x += dx * m_range;
     }
