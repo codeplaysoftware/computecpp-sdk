@@ -33,10 +33,10 @@
 #include "fluid.h"
 
 // Size of the fluid container edge (always square shaped).
-const int SIZE{300};
+constexpr int SIZE{300};
 
 // Default scale at which fluid container is rendered.
-const int SCALE{3};
+constexpr int SCALE{3};
 
 class FluidSimulationApp : public ci::app::App {
  public:
@@ -50,7 +50,7 @@ class FluidSimulationApp : public ci::app::App {
   }
 
   // Create fluid texture.
-  void setup() override {
+  void setup() override final {
     texture_ = ci::gl::Texture2d::create(nullptr, GL_RGBA, size_, size_,
                                          ci::gl::Texture2d::Format()
                                              .dataType(GL_UNSIGNED_BYTE)
@@ -58,7 +58,7 @@ class FluidSimulationApp : public ci::app::App {
   }
 
   // Called once per frame to update the fluid.
-  void update() override {
+  void update() override final {
     // Check that mouse has moved.
     if (prev_x != 0 && prev_x != 0) {
       // Add density at mouse cursor location.
@@ -75,7 +75,7 @@ class FluidSimulationApp : public ci::app::App {
   }
 
   // Draws fluid to the screen.
-  void draw() override {
+  void draw() override final {
     // Clear screen.
     ci::gl::clear();
 
@@ -91,7 +91,7 @@ class FluidSimulationApp : public ci::app::App {
   }
 
  private:
-  void keyDown(ci::app::KeyEvent event) override {
+  void keyDown(ci::app::KeyEvent event) override final {
     // Reset fluid container to empty if SPACE key is pressed.
     if (event.getCode() == ci::app::KeyEvent::KEY_SPACE) {
       fluid_.Reset();
@@ -99,9 +99,9 @@ class FluidSimulationApp : public ci::app::App {
   }
 
   // Dragging mouse does not include moving mouse so defined separately here.
-  void mouseDrag(ci::app::MouseEvent event) override { mouseMove(event); }
+  void mouseDrag(ci::app::MouseEvent event) override final { mouseMove(event); }
 
-  void mouseMove(ci::app::MouseEvent event) override {
+  void mouseMove(ci::app::MouseEvent event) override final {
     // Get mouse position as fraction of window size.
     auto x{event.getX() / float(getWindow()->getSize().x)};
     auto y{1.0f - event.getY() / float(getWindow()->getSize().y)};
