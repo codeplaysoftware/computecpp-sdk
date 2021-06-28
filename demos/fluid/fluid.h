@@ -252,12 +252,6 @@ class SYCLFluidContainer {
     return buffer.template get_access<cl::sycl::access::mode::read_write>(cgh);
   }
 
-  // Clamp value to a range.
-  template <typename T>
-  static T Clamp(T value, T low, T high) {
-    return value >= high ? high : value <= low ? low : value;
-  }
-
   // Get clamped index based off of coordinates.
   static std::size_t IX(std::size_t x, std::size_t y, std::size_t N) {
     // Clamp coordinates.
@@ -424,10 +418,10 @@ class SYCLFluidContainer {
           auto index{IX(i, j, N)};
           float x{i - dt0 * u[index]};
           float y{j - dt0 * v[index]};
-          x = Clamp(x, 0.5f, N + 0.5f);
+          x = cl::sycl::clamp(x, 0.5f, N + 0.5f);
           auto i0{(int)x};
           auto i1{i0 + 1};
-          y = Clamp(y, 0.5f, N + 0.5f);
+          y = cl::sycl::clamp(y, 0.5f, N + 0.5f);
           auto j0{(int)y};
           auto j1{j0 + 1};
           float s1{x - i0};
