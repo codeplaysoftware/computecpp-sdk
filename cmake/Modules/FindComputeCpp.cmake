@@ -63,8 +63,13 @@ set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
-set(COMPUTECPP_BITCODE "" CACHE STRING
-  "Bitcode types to use as SYCL targets in compute++.")
+set(COMPUTECPP_BITCODE "" CACHE STRING)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+  # Policy enabling rewrites of paths in depfiles when using ninja
+  cmake_policy(SET CMP0116 NEW)
+endif()
+
 mark_as_advanced(COMPUTECPP_BITCODE)
 
 set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
