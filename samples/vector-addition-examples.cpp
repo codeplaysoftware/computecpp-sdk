@@ -20,7 +20,7 @@
  *
  *  Description:
  *    Shows different code generation for vector addition kernels
- */
+ **************************************************************************/
 
 #include <iostream>
 
