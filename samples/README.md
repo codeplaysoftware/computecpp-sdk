@@ -37,3 +37,4 @@ Sample File                       | Description
 `smart-pointer.cpp`               | Custom Allocators in SYCL.
 `vptr.cpp`                        | Using the Virtual Pointer interface in SYCL on matrix addition kernel.
 `opencl-c-interop.cpp`            | OpenCL/SYCL interopability example.
+`vector-addition-examples.cpp`    | Comparison of different vector addition code to show masking, predication and vectorisation.
