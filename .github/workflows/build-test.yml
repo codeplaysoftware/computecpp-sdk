@@ -12,7 +12,7 @@ jobs:
 # cancel outdated builds on pull requests.
   skip-check:
     continue-on-error: true
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     # Map a step output to a job output
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
@@ -27,7 +27,7 @@ jobs:
   build-and-test:
     needs: skip-check
     if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
-    runs-on: ubuntu-16.04
+    runs-on: ubuntu-18.04
     strategy:
       matrix:
         include:
