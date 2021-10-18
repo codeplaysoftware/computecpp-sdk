@@ -59,7 +59,7 @@ function(get_sycl_target_extension output)
   set(${output} ${syclExtension} PARENT_SCOPE)
 endfunction()
 
-set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
+set(COMPUTECPP_USER_FLAGS "-fsycl-enable-usm" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
