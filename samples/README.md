@@ -38,3 +38,4 @@ Sample File                       | Description
 `vptr.cpp`                        | Using the Virtual Pointer interface in SYCL on matrix addition kernel.
 `opencl-c-interop.cpp`            | OpenCL/SYCL interopability example.
 `vector-addition-examples.cpp`    | Comparison of different vector addition code to show masking, predication and vectorisation.
+`vector-addition-tiled.cpp`       | Comparison of tiled vector addition code with a DMA version.
