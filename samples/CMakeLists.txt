@@ -71,6 +71,7 @@ add_sample(TARGET using-function-objects SOURCES using-function-objects.cpp)
 # This property is not necessary here, but demonstrates how to use it.
 # Forces the integration header to appear after the main code.
 set_property(TARGET using-function-objects PROPERTY COMPUTECPP_INCLUDE_AFTER 1)
+add_sample(TARGET vector-addition SOURCES vector-addition-examples.cpp)
 add_sample(TARGET vector-addition-tiled SOURCES vector-addition-tiled.cpp)
 add_sample(TARGET vptr SOURCES vptr.cpp)
 target_include_directories(vptr PRIVATE ${PROJECT_SOURCE_DIR}/include)
