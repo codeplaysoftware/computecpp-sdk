@@ -55,10 +55,10 @@ class TiledVecAddDMA;
 int main(int argc, char* argv[]) {
   constexpr const size_t N = 128000;  // this is the total vector size
   constexpr const size_t T = 32;      // this is the tile size
-  constexpr auto read = sycl::access::mode::read;
-  constexpr auto write = sycl::access::mode::write;
-  constexpr auto rw = sycl::access::mode::read_write;
-  constexpr auto dwrite = sycl::access::mode::discard_write;
+  static constexpr auto read = sycl::access::mode::read;
+  static constexpr auto write = sycl::access::mode::write;
+  static constexpr auto rw = sycl::access::mode::read_write;
+  static constexpr auto dwrite = sycl::access::mode::discard_write;
   const sycl::range<1> VecSize{N};
   const sycl::range<1> TileSize{T};
 
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
   {
     auto cg = [&](sycl::handler& h) {
-      constexpr auto local = sycl::access::target::local;
+      static constexpr auto local = sycl::access::target::local;
 
       auto a = bufA.get_access<read>(h);
       auto b = bufB.get_access<read>(h);
@@ -116,7 +116,7 @@ int main(int argc, char* argv[]) {
 
   {
     auto cg = [&](sycl::handler& h) {
-      constexpr auto local = sycl::access::target::local;
+      static constexpr auto local = sycl::access::target::local;
 
       auto a = bufA.get_access<read>(h);
       auto b = bufB.get_access<read>(h);
