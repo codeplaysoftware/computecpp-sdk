@@ -84,13 +84,13 @@ int main(int argc, char* argv[]) {
 
   {
     auto cg = [&](sycl::handler& h) {
-      static constexpr auto local = sycl::access::target::local;
-
       auto a = bufA.get_access<read>(h);
       auto b = bufB.get_access<read>(h);
       auto c = bufC.get_access<dwrite>(h);
-      sycl::accessor<float, 1, rw, local> tile1(TileSize, h);
-      sycl::accessor<float, 1, rw, local> tile2(TileSize, h);
+      sycl::accessor<float, 1, rw, sycl::access::target::local> tile1(TileSize,
+                                                                      h);
+      sycl::accessor<float, 1, rw, sycl::access::target::local> tile2(TileSize,
+                                                                      h);
 
       h.parallel_for<TiledVecAdd>(
           sycl::nd_range<1>(VecSize, TileSize), [=](sycl::nd_item<1> i) {
@@ -116,13 +116,13 @@ int main(int argc, char* argv[]) {
 
   {
     auto cg = [&](sycl::handler& h) {
-      static constexpr auto local = sycl::access::target::local;
-
       auto a = bufA.get_access<read>(h);
       auto b = bufB.get_access<read>(h);
       auto c = bufC.get_access<write>(h);
-      sycl::accessor<float, 1, rw, local> tile1(TileSize, h);
-      sycl::accessor<float, 1, rw, local> tile2(TileSize, h);
+      sycl::accessor<float, 1, rw, sycl::access::target::local> tile1(TileSize,
+                                                                      h);
+      sycl::accessor<float, 1, rw, sycl::access::target::local> tile2(TileSize,
+                                                                      h);
 
       h.parallel_for<TiledVecAddDMA>(
           sycl::nd_range<1>(VecSize, TileSize), [=](sycl::nd_item<1> i) {
