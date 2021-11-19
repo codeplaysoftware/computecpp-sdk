@@ -55,10 +55,11 @@ class TiledVecAddDMA;
 int main(int argc, char* argv[]) {
   constexpr const size_t N = 128000;  // this is the total vector size
   constexpr const size_t T = 32;      // this is the tile size
-  constexpr auto read = sycl::access::mode::read;
-  constexpr auto write = sycl::access::mode::write;
-  constexpr auto rw = sycl::access::mode::read_write;
-  constexpr auto dwrite = sycl::access::mode::discard_write;
+  static constexpr auto read = sycl::access::mode::read;
+  static constexpr auto write = sycl::access::mode::write;
+  static constexpr auto rw = sycl::access::mode::read_write;
+  static constexpr auto dwrite = sycl::access::mode::discard_write;
+  using local_acc = sycl::accessor<float, 1, rw, sycl::access::target::local>;
   const sycl::range<1> VecSize{N};
   const sycl::range<1> TileSize{T};
 
@@ -84,13 +85,11 @@ int main(int argc, char* argv[]) {
 
   {
     auto cg = [&](sycl::handler& h) {
-      constexpr auto local = sycl::access::target::local;
-
       auto a = bufA.get_access<read>(h);
       auto b = bufB.get_access<read>(h);
       auto c = bufC.get_access<dwrite>(h);
-      sycl::accessor<float, 1, rw, local> tile1(TileSize, h);
-      sycl::accessor<float, 1, rw, local> tile2(TileSize, h);
+      local_acc tile1(TileSize, h);
+      local_acc tile2(TileSize, h);
 
       h.parallel_for<TiledVecAdd>(
           sycl::nd_range<1>(VecSize, TileSize), [=](sycl::nd_item<1> i) {
@@ -116,13 +115,11 @@ int main(int argc, char* argv[]) {
 
   {
     auto cg = [&](sycl::handler& h) {
-      constexpr auto local = sycl::access::target::local;
-
       auto a = bufA.get_access<read>(h);
       auto b = bufB.get_access<read>(h);
       auto c = bufC.get_access<write>(h);
-      sycl::accessor<float, 1, rw, local> tile1(TileSize, h);
-      sycl::accessor<float, 1, rw, local> tile2(TileSize, h);
+      local_acc tile1(TileSize, h);
+      local_acc tile2(TileSize, h);
 
       h.parallel_for<TiledVecAddDMA>(
           sycl::nd_range<1>(VecSize, TileSize), [=](sycl::nd_item<1> i) {

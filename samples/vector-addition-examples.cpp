@@ -55,7 +55,7 @@ class VecAddKernelMasked;
 class VecAddKernelPredicated;
 
 void zeroBuffer(sycl::buffer<float, 1> b) {
-  constexpr auto dwrite = sycl::access::mode::discard_write;
+  static constexpr auto dwrite = sycl::access::mode::discard_write;
   auto h = b.get_access<dwrite>();
   for (auto i = 0u; i < b.get_range()[0]; i++) {
     h[i] = 0.f;
@@ -63,7 +63,7 @@ void zeroBuffer(sycl::buffer<float, 1> b) {
 }
 
 void sumBuffer(sycl::buffer<float, 1> b) {
-  constexpr auto read = sycl::access::mode::read;
+  static constexpr auto read = sycl::access::mode::read;
   auto h = b.get_access<read>();
   auto sum = 0.0f;
   for (auto i = 0u; i < b.get_range()[0]; i++) {
@@ -78,9 +78,9 @@ void sumBuffer(sycl::buffer<float, 1> b) {
  * The general flow is that the output buffer is zeroed, the calculation
  * scheduled, then the sum printed for each of the functions. */
 int main(int argc, char* argv[]) {
-  constexpr auto read = sycl::access::mode::read;
-  constexpr auto write = sycl::access::mode::write;
-  constexpr auto dwrite = sycl::access::mode::discard_write;
+  static constexpr auto read = sycl::access::mode::read;
+  static constexpr auto write = sycl::access::mode::write;
+  static constexpr auto dwrite = sycl::access::mode::discard_write;
   constexpr const size_t N = 100000;
   const sycl::range<1> VecSize{N};
 
