@@ -108,7 +108,7 @@ find_library(COMPUTECPP_RUNTIME_LIBRARY
 
 # Found the library, use only single hint from now on
 get_filename_component(computecpp_library_path "${COMPUTECPP_RUNTIME_LIBRARY}" DIRECTORY)
-set(computecpp_find_hint "${computecpp_library_path}/..")
+get_filename_component(computecpp_find_hint "${computecpp_library_path}/.." ABSOLUTE)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
   NAMES ComputeCpp_d ComputeCpp
