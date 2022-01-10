@@ -2,7 +2,7 @@
 # FindComputeCpp
 #---------------
 #
-#   Copyright 2016-2018 Codeplay Software Ltd.
+#   Copyright Codeplay Software Ltd.
 #
 #   Licensed under the Apache License, Version 2.0 (the "License");
 #   you may not use these files except in compliance with the License.
@@ -73,22 +73,21 @@ find_package(OpenCL REQUIRED)
 
 # Find ComputeCpp package
 
-if(DEFINED ComputeCpp_DIR)
-  set(computecpp_find_hint ${ComputeCpp_DIR})
-elseif(DEFINED ENV{COMPUTECPP_DIR})
-  set(computecpp_find_hint $ENV{COMPUTECPP_DIR})
-endif()
+set(computecpp_find_hint
+  "${ComputeCpp_DIR}"
+  "$ENV{COMPUTECPP_DIR}"
+)
 
 # Used for running executables on the host
 set(computecpp_host_find_hint ${computecpp_find_hint})
 
 if(CMAKE_CROSSCOMPILING)
   # ComputeCpp_HOST_DIR is used to find executables that are run on the host
-  if(DEFINED ComputeCpp_HOST_DIR)
-    set(computecpp_host_find_hint ${ComputeCpp_HOST_DIR})
-  elseif(DEFINED ENV{COMPUTECPP_HOST_DIR})
-    set(computecpp_host_find_hint $ENV{COMPUTECPP_HOST_DIR})
-  endif()
+  set(computecpp_host_find_hint
+    "${ComputeCpp_HOST_DIR}"
+    "$ENV{COMPUTECPP_HOST_DIR}"
+    ${computecpp_find_hint}
+  )
 endif()
 
 find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
@@ -102,13 +101,17 @@ find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
   NO_SYSTEM_ENVIRONMENT_PATH)
 
 find_library(COMPUTECPP_RUNTIME_LIBRARY
-  NAMES ComputeCpp ComputeCpp_vs2015
+  NAMES ComputeCpp
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
+# Found the library, use only single hint from now on
+get_filename_component(computecpp_library_path "${COMPUTECPP_RUNTIME_LIBRARY}" DIRECTORY)
+set(computecpp_find_hint "${computecpp_library_path}/..")
+
 find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
-  NAMES ComputeCpp_d ComputeCpp ComputeCpp_vs2015_d
+  NAMES ComputeCpp_d ComputeCpp
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
