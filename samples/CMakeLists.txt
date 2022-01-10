@@ -9,19 +9,19 @@ function(add_sample)
   set(options NO_TEST)
   set(one_value_args TARGET)
   set(multi_value_args SOURCES)
-  cmake_parse_arguments(SDK_ADD_SAMPLE
+  cmake_parse_arguments(ARG
     "${options}"
     "${one_value_args}"
     "${multi_value_args}"
     ${ARGN}
   )
-  add_executable(${SDK_ADD_SAMPLE_TARGET} ${SDK_ADD_SAMPLE_SOURCES})
-  add_sycl_to_target(TARGET ${SDK_ADD_SAMPLE_TARGET}
-    SOURCES ${SDK_ADD_SAMPLE_SOURCES})
-  if(NOT SDK_ADD_SAMPLE_NO_TEST)
-    add_test(NAME ${SDK_ADD_SAMPLE_TARGET} COMMAND ${SDK_ADD_SAMPLE_TARGET})
+  add_executable(${ARG_TARGET} ${ARG_SOURCES})
+  add_sycl_to_target(TARGET ${ARG_TARGET}
+    SOURCES ${ARG_SOURCES})
+  if(NOT ARG_NO_TEST)
+    add_test(NAME ${ARG_TARGET} COMMAND ${ARG_TARGET})
   endif()
-  install(TARGETS ${SDK_ADD_SAMPLE_TARGET} RUNTIME DESTINATION bin)
+  install(TARGETS ${ARG_TARGET} RUNTIME DESTINATION bin)
 endfunction(add_sample)
 
 add_sample(TARGET accessors SOURCES accessors.cpp)
