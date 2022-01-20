@@ -29,7 +29,7 @@
 #  Latest version of this file can be found at:
 #    https://github.com/codeplaysoftware/computecpp-sdk
 
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.10.2)
 include(FindPackageHandleStandardArgs)
 
 # These should match the types of IR output by compute++
@@ -348,9 +348,9 @@ function(__build_ir)
   set(include_directories "$<TARGET_PROPERTY:${ARG_TARGET},INCLUDE_DIRECTORIES>")
   set(compile_definitions "$<TARGET_PROPERTY:${ARG_TARGET},COMPILE_DEFINITIONS>")
   set(generated_include_directories
-    $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">)
+    $<$<BOOL:${include_directories}>:-I$<JOIN:${include_directories},;-I>>)
   set(generated_compile_definitions
-    $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},\t-D>>)
+    $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},;-D>>)
 
   # Obtain language standard of the file
   set(device_compiler_cxx_standard)
@@ -406,12 +406,13 @@ function(__build_ir)
     OUTPUT ${outputDeviceFile} ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-            ${generated_include_directories}
-            ${generated_compile_definitions}
+            "${generated_include_directories}"
+            "${generated_compile_definitions}"
             -sycl-ih ${outputSyclFile}
             -o ${outputDeviceFile}
             -c ${ARG_SOURCE}
             ${generate_depfile}
+    COMMAND_EXPAND_LISTS
     DEPENDS ${ir_dependencies}
     IMPLICIT_DEPENDS CXX ${ARG_SOURCE}
     ${enable_depfile}
