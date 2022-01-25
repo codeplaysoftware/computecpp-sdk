@@ -63,7 +63,7 @@ set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
-set(COMPUTECPP_BITCODE "spir64" CACHE STRING
+set(COMPUTECPP_BITCODE "" CACHE STRING
   "Bitcode types to use as SYCL targets in compute++.")
 mark_as_advanced(COMPUTECPP_BITCODE)
 
@@ -185,7 +185,9 @@ endif()
 list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -DSYCL_LANGUAGE_VERSION=${SYCL_LANGUAGE_VERSION})
 
 foreach (bitcode IN ITEMS ${COMPUTECPP_BITCODE})
-  list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${bitcode})
+  if(NOT "${bitcode}" STREQUAL "")
+    list(APPEND COMPUTECPP_DEVICE_COMPILER_FLAGS -sycl-target ${bitcode})
+  endif()
 endforeach()
 
 message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
