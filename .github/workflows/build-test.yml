@@ -38,7 +38,7 @@ jobs:
             cc_compiler: "gcc"
             cxx_compiler: "g++"
     steps:
-      - uses: actions/checkout@v2.4.0
+      - uses: actions/checkout@v3
       - name: Install prerequisites
         run: |
           sudo apt update
