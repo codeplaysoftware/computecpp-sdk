@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10.2)
 project(ComputeCpp-SDK)
 
 option(COMPUTECPP_SDK_USE_OPENMP "Enable OpenMP support in samples" OFF)
+option(COMPUTECPP_SDK_USE_SUBGROUPS "Enable subgroup support in samples" OFF)
 option(COMPUTECPP_SDK_BUILD_TESTS "Build the tests for the header utilities in include/" OFF)
 option(COMPUTECPP_SDK_BUILD_DEMOS "Build the SDK demos" OFF)
 
