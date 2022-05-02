@@ -556,6 +556,6 @@ function(add_sycl_to_target)
     APPEND PROPERTY LINK_LIBRARIES ComputeCpp::ComputeCpp)
   set_property(TARGET ${ARG_TARGET}
     APPEND PROPERTY INTERFACE_LINK_LIBRARIES ComputeCpp::ComputeCpp)
-  target_compile_definitions(${ARG_TARGET} INTERFACE
+  target_compile_definitions(${ARG_TARGET} PUBLIC
     SYCL_LANGUAGE_VERSION=${SYCL_LANGUAGE_VERSION})
 endfunction(add_sycl_to_target)
