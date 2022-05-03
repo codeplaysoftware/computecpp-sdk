@@ -1,6 +1,6 @@
 /***************************************************************************
  *
- *  Copyright (C) 2017 Codeplay Software Limited
+ *  Copyright (C) Codeplay Software Limited
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
@@ -22,8 +22,7 @@
  *
  **************************************************************************/
 
-#include <CL/sycl.hpp>
-namespace sycl = cl::sycl;
+#include <sycl/sycl.hpp>
 
 #include <algorithm>
 #include <iostream>
@@ -50,7 +49,7 @@ void par_scan(sycl::buffer<T, 1> in, sycl::queue q) {
 
   // Check if there is enough global memory.
   size_t global_mem_size = dev.get_info<sycl::info::device::global_mem_size>();
-  if (!dev.is_host() && in.get_count() > (global_mem_size)) {
+  if (in.get_count() > global_mem_size) {
     throw std::runtime_error("Input size exceeds device global memory size.");
   }
 
@@ -91,11 +90,11 @@ void par_scan(sycl::buffer<T, 1> in, sycl::queue q) {
           auto sub_group = item.get_sub_group();
           auto scan_res = inclusive_scan_over_group(sub_group, data[gid], Op{});
           if (sub_group.get_local_id() == sub_group.get_local_range() - 1) {
-            temp[sub_group.get_group_id()[0]] = scan_res;
+            temp[sub_group.get_group_linear_id()] = scan_res;
           }
           item.barrier(sycl::access::fence_space::local_space);
-          for (auto i = 1u; i < sub_group.get_group_range()[0]; i++) {
-            scan_res += sub_group.get_group_id()[0] >= i ? temp[i - 1] : 0;
+          for (auto i = 1u; i < sub_group.get_group_linear_range(); i++) {
+            scan_res += sub_group.get_group_linear_id() >= i ? temp[i - 1] : 0;
           }
           data[gid] = scan_res;
         });
@@ -158,7 +157,7 @@ int test_sum(sycl::queue& q) {
       cgh.copy(in.data(), acc);
     });
 
-    par_scan<int32_t, sycl::experimental::plus<int32_t>>(buf, q);
+    par_scan<int32_t, sycl::plus<int32_t>>(buf, q);
   }
 
   std::vector<int32_t> test_sum(in.size());
@@ -183,26 +182,18 @@ int test_sum(sycl::queue& q) {
 
 int main() {
   sycl::queue q{sycl::default_selector{}};
-  sycl::device d = q.get_device();
 
-  auto version = d.get_platform().get_info<sycl::info::platform::version>();
-  auto is_version = [&](std::string_view req_ver) {
-    return version.find(req_ver) != std::string::npos;
-  };
-  auto has_subgroups = d.is_host() || is_version("2.1") ||
-                       is_version("2.2") || is_version("3.0");
-  auto has_ext_subgroups = d.has_extension("cl_intel_subgroups") ||
-                           d.has_extension("cl_khr_subgroups");
-  if (!(has_subgroups || has_ext_subgroups)) {
-    std::cout << "Subgroups not supported on device.\n";
+  if (SYCL_LANGUAGE_VERSION < 202000) {
+    std::cout << "This sample must be compiled with SYCL 2020 support\n";
     return 0;
   }
 
   auto ret = test_sum(q);
   if (ret != 0) {
+    std::cout << "Results are not correct.\n";
     return ret;
   }
 
-  std::cout << "Results are correct." << std::endl;
+  std::cout << "Results are correct.\n";
   return 0;
 }
