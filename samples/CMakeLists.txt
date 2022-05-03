@@ -17,9 +17,9 @@ function(add_sample)
     ${ARGN}
   )
   add_executable(${ARG_TARGET} ${ARG_SOURCES})
+  set_property(TARGET ${ARG_TARGET} PROPERTY CXX_STANDARD 14)
   add_sycl_to_target(TARGET ${ARG_TARGET}
     SOURCES ${ARG_SOURCES})
-  set_property(TARGET ${ARG_TARGET} PROPERTY CXX_STANDARD 14)
   if(NOT ARG_NO_TEST)
     add_test(NAME ${ARG_TARGET} COMMAND ${ARG_TARGET})
   endif()
