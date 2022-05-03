@@ -16,7 +16,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
 list(APPEND COMPUTECPP_USER_FLAGS "-no-serial-memop")
 find_package(ComputeCpp REQUIRED)
 
-set(CMAKE_CXX_STANDARD 14)
 enable_testing()
 
 add_subdirectory(samples)
