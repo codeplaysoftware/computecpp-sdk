@@ -352,19 +352,8 @@ function(__build_ir)
     $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},;-D>>)
 
   # Obtain language standard of the file
-  set(device_compiler_cxx_standard)
-  get_target_property(targetCxxStandard ${ARG_TARGET} CXX_STANDARD)
-  if (targetCxxStandard MATCHES 17)
-    set(device_compiler_cxx_standard "-std=c++1z")
-  elseif (targetCxxStandard MATCHES 14)
-    set(device_compiler_cxx_standard "-std=c++14")
-  elseif (targetCxxStandard MATCHES 11)
-    set(device_compiler_cxx_standard "-std=c++11")
-  elseif (targetCxxStandard MATCHES 98)
-    message(FATAL_ERROR "SYCL applications cannot be compiled using C++98")
-  else ()
-    set(device_compiler_cxx_standard "")
-  endif()
+  set(device_compiler_cxx_standard
+    "-std=c++$<TARGET_PROPERTY:${ARG_TARGET},CXX_STANDARD>")
 
   get_property(source_compile_flags
     SOURCE ${ARG_SOURCE}
