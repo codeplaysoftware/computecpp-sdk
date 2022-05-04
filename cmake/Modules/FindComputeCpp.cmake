@@ -29,7 +29,7 @@
 #  Latest version of this file can be found at:
 #    https://github.com/codeplaysoftware/computecpp-sdk
 
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.10.2)
 include(FindPackageHandleStandardArgs)
 
 # These should match the types of IR output by compute++
@@ -63,9 +63,13 @@ set(COMPUTECPP_USER_FLAGS "" CACHE STRING "User flags for compute++")
 separate_arguments(COMPUTECPP_USER_FLAGS)
 mark_as_advanced(COMPUTECPP_USER_FLAGS)
 
-set(COMPUTECPP_BITCODE "" CACHE STRING
-  "Bitcode types to use as SYCL targets in compute++.")
+set(COMPUTECPP_BITCODE "" CACHE STRING "")
 mark_as_advanced(COMPUTECPP_BITCODE)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
+  # Policy enabling rewrites of paths in depfiles when using ninja
+  cmake_policy(SET CMP0116 NEW)
+endif()
 
 set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
 
@@ -343,24 +347,13 @@ function(__build_ir)
   set(include_directories "$<TARGET_PROPERTY:${ARG_TARGET},INCLUDE_DIRECTORIES>")
   set(compile_definitions "$<TARGET_PROPERTY:${ARG_TARGET},COMPILE_DEFINITIONS>")
   set(generated_include_directories
-    $<$<BOOL:${include_directories}>:-I\"$<JOIN:${include_directories},\"\t-I\">\">)
+    $<$<BOOL:${include_directories}>:-I$<JOIN:${include_directories},;-I>>)
   set(generated_compile_definitions
-    $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},\t-D>>)
+    $<$<BOOL:${compile_definitions}>:-D$<JOIN:${compile_definitions},;-D>>)
 
   # Obtain language standard of the file
-  set(device_compiler_cxx_standard)
-  get_target_property(targetCxxStandard ${ARG_TARGET} CXX_STANDARD)
-  if (targetCxxStandard MATCHES 17)
-    set(device_compiler_cxx_standard "-std=c++1z")
-  elseif (targetCxxStandard MATCHES 14)
-    set(device_compiler_cxx_standard "-std=c++14")
-  elseif (targetCxxStandard MATCHES 11)
-    set(device_compiler_cxx_standard "-std=c++11")
-  elseif (targetCxxStandard MATCHES 98)
-    message(FATAL_ERROR "SYCL applications cannot be compiled using C++98")
-  else ()
-    set(device_compiler_cxx_standard "")
-  endif()
+  set(device_compiler_cxx_standard
+    "-std=c++$<TARGET_PROPERTY:${ARG_TARGET},CXX_STANDARD>")
 
   get_property(source_compile_flags
     SOURCE ${ARG_SOURCE}
@@ -401,12 +394,13 @@ function(__build_ir)
     OUTPUT ${outputDeviceFile} ${outputSyclFile}
     COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
-            ${generated_include_directories}
-            ${generated_compile_definitions}
+            "${generated_include_directories}"
+            "${generated_compile_definitions}"
             -sycl-ih ${outputSyclFile}
             -o ${outputDeviceFile}
             -c ${ARG_SOURCE}
             ${generate_depfile}
+    COMMAND_EXPAND_LISTS
     DEPENDS ${ir_dependencies}
     IMPLICIT_DEPENDS CXX ${ARG_SOURCE}
     ${enable_depfile}

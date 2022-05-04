@@ -1,3 +1,4 @@
+cmake_minimum_required(VERSION 3.10.2)
 if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
   set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -16,6 +17,7 @@ function(add_sample)
     ${ARGN}
   )
   add_executable(${ARG_TARGET} ${ARG_SOURCES})
+  set_property(TARGET ${ARG_TARGET} PROPERTY CXX_STANDARD 14)
   add_sycl_to_target(TARGET ${ARG_TARGET}
     SOURCES ${ARG_SOURCES})
   if(NOT ARG_NO_TEST)
@@ -37,14 +39,7 @@ add_sample(TARGET images SOURCES images.cpp)
 add_sample(TARGET matrix-multiply SOURCES matrix-multiply.cpp NO_TEST)
 if(COMPUTECPP_SDK_USE_OPENMP)
   find_package(OpenMP REQUIRED)
-  if(TARGET OpenMP::OpenMP_CXX)
-    target_link_libraries(matrix-multiply PRIVATE OpenMP::OpenMP_CXX)
-  else()
-    # Workaround for CMake <3.9 - FindOpenMP does not provide the
-    # linker flags and no imported target
-    target_compile_options(matrix-multiply PRIVATE ${OpenMP_CXX_FLAGS})
-    target_link_libraries( matrix-multiply PRIVATE ${OpenMP_CXX_FLAGS})
-  endif()
+  target_link_libraries(matrix-multiply PRIVATE OpenMP::OpenMP_CXX)
   add_test(NAME matrix-multiply_omp COMMAND matrix-multiply 64 omp)
 endif()
 add_test(NAME matrix-multiply_sycl COMMAND matrix-multiply 64 sycl)
