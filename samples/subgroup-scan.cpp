@@ -81,8 +81,7 @@ void par_scan(sycl::buffer<T, 1> in, sycl::queue q) {
   using namespace sycl::access;
   q.submit([&](sycl::handler& cgh) {
     auto data = in.template get_access<mode::read_write>(cgh);
-    auto temp = sycl::accessor<T, 1, mode::read_write, target::local>(
-        sycl::range<1>(wgroup_size), cgh);
+    auto temp = sycl::local_accessor<T, 1>(sycl::range<1>(wgroup_size), cgh);
     cgh.parallel_for<kernel_name<T, Op, class scan_segments>>(
         sycl::nd_range<1>(input_size, wgroup_size), [=](sycl::nd_item<1> item) {
           size_t gid = item.get_global_linear_id();
