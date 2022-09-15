@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2017 Codeplay Software Limited
+ *  Copyright (C) Codeplay Software Limited
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
@@ -35,13 +35,21 @@
 
 #include <CL/sycl.hpp>
 
+#ifdef SYCL_IMPLEMENTATION_ONEAPI
+#if __SYCL_COMPILER_VERSION >= 20220812
+#define NO_CL_NAMESPACE
+#endif
+#endif
+
 #include <cstddef>
 #include <queue>
 #include <set>
 #include <stdexcept>
 #include <map>
 
+#ifndef NO_CL_NAMESPACE
 namespace cl {
+#endif
 namespace sycl {
 namespace codeplay {
 
@@ -540,5 +548,10 @@ inline void SYCLfreeAll(PointerMapper& pMap) {
 
 }  // namespace codeplay
 }  // namespace sycl
+#ifndef NO_CL_NAMESPACE
 }  // namespace cl
+#else
+#undef NO_CL_NAMESPACE
+#endif
+
 #endif  // CL_SYCL_SDK_CODEPLAY_VIRTUAL_PTR_HPP
