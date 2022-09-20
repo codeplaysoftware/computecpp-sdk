@@ -57,14 +57,14 @@ simultaneously.
 ## Usage
 
 Include the `virtual_ptr` header file in your program. Replace your
-device `malloc` and `free` operations with `codeplay::SYCLmalloc`
-and `codeplay::SYCLfree`. These functions are not thread-safe, even
+device `malloc` and `free` operations with `vptr::SYCLmalloc`
+and `vptr::SYCLfree`. These functions are not thread-safe, even
 though the underlying SYCL buffer objects are thread-safe.
 
 To retrieve the SYCL buffer from the virtual pointer, use the
-`codeplay::PointerMapper::get_buffer` function. The offset into the
+`vptr::PointerMapper::get_buffer` function. The offset into the
 SYCL buffer on the device side can be retrieved using the
-`codeplay::PointerMapper::get_offset` function. A pointer of size
+`vptr::PointerMapper::get_offset` function. A pointer of size
 zero can be malloc’ed and free’d but will throw an exception if
 accessed.
 

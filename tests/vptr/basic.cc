@@ -40,7 +40,7 @@ const sycl_acc_mode sycl_acc_rw = sycl_acc_mode::read_write;
 using sycl_acc_target = cl::sycl::access::target;
 const sycl_acc_target sycl_acc_host = sycl_acc_target::host_buffer;
 
-using namespace cl::sycl::codeplay;
+using namespace vptr;
 
 TEST(pointer_mapper, basic_test) {
   PointerMapper pMap;

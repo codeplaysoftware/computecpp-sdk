@@ -50,7 +50,7 @@ const size_t M = 150;
 int main() {
   {
     queue myQueue;
-    cl::sycl::codeplay::PointerMapper pMap;
+    vptr::PointerMapper pMap;
 
     /* Allocate the matrices using SYCLmalloc. a, b and c are virtual pointers,
      * pointing to device buffers.
