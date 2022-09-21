@@ -33,7 +33,7 @@
 #include "vptr/pointer_alias.hpp"
 #include "vptr/virtual_ptr.hpp"
 
-using namespace cl::sycl::codeplay;
+using namespace vptr;
 
 using buffer_t = PointerMapper::buffer_t;
 

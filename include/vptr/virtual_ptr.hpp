@@ -1,5 +1,5 @@
 /***************************************************************************
- *  Copyright (C) 2017 Codeplay Software Limited
+ *  Copyright (C) Codeplay Software Limited
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
@@ -35,15 +35,14 @@
 
 #include <CL/sycl.hpp>
 
+
 #include <cstddef>
 #include <queue>
 #include <set>
 #include <stdexcept>
 #include <map>
 
-namespace cl {
-namespace sycl {
-namespace codeplay {
+namespace vptr {
 
 using sycl_acc_target = cl::sycl::access::target;
 using sycl_acc_mode = cl::sycl::access::mode;
@@ -506,7 +505,7 @@ inline void PointerMapper::remove_pointer<false>(const virtual_pointer_t ptr) {
  * \throw cl::sycl::exception if error while creating the buffer
  */
 inline void* SYCLmalloc(size_t size, PointerMapper& pMap,
-                        const property_list& pList = {}) {
+                        const cl::sycl::property_list& pList = {}) {
   if (size == 0) {
     return nullptr;
   }
@@ -538,7 +537,6 @@ inline void SYCLfreeAll(PointerMapper& pMap) {
   pMap.clear();
 }
 
-}  // namespace codeplay
-}  // namespace sycl
-}  // namespace cl
+}  // namespace vptr
+
 #endif  // CL_SYCL_SDK_CODEPLAY_VIRTUAL_PTR_HPP
