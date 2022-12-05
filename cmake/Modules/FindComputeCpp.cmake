@@ -234,6 +234,9 @@ if(MSVC)
                         -isystem ${OpenCL_INTERFACE_INCLUDE_DIRECTORIES}
                         -o ${ComputeCpp_STL_CHECK_SRC}.sycl
                         -c ${ComputeCpp_STL_CHECK_SRC}.cpp)
+  if(SYCL_LANGUAGE_VERSION STREQUAL 2020)
+    list(APPEND _stl_test_command "-std=c++17")
+  endif()
   execute_process(
     COMMAND ${_stl_test_command}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
