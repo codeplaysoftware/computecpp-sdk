@@ -229,6 +229,7 @@ if(MSVC)
   set(_stl_test_command "${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}"
                         -sycl
                         ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+                        ${COMPUTECPP_USER_FLAGS}
                         -isystem ${ComputeCpp_INCLUDE_DIRS}
                         -isystem ${OpenCL_INTERFACE_INCLUDE_DIRECTORIES}
                         -o ${ComputeCpp_STL_CHECK_SRC}.sycl
