@@ -403,11 +403,15 @@ function(__build_ir)
 
   # Depfile support was only added in CMake 3.7
   # CMake throws an error if it is unsupported by the generator (i. e. not ninja)
-  if((NOT CMAKE_VERSION VERSION_LESS 3.7.0) AND
-          CMAKE_GENERATOR MATCHES "Ninja")
+  if(((NOT CMAKE_VERSION VERSION_LESS 3.7.0)  AND CMAKE_GENERATOR MATCHES "Ninja") OR
+     ((NOT CMAKE_VERSION VERSION_LESS 3.17.0) AND CMAKE_GENERATOR MATCHES "Ninja Multi-Config") OR
+     ((NOT CMAKE_VERSION VERSION_LESS 3.20.0) AND CMAKE_GENERATOR MATCHES "Make")
+  )
     file(RELATIVE_PATH relOutputFile ${CMAKE_BINARY_DIR} ${outputDeviceFile})
     set(generate_depfile -MMD -MF ${depFileName} -MT ${relOutputFile})
-    set(enable_depfile DEPFILE ${depFileName})
+    set(depfile_arg DEPFILE ${depFileName})
+  else()
+    set(implicit_depends_arg IMPLICIT_DEPENDS CXX ${ARG_SOURCE})
   endif()
 
   # Add custom command for running compute++
@@ -423,8 +427,8 @@ function(__build_ir)
             ${generate_depfile}
     COMMAND_EXPAND_LISTS
     DEPENDS ${ir_dependencies}
-    IMPLICIT_DEPENDS CXX ${ARG_SOURCE}
-    ${enable_depfile}
+    ${implicit_depends_arg}
+    ${depfile_arg}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
