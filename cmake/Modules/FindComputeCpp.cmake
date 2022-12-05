@@ -75,8 +75,13 @@ set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 
 
 find_package(OpenCL REQUIRED)
 
-# Find ComputeCpp package
+if(TARGET OpenCL::Headers)
+  get_target_property(OpenCL_INTERFACE_INCLUDE_DIRECTORIES OpenCL::Headers INTERFACE_INCLUDE_DIRECTORIES)
+else()
+  get_target_property(OpenCL_INTERFACE_INCLUDE_DIRECTORIES OpenCL::OpenCL INTERFACE_INCLUDE_DIRECTORIES)
+endif()
 
+# Find ComputeCpp package
 set(computecpp_find_hint
   "${ComputeCpp_DIR}"
   "$ENV{COMPUTECPP_DIR}"
@@ -215,7 +220,7 @@ if(MSVC)
                         -sycl
                         ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
                         -isystem ${ComputeCpp_INCLUDE_DIRS}
-                        -isystem ${OpenCL_INCLUDE_DIRS}
+                        -isystem ${OpenCL_INTERFACE_INCLUDE_DIRECTORIES}
                         -o ${ComputeCpp_STL_CHECK_SRC}.sycl
                         -c ${ComputeCpp_STL_CHECK_SRC}.cpp)
   execute_process(
@@ -260,14 +265,6 @@ if(MSVC)
   file(REMOVE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
               ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp.sycl)
 endif(MSVC)
-
-if(NOT TARGET OpenCL::OpenCL)
-  add_library(OpenCL::OpenCL UNKNOWN IMPORTED)
-  set_target_properties(OpenCL::OpenCL PROPERTIES
-    IMPORTED_LOCATION             "${OpenCL_LIBRARIES}"
-    INTERFACE_INCLUDE_DIRECTORIES "${OpenCL_INCLUDE_DIRS}"
-  )
-endif()
 
 if(NOT TARGET ComputeCpp::ComputeCpp)
   add_library(ComputeCpp::ComputeCpp UNKNOWN IMPORTED)
