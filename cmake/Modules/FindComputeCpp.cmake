@@ -103,24 +103,27 @@ find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
   HINTS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin
   NO_SYSTEM_ENVIRONMENT_PATH)
-
 find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
   HINTS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin
   NO_SYSTEM_ENVIRONMENT_PATH)
-
-find_library(COMPUTECPP_RUNTIME_LIBRARY
+find_library(COMPUTECPP_LIBRARY
   NAMES ComputeCpp
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
 # Found the library, use only single hint from now on
-get_filename_component(computecpp_library_path "${COMPUTECPP_RUNTIME_LIBRARY}" DIRECTORY)
+get_filename_component(computecpp_library_path "${COMPUTECPP_LIBRARY}" DIRECTORY)
 get_filename_component(computecpp_find_hint "${computecpp_library_path}/.." ABSOLUTE)
 
-find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
-  NAMES ComputeCpp_d ComputeCpp
+if(WIN32)
+  set(DEBUG_POSTFIX "_d")
+else()
+  set(DEBUG_POSTFIX "")
+endif()
+find_library(COMPUTECPP_LIBRARY_DEBUG
+  NAMES ComputeCpp${DEBUG_POSTFIX}
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
@@ -164,15 +167,15 @@ find_package_handle_standard_args(ComputeCpp
   REQUIRED_VARS ComputeCpp_ROOT_DIR
                 ComputeCpp_DEVICE_COMPILER_EXECUTABLE
                 ComputeCpp_INFO_EXECUTABLE
-                COMPUTECPP_RUNTIME_LIBRARY
-                COMPUTECPP_RUNTIME_LIBRARY_DEBUG
+                COMPUTECPP_LIBRARY
+                COMPUTECPP_LIBRARY_DEBUG
                 ComputeCpp_INCLUDE_DIRS
   VERSION_VAR ComputeCpp_VERSION)
 mark_as_advanced(ComputeCpp_ROOT_DIR
                  ComputeCpp_DEVICE_COMPILER_EXECUTABLE
                  ComputeCpp_INFO_EXECUTABLE
-                 COMPUTECPP_RUNTIME_LIBRARY
-                 COMPUTECPP_RUNTIME_LIBRARY_DEBUG
+                 COMPUTECPP_LIBRARY
+                 COMPUTECPP_LIBRARY_DEBUG
                  ComputeCpp_INCLUDE_DIRS
                  ComputeCpp_VERSION)
 
@@ -267,11 +270,21 @@ if(MSVC)
 endif(MSVC)
 
 if(NOT TARGET ComputeCpp::ComputeCpp)
-  add_library(ComputeCpp::ComputeCpp UNKNOWN IMPORTED)
+  add_library(ComputeCpp::ComputeCpp SHARED IMPORTED)
+  if(WIN32)
+    string(REGEX REPLACE [[lib$]] [[dll]] COMPUTECPP_RUNTIME_LIBRARY "${COMPUTECPP_LIBRARY}")
+    string(REGEX REPLACE [[lib$]] [[dll]] COMPUTECPP_RUNTIME_LIBRARY_DEBUG "${COMPUTECPP_LIBRARY_DEBUG}")
+    set(EXTRA_IMPORTED_ARG IMPORTED_IMPLIB "${COMPUTECPP_LIBRARY}"
+                           IMPORTED_IMPLIB_DEBUG "${COMPUTECPP_LIBRARY_DEBUG}")
+  else()
+    set(COMPUTECPP_RUNTIME_LIBRARY_DEBUG "${COMPUTECPP_LIBRARY_DEBUG}")
+    set(COMPUTECPP_RUNTIME_LIBRARY "${COMPUTECPP_LIBRARY}")
+    set(EXTRA_IMPORTED_ARG IMPORTED_SONAME ComputeCpp)
+  endif()
   set_target_properties(ComputeCpp::ComputeCpp PROPERTIES
     IMPORTED_LOCATION_DEBUG          "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
-    IMPORTED_LOCATION_RELWITHDEBINFO "${COMPUTECPP_RUNTIME_LIBRARY}"
     IMPORTED_LOCATION                "${COMPUTECPP_RUNTIME_LIBRARY}"
+    ${EXTRA_IMPORTED_ARG}
     INTERFACE_INCLUDE_DIRECTORIES    "${ComputeCpp_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL"
   )
