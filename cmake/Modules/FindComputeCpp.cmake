@@ -226,7 +226,7 @@ if(MSVC)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
     "#include <CL/sycl.hpp>  \n"
     "int main() { return 0; }\n")
-  set(_stl_test_command ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
+  set(_stl_test_command "${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}"
                         -sycl
                         ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
                         -isystem ${ComputeCpp_INCLUDE_DIRS}
@@ -409,7 +409,7 @@ function(__build_ir)
   # Add custom command for running compute++
   add_custom_command(
     OUTPUT ${outputDeviceFile} ${outputSyclFile}
-    COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
+    COMMAND "${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}"
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
             "${generated_include_directories}"
             "${generated_compile_definitions}"
