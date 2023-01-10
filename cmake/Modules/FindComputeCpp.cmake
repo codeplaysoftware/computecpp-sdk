@@ -73,7 +73,9 @@ endif()
 
 set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
 
-find_package(OpenCL REQUIRED)
+if(NOT TARGET OpenCL::OpenCL)
+  find_package(OpenCL REQUIRED)
+endif()
 
 if(TARGET OpenCL::Headers)
   get_target_property(OpenCL_INTERFACE_INCLUDE_DIRECTORIES OpenCL::Headers INTERFACE_INCLUDE_DIRECTORIES)
