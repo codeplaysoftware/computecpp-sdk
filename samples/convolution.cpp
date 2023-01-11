@@ -3,8 +3,8 @@
 
 #include <utility>
 
-constexpr auto elems_per_thread = 8;
-constexpr auto double_buffer_iterations = 4;
+constexpr auto elems_per_thread = 4;
+constexpr auto double_buffer_iterations = 64;
 
 template <typename T>
 class Convolve1D {
@@ -64,18 +64,23 @@ class Convolve1D {
     DataEvent inactive = {f_b_.get_pointer(), out_b_.get_pointer(), f_b_ev,
                           f_b_ev};
     i.wait_for(g_ev);
-    for (int j = 2; j < double_buffer_iterations; j++) {
+    for (int j = 0; j < double_buffer_iterations - 1; j++) {
       auto& [in, out, ev, out_ev] = active;
+      auto& [inactive_ptr, b, inactive_ev, c] = inactive;
+      inactive_ev = i.async_work_group_copy(
+          inactive_ptr, f_.get_pointer() + offset + (j+1) * wg_elements,
+          wg_elements + g_.get_size());
       i.wait_for(ev, out_ev);
       process_chunk(in, out, i);
-      ev = i.async_work_group_copy(
-          in, f_.get_pointer() + offset + j * wg_elements, wg_elements + g_.get_size());
       out_ev = i.async_work_group_copy(
-          out_.get_pointer() + offset + (j-2) * wg_elements, out, wg_elements);
+          out_.get_pointer() + offset + j * wg_elements, out, wg_elements);
       std::swap(active, inactive);
     }
-    // wait on all output events
-    i.wait_for(std::get<3>(active), std::get<3>(inactive));
+    auto& [in, out, ev, out_ev] = active;
+    i.wait_for(ev);
+    process_chunk(in, out, i);
+    out_ev = i.async_work_group_copy(out_.get_pointer() + offset + (double_buffer_iterations - 1) * wg_elements, out, wg_elements);
+    //i.wait_for(out_ev, std::get<3>(inactive));
   }
 };
 
@@ -105,7 +110,8 @@ int main() {
     sycl::accessor<float> l(lhs, h);
     sycl::accessor<float> r(rhs, h);
     sycl::accessor<float> o(out, h);
-    h.parallel_for(sycl::nd_range{o.get_range() / (elems_per_thread * double_buffer_iterations),
+    h.parallel_for(sycl::nd_range{o.get_range() / (elems_per_thread *
+                                                   double_buffer_iterations),
                                   sycl::range{wg_size}},
                    Convolve1D<float>{l, r, o, wg_size, h});
   });
