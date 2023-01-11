@@ -1,6 +1,10 @@
+#include <iostream>
 #include <sycl/sycl.hpp>
 
+#include <utility>
+
 constexpr auto elems_per_thread = 8;
+constexpr auto double_buffer_iterations = 4;
 
 template <typename T>
 class Convolve1D {
@@ -9,6 +13,8 @@ class Convolve1D {
   sycl::accessor<T> out_;
   sycl::local_accessor<T> f_a_;
   sycl::local_accessor<T> f_b_;
+  sycl::local_accessor<T> out_a_;
+  sycl::local_accessor<T> out_b_;
   sycl::local_accessor<T> g_local_;
 
   void process_chunk(T* chunk, T* out, sycl::nd_item<> i) const {
@@ -34,28 +40,42 @@ class Convolve1D {
         out_(out),
         f_a_(sycl::range{wg_size * elems_per_thread} + g.get_range(), h),
         f_b_(sycl::range{wg_size * elems_per_thread} + g.get_range(), h),
+        out_a_(sycl::range{wg_size * elems_per_thread}, h),
+        out_b_(sycl::range{wg_size * elems_per_thread}, h),
         g_local_(g.get_range(), h) {}
 
   void operator()(sycl::nd_item<> i) const {
+    using DataEvent = std::tuple<sycl::local_ptr<T>, sycl::local_ptr<T>,
+                                 sycl::device_event, sycl::device_event>;
     // Offset: work-group size x number of elements per work-item x the global
-    // work-group identity x two chunks per work-group
-    const auto offset =
-        i.get_group(0) * 2 * i.get_local_range(0) * elems_per_thread;
+    // work-group identity
+    const auto wg_elements = i.get_local_range(0) * elems_per_thread;
+    const auto offset = i.get_group(0) * wg_elements * double_buffer_iterations;
     auto g_ev = i.async_work_group_copy(g_local_.get_pointer(),
                                         g_.get_pointer(), g_.size());
     auto f_a_ev = i.async_work_group_copy(
         f_a_.get_pointer(), f_.get_pointer() + offset, f_a_.size());
     auto f_b_ev = i.async_work_group_copy(
-        f_b_.get_pointer(),
-        f_.get_pointer() + offset + i.get_local_range(0) * elems_per_thread,
+        f_b_.get_pointer(), f_.get_pointer() + offset + wg_elements,
         f_b_.size());
-    i.wait_for(g_ev, f_a_ev);
-    process_chunk(f_a_.get_pointer(), out_.get_pointer() + offset, i);
-    i.wait_for(f_b_ev);
-    process_chunk(
-        f_b_.get_pointer(),
-        out_.get_pointer() + offset + i.get_local_range(0) * elems_per_thread,
-        i);
+    // The repeated f events will be replaced with output events in the loop
+    DataEvent active = {f_a_.get_pointer(), out_a_.get_pointer(), f_a_ev,
+                        f_a_ev};
+    DataEvent inactive = {f_b_.get_pointer(), out_b_.get_pointer(), f_b_ev,
+                          f_b_ev};
+    i.wait_for(g_ev);
+    for (int j = 2; j < double_buffer_iterations; j++) {
+      auto& [in, out, ev, out_ev] = active;
+      i.wait_for(ev, out_ev);
+      process_chunk(in, out, i);
+      ev = i.async_work_group_copy(
+          in, f_.get_pointer() + offset + j * wg_elements, wg_elements + g_.get_size());
+      out_ev = i.async_work_group_copy(
+          out_.get_pointer() + offset + (j-2) * wg_elements, out, wg_elements);
+      std::swap(active, inactive);
+    }
+    // wait on all output events
+    i.wait_for(std::get<3>(active), std::get<3>(inactive));
   }
 };
 
@@ -85,8 +105,7 @@ int main() {
     sycl::accessor<float> l(lhs, h);
     sycl::accessor<float> r(rhs, h);
     sycl::accessor<float> o(out, h);
-    // each WI double-buffers, so 2x elems/thread per output
-    h.parallel_for(sycl::nd_range{o.get_range() / (elems_per_thread * 2),
+    h.parallel_for(sycl::nd_range{o.get_range() / (elems_per_thread * double_buffer_iterations),
                                   sycl::range{wg_size}},
                    Convolve1D<float>{l, r, o, wg_size, h});
   });
