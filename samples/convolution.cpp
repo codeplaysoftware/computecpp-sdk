@@ -68,7 +68,7 @@ class Convolve1D {
       auto& [in, out, ev, out_ev] = active;
       auto& [inactive_ptr, b, inactive_ev, c] = inactive;
       inactive_ev = i.async_work_group_copy(
-          inactive_ptr, f_.get_pointer() + offset + (j+1) * wg_elements,
+          inactive_ptr, f_.get_pointer() + offset + (j + 1) * wg_elements,
           wg_elements + g_.get_size());
       i.wait_for(ev, out_ev);
       process_chunk(in, out, i);
@@ -79,8 +79,11 @@ class Convolve1D {
     auto& [in, out, ev, out_ev] = active;
     i.wait_for(ev);
     process_chunk(in, out, i);
-    out_ev = i.async_work_group_copy(out_.get_pointer() + offset + (double_buffer_iterations - 1) * wg_elements, out, wg_elements);
-    //i.wait_for(out_ev, std::get<3>(inactive));
+    out_ev = i.async_work_group_copy(
+        out_.get_pointer() + offset +
+            (double_buffer_iterations - 1) * wg_elements,
+        out, wg_elements);
+    i.wait_for(out_ev, std::get<3>(inactive));
   }
 };
 
@@ -110,10 +113,10 @@ int main() {
     sycl::accessor<float> l(lhs, h);
     sycl::accessor<float> r(rhs, h);
     sycl::accessor<float> o(out, h);
-    h.parallel_for(sycl::nd_range{o.get_range() / (elems_per_thread *
-                                                   double_buffer_iterations),
-                                  sycl::range{wg_size}},
-                   Convolve1D<float>{l, r, o, wg_size, h});
+    auto rng = sycl::nd_range{
+        o.get_range() / (double_buffer_iterations * elems_per_thread),
+        sycl::range{wg_size}};
+    h.parallel_for(rng, Convolve1D<float>{l, r, o, wg_size, h});
   });
   q.wait_and_throw();
 
