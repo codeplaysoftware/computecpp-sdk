@@ -1,12 +1,8 @@
-#include <iostream>
 #include <sycl/sycl.hpp>
 
 #include <utility>
 
-constexpr auto elems_per_thread = 4;
-constexpr auto double_buffer_iterations = 64;
-
-template <typename T>
+template <typename T, int elems_thread, int iterations>
 class Convolve1D {
   sycl::accessor<T> f_;
   sycl::accessor<T> g_;
@@ -18,16 +14,17 @@ class Convolve1D {
   sycl::local_accessor<T> g_local_;
 
   void process_chunk(T* chunk, T* out, sycl::nd_item<> i) const {
-    T accums[elems_per_thread] = {0};
+    T accums[elems_thread] = {0};
     for (int g_index = 0; g_index < g_.size(); g_index++) {
-      for (int k = 0; k < elems_per_thread; k++) {
+      auto scale = g_local_[g_index];
+      for (int k = 0; k < elems_thread; k++) {
         // k variable avoids bank conflicts, g_index is a broadcast
         accums[k] +=
             chunk[g_index + k * i.get_local_range(0) + i.get_local_id(0)] *
-            g_local_[g_index];
+            scale;
       }
     }
-    for (int k = 0; k < elems_per_thread; k++) {
+    for (int k = 0; k < elems_thread; k++) {
       out[i.get_local_id(0) + i.get_local_range(0) * k] = accums[k];
     }
   }
@@ -38,10 +35,10 @@ class Convolve1D {
       : f_(f),
         g_(g),
         out_(out),
-        f_a_(sycl::range{wg_size * elems_per_thread} + g.get_range(), h),
-        f_b_(sycl::range{wg_size * elems_per_thread} + g.get_range(), h),
-        out_a_(sycl::range{wg_size * elems_per_thread}, h),
-        out_b_(sycl::range{wg_size * elems_per_thread}, h),
+        f_a_(sycl::range{wg_size * elems_thread} + g.get_range(), h),
+        f_b_(sycl::range{wg_size * elems_thread} + g.get_range(), h),
+        out_a_(sycl::range{wg_size * elems_thread}, h),
+        out_b_(sycl::range{wg_size * elems_thread}, h),
         g_local_(g.get_range(), h) {}
 
   void operator()(sycl::nd_item<> i) const {
@@ -49,8 +46,8 @@ class Convolve1D {
                                  sycl::device_event, sycl::device_event>;
     // Offset: work-group size x number of elements per work-item x the global
     // work-group identity
-    const auto wg_elements = i.get_local_range(0) * elems_per_thread;
-    const auto offset = i.get_group(0) * wg_elements * double_buffer_iterations;
+    const auto wg_elements = i.get_local_range(0) * elems_thread;
+    const auto offset = i.get_group(0) * wg_elements * iterations;
     auto g_ev = i.async_work_group_copy(g_local_.get_pointer(),
                                         g_.get_pointer(), g_.size());
     auto f_a_ev = i.async_work_group_copy(
@@ -64,7 +61,7 @@ class Convolve1D {
     DataEvent inactive = {f_b_.get_pointer(), out_b_.get_pointer(), f_b_ev,
                           f_b_ev};
     i.wait_for(g_ev);
-    for (int j = 0; j < double_buffer_iterations - 1; j++) {
+    for (int j = 0; j < iterations - 1; j++) {
       auto& [in, out, ev, out_ev] = active;
       auto& [inactive_ptr, b, inactive_ev, c] = inactive;
       inactive_ev = i.async_work_group_copy(
@@ -80,9 +77,8 @@ class Convolve1D {
     i.wait_for(ev);
     process_chunk(in, out, i);
     out_ev = i.async_work_group_copy(
-        out_.get_pointer() + offset +
-            (double_buffer_iterations - 1) * wg_elements,
-        out, wg_elements);
+        out_.get_pointer() + offset + (iterations - 1) * wg_elements, out,
+        wg_elements);
     i.wait_for(out_ev, std::get<3>(inactive));
   }
 };
@@ -92,7 +88,10 @@ class Init;
 int main() {
   constexpr auto n_elems = 16777216;
   constexpr auto g_elems = 16;
-  constexpr auto wg_size = 32;
+  constexpr auto wg_size = 128;
+
+  constexpr auto elems_per_thread = 2;
+  constexpr auto double_buffer_iterations = 32;
 
   sycl::queue q;
   // The last element will not be accessed (only elements up to f + g - 1)
@@ -116,7 +115,9 @@ int main() {
     auto rng = sycl::nd_range{
         o.get_range() / (double_buffer_iterations * elems_per_thread),
         sycl::range{wg_size}};
-    h.parallel_for(rng, Convolve1D<float>{l, r, o, wg_size, h});
+    auto k = Convolve1D<float, elems_per_thread, double_buffer_iterations>{
+        l, r, o, wg_size, h};
+    h.parallel_for(rng, k);
   });
   q.wait_and_throw();
 
