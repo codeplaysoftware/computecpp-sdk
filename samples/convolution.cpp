@@ -90,7 +90,7 @@ int main() {
   constexpr auto g_elems = 16;
   constexpr auto wg_size = 128;
 
-  constexpr auto elems_per_thread = 2;
+  constexpr auto elems_per_thread = 4;
   constexpr auto double_buffer_iterations = 32;
 
   sycl::queue q;
