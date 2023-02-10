@@ -1,3 +1,27 @@
+/***************************************************************************
+ *
+ *  Copyright (C) Codeplay Software Limited
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  Codeplay's ComputeCpp SDK
+ *
+ *  convolution.cpp
+ *
+ *  Description:
+ *    A 1D convolution using asynchronous copies to double-buffer the data.
+ *
+ **************************************************************************/
+
 #include <sycl/sycl.hpp>
 
 #include <utility>
@@ -13,12 +37,15 @@ class Convolve1D {
   sycl::local_accessor<T> out_b_;
   sycl::local_accessor<T> g_local_;
 
+  /* For each element of g, performs a convolution with a chunk of f.
+   * Stores the result to an output chunk that is double buffered.*/
   void process_chunk(T* chunk, T* out, sycl::nd_item<> i) const {
     T accums[elems_thread] = {0};
     for (int g_index = 0; g_index < g_.size(); g_index++) {
+      // When all threads access the same index in local, it can be broadcast
       auto scale = g_local_[g_index];
       for (int k = 0; k < elems_thread; k++) {
-        // k variable avoids bank conflicts, g_index is a broadcast
+        // k variable avoids bank conflicts
         accums[k] +=
             chunk[g_index + k * i.get_local_range(0) + i.get_local_id(0)] *
             scale;
@@ -44,9 +71,9 @@ class Convolve1D {
   void operator()(sycl::nd_item<> i) const {
     using DataEvent = std::tuple<sycl::local_ptr<T>, sycl::local_ptr<T>,
                                  sycl::device_event, sycl::device_event>;
-    // Offset: work-group size x number of elements per work-item x the global
-    // work-group identity
+    // Each loop iteration will process this many elements
     const auto wg_elements = i.get_local_range(0) * elems_thread;
+    // The offset to the start of the data in f
     const auto offset = i.get_group(0) * wg_elements * iterations;
     auto g_ev = i.async_work_group_copy(g_local_.get_pointer(),
                                         g_.get_pointer(), g_.size());
@@ -61,6 +88,10 @@ class Convolve1D {
     DataEvent inactive = {f_b_.get_pointer(), out_b_.get_pointer(), f_b_ev,
                           f_b_ev};
     i.wait_for(g_ev);
+    // In the loop, in and out are operated on. Inactive ptr and inactive ev
+    // are only used in the async functions, hence are not "actively" worked
+    // on. After this, the active and inactive pointers are swapped, so that
+    // the next iteration can wait on the correct data.
     for (int j = 0; j < iterations - 1; j++) {
       auto& [in, out, ev, out_ev] = active;
       auto& [inactive_ptr, b, inactive_ev, c] = inactive;
