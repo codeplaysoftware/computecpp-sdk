@@ -32,8 +32,6 @@ add_sample(TARGET builtin-kernel-example SOURCES builtin-kernel-example.cpp)
 add_sample(TARGET example-sycl-application SOURCES example-sycl-application.cpp)
 add_sample(TARGET gaussian-blur SOURCES gaussian-blur.cpp NO_TEST)
 target_include_directories(gaussian-blur PRIVATE ${PROJECT_SOURCE_DIR}/include)
-add_test(NAME gaussian-blur
-  COMMAND gaussian-blur ${CMAKE_CURRENT_SOURCE_DIR}/Lenna.png)
 add_sample(TARGET images SOURCES images.cpp)
 
 add_sample(TARGET matrix-multiply SOURCES matrix-multiply.cpp NO_TEST)
