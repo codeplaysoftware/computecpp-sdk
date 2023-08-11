@@ -73,10 +73,17 @@ endif()
 
 set(SYCL_LANGUAGE_VERSION "2017" CACHE STRING "SYCL version to use. Defaults to 1.2.1.")
 
-find_package(OpenCL REQUIRED)
+if(NOT TARGET OpenCL::OpenCL)
+  find_package(OpenCL REQUIRED)
+endif()
+
+if(TARGET OpenCL::Headers)
+  get_target_property(OpenCL_INTERFACE_INCLUDE_DIRECTORIES OpenCL::Headers INTERFACE_INCLUDE_DIRECTORIES)
+else()
+  get_target_property(OpenCL_INTERFACE_INCLUDE_DIRECTORIES OpenCL::OpenCL INTERFACE_INCLUDE_DIRECTORIES)
+endif()
 
 # Find ComputeCpp package
-
 set(computecpp_find_hint
   "${ComputeCpp_DIR}"
   "$ENV{COMPUTECPP_DIR}"
@@ -98,24 +105,27 @@ find_program(ComputeCpp_DEVICE_COMPILER_EXECUTABLE compute++
   HINTS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin
   NO_SYSTEM_ENVIRONMENT_PATH)
-
 find_program(ComputeCpp_INFO_EXECUTABLE computecpp_info
   HINTS ${computecpp_host_find_hint}
   PATH_SUFFIXES bin
   NO_SYSTEM_ENVIRONMENT_PATH)
-
-find_library(COMPUTECPP_RUNTIME_LIBRARY
+find_library(COMPUTECPP_LIBRARY
   NAMES ComputeCpp
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Runtime Library")
 
 # Found the library, use only single hint from now on
-get_filename_component(computecpp_library_path "${COMPUTECPP_RUNTIME_LIBRARY}" DIRECTORY)
+get_filename_component(computecpp_library_path "${COMPUTECPP_LIBRARY}" DIRECTORY)
 get_filename_component(computecpp_find_hint "${computecpp_library_path}/.." ABSOLUTE)
 
-find_library(COMPUTECPP_RUNTIME_LIBRARY_DEBUG
-  NAMES ComputeCpp_d ComputeCpp
+if(WIN32)
+  set(DEBUG_POSTFIX "_d")
+else()
+  set(DEBUG_POSTFIX "")
+endif()
+find_library(COMPUTECPP_LIBRARY_DEBUG
+  NAMES ComputeCpp${DEBUG_POSTFIX}
   HINTS ${computecpp_find_hint}
   PATH_SUFFIXES lib
   DOC "ComputeCpp Debug Runtime Library")
@@ -146,11 +156,14 @@ else()
   if(NOT ComputeCpp_INFO_EXECUTABLE_RESULT EQUAL "0")
     message(WARNING "platform - Error checking platform support!")
   else()
-    mark_as_advanced(COMPUTECPP_PLATFORM_IS_SUPPORTED)
-    if (COMPUTECPP_PLATFORM_IS_SUPPORTED)
-      message(STATUS "platform - your system can support ComputeCpp")
-    else()
-      message(STATUS "platform - your system is not officially supported")
+    if(NOT PREVIOUS_COMPUTECPP_PLATFORM_IS_SUPPORTED STREQUAL COMPUTECPP_PLATFORM_IS_SUPPORTED)
+      mark_as_advanced(COMPUTECPP_PLATFORM_IS_SUPPORTED)
+      if (COMPUTECPP_PLATFORM_IS_SUPPORTED)
+        message(STATUS "platform - your system can support ComputeCpp")
+      else()
+        message(STATUS "platform - your system is not officially supported")
+      endif()
+      set(PREVIOUS_COMPUTECPP_PLATFORM_IS_SUPPORTED "${COMPUTECPP_PLATFORM_IS_SUPPORTED}" CACHE INTERNAL "Remember not to re-print when there's no change")
     endif()
   endif()
 endif()
@@ -159,15 +172,15 @@ find_package_handle_standard_args(ComputeCpp
   REQUIRED_VARS ComputeCpp_ROOT_DIR
                 ComputeCpp_DEVICE_COMPILER_EXECUTABLE
                 ComputeCpp_INFO_EXECUTABLE
-                COMPUTECPP_RUNTIME_LIBRARY
-                COMPUTECPP_RUNTIME_LIBRARY_DEBUG
+                COMPUTECPP_LIBRARY
+                COMPUTECPP_LIBRARY_DEBUG
                 ComputeCpp_INCLUDE_DIRS
   VERSION_VAR ComputeCpp_VERSION)
 mark_as_advanced(ComputeCpp_ROOT_DIR
                  ComputeCpp_DEVICE_COMPILER_EXECUTABLE
                  ComputeCpp_INFO_EXECUTABLE
-                 COMPUTECPP_RUNTIME_LIBRARY
-                 COMPUTECPP_RUNTIME_LIBRARY_DEBUG
+                 COMPUTECPP_LIBRARY
+                 COMPUTECPP_LIBRARY_DEBUG
                  ComputeCpp_INCLUDE_DIRS
                  ComputeCpp_VERSION)
 
@@ -194,7 +207,11 @@ foreach (bitcode IN ITEMS ${COMPUTECPP_BITCODE})
   endif()
 endforeach()
 
-message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
+if(NOT PREVIOUS_COMPUTECPP_DEVICE_COMPILER_FLAGS STREQUAL COMPUTECPP_DEVICE_COMPILER_FLAGS)
+  message(STATUS "compute++ flags - ${COMPUTECPP_DEVICE_COMPILER_FLAGS}")
+  set(PREVIOUS_COMPUTECPP_DEVICE_COMPILER_FLAGS "${COMPUTECPP_DEVICE_COMPILER_FLAGS}" CACHE INTERNAL "Remember not to re-print when there's no change")
+endif()
+
 
 if(CMAKE_COMPILER_IS_GNUCXX)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
@@ -211,13 +228,17 @@ if(MSVC)
   file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp
     "#include <CL/sycl.hpp>  \n"
     "int main() { return 0; }\n")
-  set(_stl_test_command ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
+  set(_stl_test_command "${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}"
                         -sycl
                         ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
+                        ${COMPUTECPP_USER_FLAGS}
                         -isystem ${ComputeCpp_INCLUDE_DIRS}
-                        -isystem ${OpenCL_INCLUDE_DIRS}
+                        -isystem ${OpenCL_INTERFACE_INCLUDE_DIRECTORIES}
                         -o ${ComputeCpp_STL_CHECK_SRC}.sycl
                         -c ${ComputeCpp_STL_CHECK_SRC}.cpp)
+  if(SYCL_LANGUAGE_VERSION STREQUAL 2020)
+    list(APPEND _stl_test_command "-std=c++17")
+  endif()
   execute_process(
     COMMAND ${_stl_test_command}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
@@ -261,20 +282,22 @@ if(MSVC)
               ${CMAKE_CURRENT_BINARY_DIR}/${ComputeCpp_STL_CHECK_SRC}.cpp.sycl)
 endif(MSVC)
 
-if(NOT TARGET OpenCL::OpenCL)
-  add_library(OpenCL::OpenCL UNKNOWN IMPORTED)
-  set_target_properties(OpenCL::OpenCL PROPERTIES
-    IMPORTED_LOCATION             "${OpenCL_LIBRARIES}"
-    INTERFACE_INCLUDE_DIRECTORIES "${OpenCL_INCLUDE_DIRS}"
-  )
-endif()
-
 if(NOT TARGET ComputeCpp::ComputeCpp)
-  add_library(ComputeCpp::ComputeCpp UNKNOWN IMPORTED)
+  add_library(ComputeCpp::ComputeCpp SHARED IMPORTED)
+  if(WIN32)
+    string(REGEX REPLACE [[lib$]] [[dll]] COMPUTECPP_RUNTIME_LIBRARY "${COMPUTECPP_LIBRARY}")
+    string(REGEX REPLACE [[lib$]] [[dll]] COMPUTECPP_RUNTIME_LIBRARY_DEBUG "${COMPUTECPP_LIBRARY_DEBUG}")
+    set(EXTRA_IMPORTED_ARG IMPORTED_IMPLIB "${COMPUTECPP_LIBRARY}"
+                           IMPORTED_IMPLIB_DEBUG "${COMPUTECPP_LIBRARY_DEBUG}")
+  else()
+    set(COMPUTECPP_RUNTIME_LIBRARY_DEBUG "${COMPUTECPP_LIBRARY_DEBUG}")
+    set(COMPUTECPP_RUNTIME_LIBRARY "${COMPUTECPP_LIBRARY}")
+    set(EXTRA_IMPORTED_ARG IMPORTED_SONAME ComputeCpp)
+  endif()
   set_target_properties(ComputeCpp::ComputeCpp PROPERTIES
     IMPORTED_LOCATION_DEBUG          "${COMPUTECPP_RUNTIME_LIBRARY_DEBUG}"
-    IMPORTED_LOCATION_RELWITHDEBINFO "${COMPUTECPP_RUNTIME_LIBRARY}"
     IMPORTED_LOCATION                "${COMPUTECPP_RUNTIME_LIBRARY}"
+    ${EXTRA_IMPORTED_ARG}
     INTERFACE_INCLUDE_DIRECTORIES    "${ComputeCpp_INCLUDE_DIRS}"
     INTERFACE_LINK_LIBRARIES         "OpenCL::OpenCL"
   )
@@ -382,17 +405,25 @@ function(__build_ir)
 
   # Depfile support was only added in CMake 3.7
   # CMake throws an error if it is unsupported by the generator (i. e. not ninja)
-  if((NOT CMAKE_VERSION VERSION_LESS 3.7.0) AND
-          CMAKE_GENERATOR MATCHES "Ninja")
-    file(RELATIVE_PATH relOutputFile ${CMAKE_BINARY_DIR} ${outputDeviceFile})
+  if(((NOT CMAKE_VERSION VERSION_LESS 3.7.0)  AND CMAKE_GENERATOR MATCHES "Ninja") OR
+     ((NOT CMAKE_VERSION VERSION_LESS 3.17.0) AND CMAKE_GENERATOR MATCHES "Ninja Multi-Config") OR
+     ((NOT CMAKE_VERSION VERSION_LESS 3.20.0) AND CMAKE_GENERATOR MATCHES "Make")
+  )
+    if(POLICY CMP0116)
+      file(RELATIVE_PATH relOutputFile ${CMAKE_CURRENT_BINARY_DIR} ${outputDeviceFile})
+    else()
+      file(RELATIVE_PATH relOutputFile ${CMAKE_BINARY_DIR} ${outputDeviceFile})
+    endif()
     set(generate_depfile -MMD -MF ${depFileName} -MT ${relOutputFile})
-    set(enable_depfile DEPFILE ${depFileName})
+    set(depfile_arg DEPFILE ${depFileName})
+  else()
+    set(implicit_depends_arg IMPLICIT_DEPENDS CXX ${ARG_SOURCE})
   endif()
 
   # Add custom command for running compute++
   add_custom_command(
     OUTPUT ${outputDeviceFile} ${outputSyclFile}
-    COMMAND ${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}
+    COMMAND "${ComputeCpp_DEVICE_COMPILER_EXECUTABLE}"
             ${COMPUTECPP_DEVICE_COMPILER_FLAGS}
             "${generated_include_directories}"
             "${generated_compile_definitions}"
@@ -402,8 +433,8 @@ function(__build_ir)
             ${generate_depfile}
     COMMAND_EXPAND_LISTS
     DEPENDS ${ir_dependencies}
-    IMPLICIT_DEPENDS CXX ${ARG_SOURCE}
-    ${enable_depfile}
+    ${implicit_depends_arg}
+    ${depfile_arg}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     COMMENT "Building ComputeCpp integration header file ${outputSyclFile}")
 
